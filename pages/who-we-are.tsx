@@ -21,15 +21,15 @@ const BELIEFS = [
 function BeliefItem({ title, text, ref: reference }: { title: string; text: string; ref: string }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="border border-[#E5E7EB] rounded-xl overflow-hidden">
-      <button className="w-full flex items-center justify-between gap-4 px-5 py-4 text-left bg-white hover:bg-gray-50 transition-colors" onClick={() => setOpen(!open)}>
-        <span className="font-bold text-[#111827] text-sm" style={heading}>{title}</span>
-        <ChevronDown className={`w-4 h-4 text-[#BF0A30] flex-shrink-0 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+    <div className="border border-white/10 rounded-2xl overflow-hidden">
+      <button className="w-full flex items-center justify-between gap-4 px-6 py-5 text-left bg-white/5 hover:bg-white/10 transition-colors" onClick={() => setOpen(!open)}>
+        <span className="font-bold text-white text-sm" style={heading}>{title}</span>
+        <ChevronDown className={`w-5 h-5 text-[#BF0A30] flex-shrink-0 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
       </button>
       {open && (
-        <div className="px-5 pb-5 pt-1 bg-white">
-          <p className="text-[#6B7280] text-sm leading-relaxed">{text}</p>
-          {reference && <p className="text-[#BF0A30] text-xs mt-2 font-medium">{reference}</p>}
+        <div className="px-6 pb-6 pt-2 bg-white/[0.03]">
+          <p className="text-[#8B95A8] text-sm leading-relaxed">{text}</p>
+          {reference && <p className="text-[#BF0A30] text-xs mt-3 font-medium">{reference}</p>}
         </div>
       )}
     </div>
@@ -56,26 +56,27 @@ export default function WhoWeArePage() {
             Who We Are. &nbsp; Who We Are.
           </span>
         </div>
-        <div className="relative max-w-7xl mx-auto px-6 pb-16 pt-24 w-full">
-          <h1 className="text-6xl md:text-7xl text-white tracking-tight mb-4" style={heading}>Who We Are.</h1>
+        <div className="relative max-w-7xl mx-auto px-8 lg:px-16 pb-20 pt-32 w-full">
+          <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-4" style={heading}>Who We Are</p>
+          <h1 className="text-5xl md:text-7xl text-white tracking-tight mb-4" style={heading}>Who We Are.</h1>
           <p className="text-[#8B95A8] text-lg max-w-xl font-medium">God-focused. Service-oriented. Community-driven.</p>
         </div>
       </section>
 
       {/* THREE PURSUITS */}
       <section className="bg-[#F5F0E8] py-16">
-        <div className="max-w-7xl mx-auto px-6">
+        <div className="max-w-7xl mx-auto px-8 lg:px-16">
           <p className="text-[#BF0A30] text-xs font-bold uppercase tracking-widest mb-3" style={heading}>Know Our Pursuits</p>
           <h2 className="text-3xl md:text-4xl text-[#111827] mb-10" style={heading}>As a church, these are the three ways<br className="hidden md:block" /> we intend to live out our mission.</h2>
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-3 gap-5">
             {[
               { label: 'God:', text: 'We pursue the presence of God through individual and communal spiritual practices.' },
               { label: 'Work:', text: 'We pursue the spiritual, social, and cultural flourishing of our city.' },
               { label: 'Community:', text: 'We pursue the unity of the church family across racial, political, generational, and economic divides.' },
             ].map((p) => (
               <div key={p.label} className="bg-[#000000] rounded-2xl p-8">
-                <p className="text-[#BF0A30] text-xl mb-3" style={heading}>{p.label}</p>
-                <p className="text-[#D1D5DB] text-sm leading-relaxed">{p.text}</p>
+                <p className="text-[#BF0A30] text-xl mb-3 font-black" style={heading}>{p.label}</p>
+                <p className="text-[#8B95A8] text-sm leading-relaxed">{p.text}</p>
               </div>
             ))}
           </div>
@@ -83,11 +84,14 @@ export default function WhoWeArePage() {
       </section>
 
       {/* STATEMENT OF BELIEF + VISION/MISSION */}
-      <section className="bg-white py-16 border-t border-gray-100">
-        <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16 items-start">
+      <section className="bg-[#0A0C10] py-20 border-t border-white/5">
+        <div className="max-w-7xl mx-auto px-8 lg:px-16 grid lg:grid-cols-2 gap-16 items-start">
           <div>
-            <p className="text-[#BF0A30] text-xs font-bold uppercase tracking-widest mb-4" style={heading}>Our Statement of Belief</p>
-            <div className="bg-[#0A0C10] rounded-2xl p-8">
+            <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-4" style={heading}>Our Statement of Belief</p>
+            <div
+              className="rounded-2xl p-8"
+              style={{ background: 'rgba(191,10,48,0.08)', border: '1px solid rgba(191,10,48,0.15)' }}
+            >
               <p className="text-white font-semibold leading-relaxed text-sm italic">
                 &ldquo;I am a winner and not a loser.<br />
                 I am a victor and not a victim.<br />
@@ -103,18 +107,18 @@ export default function WhoWeArePage() {
           </div>
           <div className="space-y-6">
             <div>
-              <p className="text-[#BF0A30] text-xs font-bold uppercase tracking-widest mb-2" style={heading}>Our Vision</p>
-              <p className="text-[#374151] leading-relaxed">To Effectively Administer the Word of God and Spread it through Innovative Channels; Taking Care of People&apos;s Welfare and Glorifying God through Excellence.</p>
+              <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-2" style={heading}>Our Vision</p>
+              <p className="text-[#8B95A8] leading-relaxed">To Effectively Administer the Word of God and Spread it through Innovative Channels; Taking Care of People&apos;s Welfare and Glorifying God through Excellence.</p>
             </div>
-            <div className="border-t border-gray-100 pt-6">
-              <p className="text-[#BF0A30] text-xs font-bold uppercase tracking-widest mb-2" style={heading}>Our Mission</p>
-              <p className="text-[#374151] leading-relaxed">To Raise an Empowered Body of Christ that Fulfills Her Kingdom Mandate while Reflecting God&apos;s Glory to the Nations.</p>
+            <div className="border-t border-white/8 pt-6">
+              <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-2" style={heading}>Our Mission</p>
+              <p className="text-[#8B95A8] leading-relaxed">To Raise an Empowered Body of Christ that Fulfills Her Kingdom Mandate while Reflecting God&apos;s Glory to the Nations.</p>
             </div>
-            <div className="border-t border-gray-100 pt-6">
-              <p className="text-[#BF0A30] text-xs font-bold uppercase tracking-widest mb-2" style={heading}>Our Core Values</p>
+            <div className="border-t border-white/8 pt-6">
+              <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-2" style={heading}>Our Core Values</p>
               <div className="flex flex-wrap gap-2 mt-3">
                 {['Relevant', 'Significant', 'Timely', 'Focused', 'Dependable'].map((v) => (
-                  <span key={v} className="bg-red-50 text-[#BF0A30] border border-red-100 text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg" style={heading}>{v}</span>
+                  <span key={v} className="bg-[rgba(191,10,48,0.15)] text-[#F87171] border border-[rgba(191,10,48,0.2)] text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg" style={heading}>{v}</span>
                 ))}
               </div>
             </div>
@@ -133,7 +137,7 @@ export default function WhoWeArePage() {
         }}
       >
         <div className="absolute inset-0 bg-[#0A0C10]/88" />
-        <div className="relative z-10 max-w-7xl mx-auto px-6">
+        <div className="relative z-10 max-w-7xl mx-auto px-8 lg:px-16">
           <p className="text-[#BF0A30] text-xs font-bold uppercase tracking-widest mb-3" style={heading}>Our Story</p>
           <h2 className="text-4xl md:text-5xl text-white mb-12" style={heading}>How It All Began</h2>
           <div className="grid md:grid-cols-3 gap-6 mb-12">
@@ -177,7 +181,7 @@ export default function WhoWeArePage() {
       </section>
 
       <section className="bg-[#0A0C10] py-16">
-        <div className="max-w-7xl mx-auto px-6">
+        <div className="max-w-7xl mx-auto px-8 lg:px-16">
           <div className="text-center mb-12">
             <p className="text-[#BF0A30] text-xs font-bold uppercase tracking-widest mb-3" style={heading}>What We Believe</p>
             <h2 className="text-4xl md:text-5xl text-white mb-4" style={heading}>Essential Beliefs</h2>
@@ -193,7 +197,7 @@ export default function WhoWeArePage() {
 
       {/* WELCOME FROM LEADERSHIP */}
       <section className="bg-[#F5F0E8] py-16">
-        <div className="max-w-7xl mx-auto px-6 space-y-14">
+        <div className="max-w-7xl mx-auto px-8 lg:px-16 space-y-14">
           <div className="grid md:grid-cols-2 gap-10 items-center">
             <div>
               <p className="text-[#BF0A30] text-xs font-bold uppercase tracking-widest mb-4" style={heading}>A Welcome Message from our Founder and Overseer</p>
@@ -229,7 +233,7 @@ export default function WhoWeArePage() {
 
       {/* CTA */}
       <section className="bg-[#BF0A30] py-16 text-center">
-        <div className="max-w-2xl mx-auto px-6">
+        <div className="max-w-2xl mx-auto px-8 lg:px-16">
           <h2 className="text-4xl md:text-5xl text-white mb-5" style={heading}>Attend an event.</h2>
           <p className="text-red-100 mb-8">Check out some of our upcoming events on the calendar.</p>
           <Link href="/r-events" className="inline-flex items-center gap-2 bg-white text-[#BF0A30] hover:bg-red-50 font-bold text-xs uppercase tracking-widest px-7 py-4 rounded-xl transition-all" style={heading}>Events Calendar <ArrowRight className="w-3.5 h-3.5" /></Link>

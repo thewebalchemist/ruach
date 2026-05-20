@@ -1,8 +1,11 @@
 import { useState } from 'react';
-import { ChevronDown } from 'lucide-react';
+import Link from 'next/link';
+import { ChevronDown, ArrowRight } from 'lucide-react';
 import Layout from '@/components/shared/Layout';
+import ExpectGallery from '@/components/shared/ExpectGallery';
 
-const heading = { fontFamily: 'Montserrat, sans-serif', fontWeight: 900 };
+const H = { fontFamily: 'Montserrat, sans-serif', fontWeight: 900 };
+const serif = { fontFamily: '"Playfair Display", Georgia, serif', fontStyle: 'italic' as const };
 
 const FAQS = [
   { q: 'What does "Ruach" actually mean? Is it an acronym?', a: 'The word Ruach is a Hebrew term traditionally translated as "breath," "wind," or "spirit." In a biblical context, it refers to the life-giving breath of God found in Genesis. However, at our church, it serves a dual purpose as an acronym: Rhema United Assemblies of Christ. This reflects our commitment to the "Rhema" (the spoken, revealed Word of God) and our unity as a body of believers.' },
@@ -31,17 +34,17 @@ const GALLERY = [
 function FaqItem({ q, a }: { q: string; a: string }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="rounded-xl overflow-hidden mb-3">
+    <div className="border border-white/10 rounded-2xl overflow-hidden">
       <button
-        className={`w-full flex items-center justify-between gap-4 px-6 py-5 text-left transition-colors ${open ? 'bg-[#BF0A30]' : 'bg-[#BF0A30] hover:bg-[#9A0826]'}`}
+        className="w-full flex items-center justify-between gap-4 px-6 py-5 text-left bg-white/5 hover:bg-white/10 transition-colors"
         onClick={() => setOpen(!open)}
       >
-        <span className="font-bold text-white text-sm leading-snug" style={heading}>{q}</span>
-        <ChevronDown className={`w-5 h-5 text-white flex-shrink-0 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+        <span className="font-bold text-white text-sm leading-snug" style={H}>{q}</span>
+        <ChevronDown className={`w-5 h-5 text-[#BF0A30] flex-shrink-0 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
       </button>
       {open && (
-        <div className="px-6 pb-6 pt-4 bg-[#111827]">
-          <p className="text-[#D1D5DB] text-sm leading-relaxed">{a}</p>
+        <div className="px-6 pb-6 pt-2 bg-white/[0.03]">
+          <p className="text-[#8B95A8] text-sm leading-relaxed">{a}</p>
         </div>
       )}
     </div>
@@ -55,33 +58,43 @@ export default function AllAboutRuachPage() {
       description="Everything you want to know about Ruach Tabernacle — what Ruach means, our history, branches, services, leadership, and more."
     >
 
-      {/* HERO */}
+      {/* ── HERO ──────────────────────────────────────────────────── */}
       <section className="relative min-h-[60vh] flex items-end bg-[#0A0C10] overflow-hidden">
         <div className="absolute inset-0">
-          <img src="/church-photos/rhema-feast.jpg" alt="All About Ruach" className="w-full h-full object-cover opacity-35"
-            onError={(e) => { (e.target as HTMLImageElement).src = '/church-photos/IMG_1716.jpg'; }} />
+          <img
+            src="/church-photos/rhema-feast.jpg"
+            alt="All About Ruach"
+            className="w-full h-full object-cover opacity-35"
+            onError={(e) => { (e.target as HTMLImageElement).src = '/church-photos/IMG_1716.jpg'; }}
+          />
           <div className="absolute inset-0 bg-gradient-to-t from-[#0A0C10] via-[#0A0C10]/60 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0A0C10]/70 to-transparent" />
         </div>
-        {/* Large R logo watermark */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="w-48 h-48 md:w-64 md:h-64 rounded-full bg-[#BF0A30]/10 border-2 border-[#BF0A30]/20 flex items-center justify-center">
-            <span className="text-8xl md:text-9xl text-white/10" style={heading}>R</span>
+        <div className="spirit-orb spirit-breathe absolute w-[500px] h-[500px] bg-[#BF0A30]"
+          style={{ top: '10%', right: '0%', filter: 'blur(150px)', opacity: 0.10, ['--spirit-dur' as string]: '11s' }} />
+        <div className="relative max-w-7xl mx-auto px-8 lg:px-16 pb-20 pt-32 w-full">
+          <div
+            className="inline-flex items-center gap-2 text-[#F87171] text-[10px] font-bold uppercase tracking-widest px-4 py-2 rounded-full mb-6"
+            style={{ background: 'rgba(191,10,48,0.2)', border: '1px solid rgba(191,10,48,0.35)' }}
+          >
+            <span style={H}>All About Ruach</span>
           </div>
-        </div>
-        <div className="relative max-w-7xl mx-auto px-6 pb-16 pt-24 w-full">
-          <div className="inline-flex items-center gap-2 bg-[rgba(191,10,48,0.2)] border border-[rgba(191,10,48,0.4)] text-[#F87171] text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-full mb-5" style={heading}>
-            All About Ruach
-          </div>
-          <h1 className="text-5xl md:text-6xl text-white tracking-tight" style={heading}>
-            Everything You<br />Want to Know
+          <h1 className="text-5xl md:text-7xl text-white leading-tight tracking-tight mb-5" style={H}>
+            Everything You<br /><span style={serif}>Want to Know</span>
           </h1>
+          <p className="text-[#8B95A8] text-lg max-w-md">
+            Your questions answered — who we are, where we came from, and where we&apos;re going.
+          </p>
         </div>
       </section>
 
-      {/* BRANCHES */}
-      <section className="bg-[#F5F0E8] py-12">
-        <div className="max-w-7xl mx-auto px-6">
-          <p className="text-[#BF0A30] text-xs font-bold uppercase tracking-widest mb-6 text-center" style={heading}>Our Locations Across Nairobi</p>
+      {/* ── BRANCHES ──────────────────────────────────────────────── */}
+      <section className="bg-[#F5F0E8] py-16">
+        <div className="max-w-7xl mx-auto px-8 lg:px-16">
+          <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-4 text-center" style={H}>Our Locations Across Nairobi</p>
+          <h2 className="text-3xl md:text-4xl text-[#111827] text-center mb-10" style={H}>
+            5 Assemblies.<br /><span style={serif}>One family.</span>
+          </h2>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
             {[
               { name: 'Ruach Tabernacle', sub: 'Rhema Grounds, Windsor', main: true },
@@ -90,63 +103,86 @@ export default function AllAboutRuachPage() {
               { name: 'Ruach South',      sub: 'Waterfront Mall, Karen' },
               { name: 'Ruach Rivers',     sub: 'Havilah Ranch, Northern Bypass' },
             ].map((b) => (
-              <div key={b.name} className={`rounded-xl p-5 text-center ${b.main ? 'bg-[#BF0A30] text-white col-span-2 md:col-span-1' : 'bg-white border border-gray-100'}`}>
-                <p className={`text-sm ${b.main ? 'text-white' : 'text-[#111827]'}`} style={heading}>{b.name}</p>
-                <p className={`text-xs mt-1 ${b.main ? 'text-red-200' : 'text-[#6B7280]'}`}>{b.sub}</p>
-                {b.main && <span className="mt-2 inline-block bg-white/20 text-white text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded-full" style={heading}>Flagship HQ</span>}
+              <div
+                key={b.name}
+                className={`rounded-2xl p-5 text-center ${b.main ? 'bg-[#BF0A30] col-span-2 md:col-span-1' : 'bg-[#000000]'}`}
+              >
+                <p className="text-white text-sm font-black" style={H}>{b.name}</p>
+                <p className={`text-xs mt-1 ${b.main ? 'text-red-200' : 'text-[#8B95A8]'}`}>{b.sub}</p>
+                {b.main && (
+                  <span
+                    className="mt-2 inline-block text-white text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded-full"
+                    style={{ background: 'rgba(255,255,255,0.2)' }}
+                  >
+                    Flagship HQ
+                  </span>
+                )}
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* FAQ — Red accordion on dark background */}
-      <section className="bg-[#0A0C10] py-16">
-        <div className="max-w-4xl mx-auto px-6">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl text-white mb-4" style={heading}>Frequently Asked Questions</h2>
-            <p className="text-[#8B95A8]">Everything you want to know about Ruach — answered.</p>
+      {/* ── MAIN FAQ ──────────────────────────────────────────────── */}
+      <section className="bg-[#0A0C10] py-24">
+        <div className="max-w-4xl mx-auto px-8 lg:px-16">
+          <div className="text-center mb-14">
+            <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-3" style={H}>Got Questions?</p>
+            <h2 className="text-4xl md:text-5xl text-white mb-4" style={H}>
+              Frequently Asked<br /><span style={serif}>Questions</span>
+            </h2>
+            <p className="text-[#8B95A8] text-sm">Everything you want to know about Ruach — answered.</p>
           </div>
-          <div>
+          <div className="space-y-3">
             {FAQS.map((f, i) => <FaqItem key={i} q={f.q} a={f.a} />)}
           </div>
         </div>
       </section>
 
-      {/* GALLERY */}
+      {/* ── GALLERY ───────────────────────────────────────────────── */}
       <section className="bg-[#F5F0E8] py-16">
-        <div className="max-w-7xl mx-auto px-6">
-          <h2 className="text-4xl text-[#111827] mb-10" style={heading}>Here&apos;s What to Expect</h2>
+        <div className="max-w-7xl mx-auto px-8 lg:px-16">
+          <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-3" style={H}>Life at Ruach</p>
+          <h2 className="text-4xl text-[#111827] mb-10" style={H}>
+            Here&apos;s What<br /><span style={serif}>to Expect</span>
+          </h2>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             {GALLERY.map((src, i) => (
-              <div key={i} className={`rounded-xl overflow-hidden ${i === 0 ? 'row-span-2' : ''}`}>
-                <img src={src} alt={`Ruach ${i + 1}`} className="w-full h-full object-cover" loading="lazy"
-                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+              <div
+                key={i}
+                className={`rounded-2xl overflow-hidden ${i === 0 ? 'md:row-span-2' : ''}`}
+                style={{ minHeight: i === 0 ? '360px' : '180px' }}
+              >
+                <img
+                  src={src}
+                  alt={`Ruach ${i + 1}`}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                />
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* BOTTOM FAQ strip — matches screenshot second FAQ block */}
-      <section className="bg-[#0A0C10] py-16 border-t border-white/5">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid lg:grid-cols-3 gap-12">
-            <div>
-              <h2 className="text-3xl text-white mb-3" style={heading}>FAQs</h2>
-              <p className="text-[#8B95A8] text-sm">These are frequently asked questions about Ruach Tabernacle.</p>
-            </div>
-            <div className="lg:col-span-2 space-y-3">
-              {FAQS.slice(0, 5).map((f, i) => (
-                <div key={i} className="border border-[#E5E7EB] rounded-xl overflow-hidden">
-                  <button className="w-full flex items-center justify-between gap-4 px-5 py-4 text-left bg-white hover:bg-gray-50 transition-colors">
-                    <span className="font-bold text-[#111827] text-sm" style={heading}>{f.q}</span>
-                    <ChevronDown className="w-4 h-4 text-[#BF0A30] flex-shrink-0" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
+      <ExpectGallery />
+
+      {/* ── CTA ───────────────────────────────────────────────────── */}
+      <section className="bg-[#BF0A30] py-16 text-center">
+        <div className="max-w-2xl mx-auto px-8">
+          <p className="text-red-200 text-[10px] font-bold uppercase tracking-widest mb-4" style={H}>Ready to visit?</p>
+          <h2 className="text-4xl text-white mb-5" style={H}>
+            Your seat<br /><span style={serif}>is waiting.</span>
+          </h2>
+          <p className="text-red-100 text-sm mb-8">Every Sunday at 8AM, 10AM, and 12:30PM — along the Northern Bypass, next to Shell Windsor.</p>
+          <Link
+            href="/new-here"
+            className="inline-flex items-center gap-2 bg-white text-[#BF0A30] hover:bg-red-50 font-black text-xs uppercase tracking-widest px-7 py-4 rounded-2xl transition-all"
+            style={H}
+          >
+            Plan a Visit <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
         </div>
       </section>
 

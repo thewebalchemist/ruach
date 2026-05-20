@@ -7,20 +7,20 @@ import ExpectGallery from '@/components/shared/ExpectGallery';
 const heading = { fontFamily: 'Montserrat, sans-serif', fontWeight: 900 };
 
 const COMMUNITIES = [
-  { name: 'R-Kids Church',        sub: 'Children Ministry',   href: '/r-kids-church',          img: '/kids/children-1.jpeg' },
-  { name: 'Trendsetters',         sub: 'Teens Church',         href: '/rt-teens-church',        img: '/church-photos/aug-2025-c.jpg' },
-  { name: 'Bridge',               sub: 'Youth Church',         href: '/rt-youth-church',        img: '/church-photos/june-2025.jpg' },
-  { name: 'Crosspoints',          sub: 'Home Church',          href: '/r-crosspoints',          img: '/church-photos/aug-2025-a.jpg' },
-  { name: 'R-Warriors',           sub: "Men's Ministry",       href: '/rt-warriors',            img: '/church-photos/aug-2025-b.jpg' },
-  { name: 'Kingdom Woman',        sub: "Women's Ministry",     href: '/rt-kingdom-woman',       img: '/church-photos/advancing-kingdom.jpg' },
-  { name: 'Marriage Ministry',    sub: 'Marriages & Families', href: '/rt-marriage-ministry',   img: '/church-photos/dec-2024.jpg' },
-  { name: 'R-Worship',            sub: 'Worship Team',         href: '/rt-worship',             img: '/church-photos/rhema-feast.jpg' },
-  { name: 'Media Team',           sub: 'Production & Media',   href: '/rt-media',               img: '/church-photos/dec-2024.jpg' },
-  { name: 'Intercessors',         sub: 'Prayer Ministry',      href: '/rt-intercessors',        img: '/church-photos/aug-2025-b.jpg' },
-  { name: 'Evangelists',          sub: 'Outreach Ministry',    href: '/rt-evangelists',         img: '/church-photos/IMG_7023.jpg' },
-  { name: 'Hospitality',          sub: 'Guest Services',       href: '/rt-hospitality',         img: '/church-photos/IMG_1716.jpg' },
-  { name: 'Care and Counselling', sub: 'Pastoral Care',        href: '/r-care-and-counselling', img: '/church-photos/about-carousel.avif' },
-  { name: 'Guest Experience',     sub: 'First Impressions',    href: '/rt-guest-experience',    img: '/church-photos/aug-2025-b.jpg' },
+  { name: 'R-Kids Church',        sub: 'Children Ministry',   href: '/r-kids-church',          img: '/communities/r-kids.jpeg' },
+  { name: 'Trendsetters',         sub: 'Teens Church',         href: '/trendsetters',           img: '/communities/the-bridge2.jpg' },
+  { name: 'The Bridge',           sub: 'Youth Church',         href: '/the-bridge',             img: '/communities/the-bridge.jpg' },
+  { name: 'Crosspoints',          sub: 'Home Church',          href: '/r-crosspoints',          img: '/communities/ruach2.jpg' },
+  { name: 'R-Warriors',           sub: "Men's Ministry",       href: '/r-warriors',             img: '/communities/r-warriors.jpg' },
+  { name: 'Kingdom Woman',        sub: "Women's Ministry",     href: '/kingdom-woman',          img: '/communities/kingdom-woman2.jpg' },
+  { name: 'Marriage Ministry',    sub: 'Marriages & Families', href: '/marriage-ministry',      img: '/communities/marriage.jpg' },
+  { name: 'R-Worship',            sub: 'Worship Team',         href: '/r-worship',              img: '/communities/r-worship-praise.jpg' },
+  { name: 'R-Media',              sub: 'Production & Media',   href: '/r-media',                img: '/communities/r-media.jpg' },
+  { name: 'Intercessors',         sub: 'Prayer Ministry',      href: '/intercessors',           img: '/communities/ruach2.jpg' },
+  { name: 'Evangelists',          sub: 'Outreach Ministry',    href: '/r-communities',          img: '/communities/worship1.jpg' },
+  { name: 'Hospitality',          sub: 'Guest Services',       href: '/r-communities',          img: '/communities/the-bridge1.jpg' },
+  { name: 'Care and Counselling', sub: 'Pastoral Care',        href: '/r-communities',          img: '/communities/kingdom-woman3.jpg' },
+  { name: 'Guest Experience',     sub: 'First Impressions',    href: '/r-communities',          img: '/communities/r-worship-praise2.jpg' },
 ];
 
 
@@ -35,12 +35,12 @@ const FAQS = [
 function FaqItem({ q, a }: { q: string; a: string }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="border border-[#E5E7EB] rounded-xl overflow-hidden">
-      <button className="w-full flex items-center justify-between gap-4 px-5 py-4 text-left bg-white hover:bg-gray-50 transition-colors" onClick={() => setOpen(!open)}>
-        <span className="font-bold text-[#111827] text-sm" style={heading}>{q}</span>
-        <ChevronDown className={`w-4 h-4 text-[#BF0A30] flex-shrink-0 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+    <div className="border border-white/10 rounded-2xl overflow-hidden">
+      <button className="w-full flex items-center justify-between gap-4 px-6 py-5 text-left bg-white/5 hover:bg-white/10 transition-colors" onClick={() => setOpen(!open)}>
+        <span className="font-bold text-white text-sm" style={heading}>{q}</span>
+        <ChevronDown className={`w-5 h-5 text-[#BF0A30] flex-shrink-0 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
       </button>
-      {open && <div className="px-5 pb-5 pt-1 text-[#6B7280] text-sm leading-relaxed bg-white">{a}</div>}
+      {open && <div className="px-6 pb-6 pt-2 text-[#8B95A8] text-sm leading-relaxed bg-white/[0.03]">{a}</div>}
     </div>
   );
 }
@@ -66,14 +66,15 @@ export default function RCommunitiesPage() {
             R-Communities. &nbsp; R-Communities.
           </span>
         </div>
-        <div className="relative max-w-7xl mx-auto px-6 pb-20 pt-32 w-full">
-          <h1 className="text-6xl md:text-7xl text-white tracking-tight" style={heading}>Find Your Circle</h1>
+        <div className="relative max-w-7xl mx-auto px-8 lg:px-16 pb-20 pt-32 w-full">
+          <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-4" style={heading}>R-Communities</p>
+          <h1 className="text-5xl md:text-7xl text-white tracking-tight" style={heading}>Find Your Circle</h1>
         </div>
       </section>
 
       {/* TAGLINE */}
       <section className="bg-[#F5F0E8] py-12 text-center">
-        <div className="max-w-2xl mx-auto px-6">
+        <div className="max-w-2xl mx-auto px-8 lg:px-16">
           <h3 className="text-3xl md:text-4xl text-[#111827] mb-5" style={heading}>Have people to do life with!</h3>
           <p className="text-[#6B7280] leading-relaxed">
             We believe that real life change and growth happens through authentic relationships. You can&apos;t do life with everyone, but we can create a world where everyone has someone to do life with.
@@ -99,7 +100,7 @@ export default function RCommunitiesPage() {
 
       {/* COMMUNITIES GRID */}
       <section className="bg-[#0A0C10] py-16">
-        <div className="max-w-7xl mx-auto px-6">
+        <div className="max-w-7xl mx-auto px-8 lg:px-16">
           <div className="flex items-center justify-between mb-10">
             <h2 className="text-3xl md:text-4xl text-white" style={heading}>Join Community.</h2>
           </div>
@@ -136,7 +137,7 @@ export default function RCommunitiesPage() {
 
       {/* FAQ */}
       <section className="bg-[#0A0C10] py-16">
-        <div className="max-w-7xl mx-auto px-6">
+        <div className="max-w-7xl mx-auto px-8 lg:px-16">
           <div className="grid lg:grid-cols-3 gap-12">
             <div>
               <h2 className="text-4xl text-white mb-3" style={heading}>FAQs</h2>

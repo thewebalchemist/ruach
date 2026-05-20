@@ -32,17 +32,14 @@ export default function Footer() {
 
           {/* Brand column */}
           <div>
-            <div className="flex items-center gap-3 mb-4">
+            <div className="mb-4">
               <img
-                src="/brand/cropped-icon.png"
-                alt="R"
-                className="h-10 w-10 object-contain"
-                onError={(e) => { (e.target as HTMLImageElement).src = '/brand/icon.png'; }}
+                src="/brand/ruach-logo.png"
+                alt="Ruach Tabernacle"
+                className="h-9 object-contain brightness-0 invert opacity-90"
+                style={{ maxWidth: '150px' }}
+                onError={(e) => { (e.target as HTMLImageElement).src = '/brand/logo.png'; }}
               />
-              <div className="leading-none">
-                <p className="text-white font-black text-sm" style={{ fontFamily: 'Montserrat, sans-serif' }}>RUACH</p>
-                <p className="text-[#4A5568] text-[10px] uppercase tracking-wider">Tabernacle Assembly</p>
-              </div>
             </div>
             <p className="text-[#BF0A30] font-bold text-sm mb-1">Raising Kingdom Champions</p>
             <p className="text-[#4A5568] text-sm leading-relaxed mb-4">

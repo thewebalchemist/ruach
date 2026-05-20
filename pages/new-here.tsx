@@ -118,15 +118,15 @@ export default function NewHerePage() {
       </section>
 
       {/* KIDS */}
-      <section className="bg-white py-16">
-        <div className="max-w-7xl mx-auto px-6">
+      <section className="bg-[#F5F0E8] py-16">
+        <div className="max-w-7xl mx-auto px-8 lg:px-16">
           <div className="grid md:grid-cols-2 gap-10 items-center">
             <div>
               <h2 className="text-4xl md:text-5xl text-[#111827] mb-5" style={heading}>A place for your<br />kids to belong.</h2>
               <p className="text-[#6B7280] leading-relaxed mb-8">
                 We&apos;re committed to providing your children a safe and welcoming environment where they can build a relationship with Jesus and experience a strong church community from a young age.
               </p>
-              <Link href="/r-kids-church" className="inline-flex items-center gap-2 bg-[#BF0A30] text-white font-bold text-xs uppercase tracking-widest px-6 py-3.5 rounded-lg hover:bg-[#9A0826] transition-colors" style={heading}>
+              <Link href="/r-kids-church" className="inline-flex items-center gap-2 bg-[#BF0A30] text-white font-black text-xs uppercase tracking-widest px-6 py-3.5 rounded-2xl hover:bg-[#9A0826] transition-all shadow-lg shadow-[rgba(191,10,48,0.3)]" style={heading}>
                 R-Kids Church <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>

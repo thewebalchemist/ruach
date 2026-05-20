@@ -147,7 +147,9 @@ export default function Layout({ children, title, description, image, noFooter, 
       <div className="min-h-screen bg-white text-[#111827] pb-mobile-nav lg:pb-0">
         {/* Fixed header: announcement bar + navbar stacked in one container */}
         <div className="fixed top-0 left-0 right-0 z-50">
-          {!noAnnouncement && <AnnouncementBar />}
+          <div className="hidden sm:block">
+            {!noAnnouncement && <AnnouncementBar />}
+          </div>
           <Navbar />
         </div>
         <main>{children}</main>

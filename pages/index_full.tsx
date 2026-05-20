@@ -22,10 +22,10 @@ const FAQS = [
 ];
 
 const COMMUNITIES = [
-  { name: 'R-Kids Church',  sub: 'Children Ministry',  href: '/r-kids-church',    img: '/kids/children-1.jpeg' },
-  { name: 'The Bridge',     sub: 'Youth Church',        href: '/the-bridge',       img: '/church-photos/aug-2025-c.jpg' },
-  { name: 'Kingdom Woman',  sub: 'Women Ministry',      href: '/kingdom-woman',    img: '/church-photos/worship-ruach.jpg' },
-  { name: 'R-Warriors',     sub: 'Men Ministry',        href: '/r-warriors',       img: '/church-photos/ruach1.jpg' },
+  { name: 'R-Kids Church',  sub: 'Children Ministry',  href: '/r-kids-church',    img: '/communities/r-kids.jpeg' },
+  { name: 'The Bridge',     sub: 'Youth Church',        href: '/the-bridge',       img: '/communities/the-bridge1.jpg' },
+  { name: 'Kingdom Woman',  sub: "Women's Ministry",    href: '/kingdom-woman',    img: '/communities/kingdom-woman.jpg' },
+  { name: 'R-Warriors',     sub: "Men's Ministry",      href: '/r-warriors',       img: '/communities/r-warriors.jpg' },
 ];
 
 const GALLERY = [
@@ -86,14 +86,12 @@ export default function HomePage({ latestSermon, isLive }: PageProps) {
       ══════════════════════════════════════════════ */}
       <section className="relative min-h-screen flex flex-col justify-end overflow-hidden bg-[#0A0C10]">
 
-        {/* Dark texture background (visible before video loads) */}
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: 'url(/church-photos/dark-backround.png)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-          }}
+        {/* Fallback image — shown before/if video fails */}
+        <img
+          src="/church-photos/church.jpg"
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover"
+          aria-hidden
         />
 
         {/* Video background */}
@@ -101,7 +99,7 @@ export default function HomePage({ latestSermon, isLive }: PageProps) {
           ref={videoRef}
           className="absolute inset-0 w-full h-full object-cover opacity-55"
           autoPlay muted loop playsInline preload="auto"
-          poster="/church-photos/IMG_1716.jpg"
+          poster="/church-photos/church.jpg"
         >
           <source src="/videos/welcome-to-ruach.mp4" type="video/mp4" />
         </video>
@@ -173,61 +171,43 @@ export default function HomePage({ latestSermon, isLive }: PageProps) {
         </button>
 
         {/* Content */}
-        <div className="relative z-10 max-w-7xl mx-auto px-8 lg:px-16 pb-28 pt-32 w-full">
-          {/* Theme badge */}
-          <div className="inline-flex items-center gap-2 apple-glass-brand text-[#F87171] text-[11px] font-bold uppercase tracking-widest px-5 py-2.5 mb-10" style={H}>
-            2026 Theme: Greater Glory
-          </div>
-
+        <div className="relative z-10 max-w-7xl mx-auto px-6 sm:px-8 lg:px-16 pb-24 sm:pb-28 pt-28 sm:pt-32 w-full">
           {/* Mixed typography headline — Montserrat + Playfair Display italic */}
-          <h1 className="text-white leading-[0.95] tracking-tight mb-10">
-            <span className="block text-6xl md:text-7xl lg:text-[96px]" style={H}>Raising</span>
-            <span className="block text-6xl md:text-7xl lg:text-[96px]" style={{ ...serif, fontWeight: 900, fontSize: undefined }}>
-              <span className="text-6xl md:text-7xl lg:text-[96px]" style={serif}>Kingdom</span>
-            </span>
-            <span className="block text-6xl md:text-7xl lg:text-[96px] text-[#BF0A30]" style={H}>Champions</span>
+          <h1 className="text-white leading-[0.95] tracking-tight mb-8">
+            <span className="block text-5xl sm:text-6xl md:text-7xl lg:text-[96px]" style={H}>Raising</span>
+            <span className="block text-5xl sm:text-6xl md:text-7xl lg:text-[96px]" style={serif}>Kingdom</span>
+            <span className="block text-5xl sm:text-6xl md:text-7xl lg:text-[96px] text-[#BF0A30]" style={H}>Champions</span>
           </h1>
 
           {/* Sub-copy */}
-          <p className="text-white/70 text-lg md:text-xl max-w-lg mb-10 leading-relaxed">
-            A church for people who want to live out their God-given purpose —<br className="hidden md:block" />
+          <p className="text-white/70 text-base sm:text-lg md:text-xl max-w-lg mb-8 leading-relaxed">
+            A church for people who want to live out their God-given purpose —
             <span style={serif}> in business, family, and beyond.</span>
           </p>
 
           {/* CTA row */}
           <div className="flex flex-wrap gap-3">
             <Link href="/new-here"
-              className="flex items-center gap-2 bg-[#BF0A30] hover:bg-[#9A0826] text-white font-bold text-sm uppercase tracking-wider px-7 py-4 rounded-2xl transition-all hover:-translate-y-0.5 shadow-xl shadow-[rgba(191,10,48,0.4)]"
+              className="flex items-center gap-2 bg-[#BF0A30] hover:bg-[#9A0826] text-white font-bold text-sm uppercase tracking-wider px-6 sm:px-7 py-3.5 sm:py-4 rounded-2xl transition-all hover:-translate-y-0.5 shadow-xl shadow-[rgba(191,10,48,0.4)]"
               style={H}
             >
               Plan a Visit
             </Link>
             <Link href="/who-we-are"
-              className="flex items-center gap-2 apple-glass-dark text-white font-bold text-sm uppercase tracking-wider px-7 py-4 transition-all hover:-translate-y-0.5"
+              className="flex items-center gap-2 apple-glass-dark text-white font-bold text-sm uppercase tracking-wider px-6 sm:px-7 py-3.5 sm:py-4 transition-all hover:-translate-y-0.5"
               style={H}
             >
               Our Story
             </Link>
             {isLive && (
               <Link href="/live"
-                className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-sm uppercase tracking-wider px-7 py-4 rounded-2xl transition-all"
+                className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-sm uppercase tracking-wider px-6 sm:px-7 py-3.5 sm:py-4 rounded-2xl transition-all"
                 style={H}
               >
                 <span className="w-2 h-2 bg-white rounded-full animate-pulse" /> Live Now
               </Link>
             )}
           </div>
-
-          {/* Watch reel button */}
-          <button
-            className="mt-8 flex items-center gap-3 text-white/60 hover:text-white transition-colors group"
-            onClick={() => document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' })}
-          >
-            <span className="w-12 h-12 rounded-full apple-glass-dark flex items-center justify-center group-hover:scale-110 transition-transform">
-              <Play className="w-5 h-5 fill-white ml-0.5" />
-            </span>
-            <span className="text-sm font-medium">See what we&apos;re about</span>
-          </button>
         </div>
       </section>
 
@@ -339,7 +319,7 @@ export default function HomePage({ latestSermon, isLive }: PageProps) {
             {/* ── LOCATION — pure black */}
             <div className="rounded-3xl bg-[#000000] p-7 flex flex-col min-h-[220px]">
               <p className="text-[#8B95A8] text-[10px] font-bold uppercase tracking-widest mb-4" style={H}>Our Location</p>
-              <p className="text-white text-xl font-black leading-snug flex-1" style={H}>
+              <p className="text-white text-sm font-bold leading-relaxed flex-1" style={H}>
                 Rhema Grounds, Rhema Ave<br />
                 Off Northern Bypass · next to<br />
                 <span className="text-[#BF0A30]">Shell Windsor,</span>{' '}Nairobi
@@ -358,14 +338,16 @@ export default function HomePage({ latestSermon, isLive }: PageProps) {
             {/* ── SERMONS — deep dark */}
             <div className="rounded-3xl bg-[#000000] p-7 flex flex-col min-h-[220px]">
               <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-4" style={H}>Watch Sermons</p>
-              <p
-                className="text-white/70 text-sm leading-relaxed flex-1"
-                style={latestSermon ? { ...serif, fontStyle: 'italic' as const } : {}}
-              >
-                {latestSermon
-                  ? <>&ldquo;{latestSermon.title}&rdquo;</>
-                  : <>Transformative messages — watch anytime, anywhere.</>}
-              </p>
+              <div className="flex-1">
+                {latestSermon && (
+                  <p className="text-white/80 text-sm leading-snug mb-2" style={{ ...serif, fontStyle: 'italic' }}>
+                    &ldquo;{latestSermon.title}&rdquo;
+                  </p>
+                )}
+                <p className="text-white/50 text-sm leading-relaxed">
+                  Find our most recent sermon, along with a library of all our past messages.
+                </p>
+              </div>
               <Link href="/sermons"
                 className="mt-5 flex items-center justify-between bg-[#BF0A30] text-white font-bold text-xs uppercase tracking-wider px-5 py-3.5 rounded-2xl hover:bg-[#9A0826] transition-colors"
                 style={H}
@@ -454,23 +436,24 @@ export default function HomePage({ latestSermon, isLive }: PageProps) {
           </div>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {COMMUNITIES.map((c) => (
-              <Link key={c.href} href={c.href} className="group relative rounded-2xl overflow-hidden block" style={{ aspectRatio: '3/4' }}>
+              <Link key={c.href} href={c.href} className="group relative rounded-3xl overflow-hidden block" style={{ aspectRatio: '3/4' }}>
                 <img src={c.img} alt={c.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
                   onError={(e) => { (e.target as HTMLImageElement).src = '/church-photos/IMG_1716.jpg'; }} />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-3">
                   <div
-                    className="rounded-2xl p-3"
+                    className="rounded-3xl p-4"
                     style={{
-                      background: 'rgba(0,0,0,0.55)',
-                      backdropFilter: 'blur(12px)',
-                      WebkitBackdropFilter: 'blur(12px)',
-                      border: '1px solid rgba(255,255,255,0.1)',
+                      background: 'rgba(10,12,16,0.65)',
+                      backdropFilter: 'blur(20px)',
+                      WebkitBackdropFilter: 'blur(20px)',
+                      border: '1px solid rgba(255,255,255,0.15)',
+                      boxShadow: '0 4px 24px rgba(0,0,0,0.3)',
                     }}
                   >
                     <p className="text-white font-black text-sm leading-tight" style={H}>{c.name}</p>
-                    <p className="text-white/60 text-[10px] uppercase tracking-wider mt-0.5">{c.sub}</p>
-                    <span className="mt-1.5 inline-flex items-center gap-1 text-white/70 text-[10px] font-bold" style={H}>
+                    <p className="text-white/55 text-[10px] uppercase tracking-wider mt-0.5">{c.sub}</p>
+                    <span className="mt-2 inline-flex items-center gap-1 text-[#BF0A30] text-[10px] font-bold" style={H}>
                       Learn More →
                     </span>
                   </div>
@@ -482,80 +465,106 @@ export default function HomePage({ latestSermon, isLive }: PageProps) {
       </section>
 
       {/* ══════════════════════════════
-    IMPACT — Stats + Rhema Feast
-══════════════════════════════ */}
-      <section className="bg-[#0A0C10] py-16">
+          IMPACT — Stats + Rhema Feast
+      ══════════════════════════════ */}
+      <section className="bg-[#0A0C10] py-20">
         <div className="max-w-7xl mx-auto px-8 lg:px-16">
-          <p className="text-[#BF0A30] text-xs font-bold uppercase tracking-widest mb-3 text-center" style={H}>Our Impact</p>
-          <h2 className="text-3xl md:text-4xl font-black text-white text-center mb-12" style={H}>God Is Moving at Ruach</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
+          <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-3 text-center" style={H}>Our Impact</p>
+          <h2 className="text-3xl md:text-5xl font-black text-white text-center mb-3 leading-tight" style={H}>
+            God Is Moving<br /><span style={serif}>at Ruach</span>
+          </h2>
+          <p className="text-[#8B95A8] text-sm text-center max-w-md mx-auto mb-12">
+            Every Sunday, lives are transformed. Every week, the Kingdom grows. Here is what God has done — and is still doing.
+          </p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
             {[
-              { number: '10,000+', label: 'At Rhema Feast 2025' },
-              { number: '3,000+',  label: 'Weekly Congregation' },
-              { number: '5',       label: 'Nairobi Assemblies' },
-              { number: '18+',     label: 'Years of Ministry' },
+              { number: '10,000+', label: 'Attended Rhema Feast 2025', sub: 'Uhuru Park, Nairobi' },
+              { number: '3,000+',  label: 'Weekly Congregation',        sub: 'Across 3 Sunday services' },
+              { number: '5',       label: 'Nairobi Assemblies',          sub: 'And still planting' },
+              { number: '18+',     label: 'Years of Ministry',           sub: 'Since 2007' },
             ].map((s) => (
               <div key={s.label} className="text-center p-6 rounded-2xl bg-[#12151C] border border-white/5">
-                <p className="text-4xl font-black text-[#BF0A30] mb-1" style={H}>{s.number}</p>
-                <p className="text-[#8B95A8] text-sm">{s.label}</p>
+                <p className="text-3xl md:text-4xl font-black text-[#BF0A30] mb-1" style={H}>{s.number}</p>
+                <p className="text-white text-xs font-bold mb-0.5" style={H}>{s.label}</p>
+                <p className="text-[#8B95A8] text-[10px]">{s.sub}</p>
               </div>
             ))}
           </div>
-          <div className="relative rounded-3xl overflow-hidden" style={{ aspectRatio: '21/9' }}>
-            <img
-              src="/church-photos/rhema-feast.jpg"
-              alt="Rhema Feast 2025 — Uhuru Park"
-              className="w-full h-full object-cover"
-              onError={(e) => { (e.target as HTMLImageElement).src = '/church-photos/IMG_1716.jpg'; }}
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-[#0A0C10] via-[#0A0C10]/40 to-transparent" />
-            <div className="absolute bottom-6 left-8">
-              <p className="text-white font-black text-2xl" style={H}>Rhema Feast 2025</p>
-              <p className="text-[#8B95A8] text-sm mt-1">10th Edition · Uhuru Park, Nairobi</p>
+          {/* 3-photo Rhema Feast grid */}
+          <div className="grid grid-cols-3 gap-3 rounded-3xl overflow-hidden">
+            {[
+              { src: '/rhema-feast/rhema-feast1.jpg',             alt: 'Rhema Feast 2025' },
+              { src: '/rhema-feast/rhema-feast2.jpg',             alt: 'Rhema Feast 2025 Worship' },
+              { src: '/rhema-feast/Rhema-Feast-1-og_image.webp',  alt: 'Rhema Feast 2025 Crowd' },
+            ].map((img, i) => (
+              <div key={i} className={`relative overflow-hidden ${i === 0 ? 'rounded-l-3xl' : i === 2 ? 'rounded-r-3xl' : ''}`} style={{ aspectRatio: '4/3' }}>
+                <img
+                  src={img.src}
+                  alt={img.alt}
+                  className="w-full h-full object-cover"
+                  onError={(e) => { (e.target as HTMLImageElement).src = '/church-photos/rhema-feast.jpg'; }}
+                />
+                {i === 0 && (
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#0A0C10]/60 to-transparent pointer-events-none" />
+                )}
+              </div>
+            ))}
+          </div>
+          <div className="mt-4 flex items-center justify-between">
+            <div>
+              <p className="text-white font-black text-lg" style={H}>Rhema Feast 2025</p>
+              <p className="text-[#8B95A8] text-sm">10th Edition · Uhuru Park, Nairobi · 10,000+ in attendance</p>
             </div>
           </div>
         </div>
       </section>
 
       {/* ═════════════════════════════════════
-          STORY SECTION — YouVersion-inspired
-          Life-changing stories block
+          WHAT TO EXPECT — 3 pillars
       ═════════════════════════════════════ */}
-      <section
-        className="relative py-20"
-        style={{
-          backgroundImage: 'url(/church-photos/dark-background-2.png)',
-          backgroundAttachment: 'fixed',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }}
-      >
-        <div className="absolute inset-0 bg-[#0A0C10]/85" />
-        <div className="relative z-10 max-w-7xl mx-auto px-8 lg:px-16">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+      <section className="bg-[#F5F0E8] py-24">
+        <div className="max-w-7xl mx-auto px-8 lg:px-16">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-14">
             <div>
-              <p className="text-[#8B95A8] text-xs uppercase tracking-widest font-medium mb-2" style={H}>Life-Changing Stories —</p>
-              <h2 className="text-4xl md:text-5xl text-white leading-tight" style={H}>
-                Faith in <span style={{ ...serif, color: '#BF0A30' }}>Real Life</span>
+              <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-3" style={H}>What to Expect</p>
+              <h2 className="text-4xl md:text-5xl text-[#111827] leading-tight" style={H}>
+                What happens when<br />
+                <span style={serif}>you show up.</span>
               </h2>
             </div>
-            <p className="text-[#8B95A8] max-w-xs text-sm leading-relaxed">Real people share how Ruach Tabernacle is transforming their lives, one encounter with God at a time.</p>
+            <Link href="/new-here" className="self-start md:self-auto flex items-center gap-1.5 border border-[#111827] text-[#111827] hover:bg-[#111827] hover:text-white font-bold text-xs uppercase tracking-widest px-5 py-3 rounded-2xl transition-all" style={H}>
+              Plan a Visit →
+            </Link>
           </div>
-
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {[
-              { label: 'TRANSFORMED', text: '"I walked in broken. I left knowing God had a plan for my life."', name: 'Amara · Nairobi', img: '/church-photos/aug-2025-a.jpg' },
-              { label: 'CONNECTED', text: '"I found my people in the Crosspoints group. Life finally made sense."', name: 'Brian · Westlands', img: '/church-photos/advancing-kingdom.jpg' },
-              { label: 'PURPOSED', text: '"Ruach showed me my career and my faith don\'t have to be separate."', name: 'Cynthia · Karen', img: '/church-photos/june-2025.jpg' },
-            ].map((story) => (
-              <div key={story.label} className="group relative aspect-[3/4] rounded-3xl overflow-hidden">
-                <img src={story.img} alt={story.label} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+              {
+                label: 'Worship',
+                title: 'An encounter with God',
+                body: 'Our worship is alive — Spirit-filled music that ushers you into God\'s presence. Come ready to experience something real.',
+                img: '/church-photos/worship-ruach.jpg',
+              },
+              {
+                label: 'The Word',
+                title: 'Practical, powerful teaching',
+                body: 'Every message is rooted in Scripture and designed to equip you for real life — in your home, your business, and your community.',
+                img: '/church-photos/advancing-kingdom.jpg',
+              },
+              {
+                label: 'Community',
+                title: 'People doing life together',
+                body: 'You were never meant to do life alone. At Ruach, you\'ll find your people — in Crosspoints, communities, and Sunday services.',
+                img: '/church-photos/aug-2025-a.jpg',
+              },
+            ].map((item) => (
+              <div key={item.label} className="group relative rounded-3xl overflow-hidden" style={{ aspectRatio: '3/4' }}>
+                <img src={item.img} alt={item.label} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                   onError={(e) => { (e.target as HTMLImageElement).src = '/church-photos/IMG_1716.jpg'; }} />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-6">
-                  <p className="text-[#BF0A30] text-xs font-black uppercase tracking-widest mb-3" style={H}>{story.label}</p>
-                  <p className="text-white text-lg font-bold leading-snug mb-3" style={{ ...serif, fontWeight: 700 }}>{story.text}</p>
-                  <p className="text-white/50 text-xs font-medium">{story.name}</p>
+                  <p className="text-[#BF0A30] text-[10px] font-black uppercase tracking-widest mb-2" style={H}>{item.label}</p>
+                  <h3 className="text-white text-xl font-black leading-snug mb-2" style={H}>{item.title}</h3>
+                  <p className="text-white/65 text-sm leading-relaxed">{item.body}</p>
                 </div>
               </div>
             ))}
@@ -572,13 +581,13 @@ export default function HomePage({ latestSermon, isLive }: PageProps) {
             <CalendarDays className="w-4 h-4 text-[#BF0A30]" />
             <span className="text-white/40 text-xs font-bold uppercase tracking-widest" style={H}>Upcoming Event</span>
           </div>
-          <div className="grid lg:grid-cols-2 gap-10 items-center">
-            {/* Event image */}
-            <div className="rounded-2xl overflow-hidden aspect-[16/9]">
+          <div className="grid lg:grid-cols-2 gap-10 items-start">
+            {/* Event image — portrait, full display */}
+            <div className="rounded-2xl overflow-hidden w-full max-w-sm mx-auto lg:max-w-none" style={{ aspectRatio: '3/4' }}>
               <img
                 src="/events/7-days-of-glory.jpg"
                 alt="7 Days of Glory"
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover object-center"
                 onError={(e) => { (e.target as HTMLImageElement).src = '/church-photos/worship1.jpg'; }}
               />
             </div>
