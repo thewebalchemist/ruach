@@ -100,9 +100,9 @@ export default function AskRuachWidget() {
         />
       )}
 
-      {/* Fixed stack: panel above button */}
+      {/* Fixed stack: panel above button — button hidden on mobile */}
       <div
-        className="fixed z-[60] flex flex-col items-end gap-3 bottom-20 right-4 lg:bottom-8 lg:right-6"
+        className="fixed z-[60] flex flex-col items-end gap-3 bottom-24 right-4 sm:bottom-20 lg:bottom-8 lg:right-6"
       >
 
         {/* ── Chat Panel ─────────────────────────────────── */}
@@ -285,10 +285,10 @@ export default function AskRuachWidget() {
           </div>
         )}
 
-        {/* ── Floating trigger button ─────────────────────── */}
+        {/* ── Floating trigger button — desktop only ─────── */}
         <button
           onClick={() => setOpen(v => !v)}
-          className="flex items-center gap-2.5 rounded-2xl transition-all active:scale-95 hover:scale-[1.03]"
+          className="hidden sm:flex items-center gap-2.5 rounded-2xl transition-all active:scale-95 hover:scale-[1.03]"
           style={{
             background: open
               ? 'rgba(154,8,38,0.95)'

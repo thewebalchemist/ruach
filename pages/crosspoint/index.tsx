@@ -259,9 +259,11 @@ export default function CrosspointSelectPage() {
                 </div>
               </div>
 
-              <p className="mt-6 text-center">
+              <div className="mt-6 flex items-center justify-center gap-4">
                 <Link href="/auth/login" className="text-sm text-gray-400 hover:text-[#BF0A30] transition-colors">Main Login</Link>
-              </p>
+                <span className="text-gray-200 dark:text-gray-700">·</span>
+                <Link href="/crosspoint/join" className="text-sm text-[#BF0A30] font-semibold hover:underline">Join a Crosspoint →</Link>
+              </div>
             </div>
           )}
 

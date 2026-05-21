@@ -196,7 +196,7 @@ Insert a new section BETWEEN the communities grid and the Events section:
       <img
         src="/images/church-photos/RHEMA-FEAST-91-scaled.jpg"
         alt="Rhema Feast 2025 — Uhuru Park"
-        className="w-full h-full object-cover"
+        className="w-full h-full object-cover rounded-3xl"
       />
       <div className="absolute inset-0 bg-gradient-to-r from-[#0A0C10] via-transparent to-transparent" />
       <div className="absolute bottom-6 left-8">

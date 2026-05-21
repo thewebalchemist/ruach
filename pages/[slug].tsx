@@ -129,8 +129,28 @@ export default function SermonPage({ sermon, relatedSermons, seriesSermons }: Se
   return (
     <>
       <Head>
-        <title>{sermon.title} | {sermon.preacher} | RuachOnline</title>
-        <meta name="description" content={sermon.summary?.substring(0, 155).replace(/[#*_]/g, '') || ''} />
+        <title>{sermon.title} | {sermon.preacher} | Ruach Tabernacle</title>
+        <meta name="description" content={sermon.summary?.substring(0, 155).replace(/[#*_]/g, '') || `Watch "${sermon.title}" by ${sermon.preacher} on Ruach Tabernacle.`} />
+        <link rel="canonical" href={`https://ruachtabernacle.org/${sermon.slug}`} />
+        {/* Open Graph — enables rich preview when sharing the sermon link */}
+        <meta property="og:type" content="video.other" />
+        <meta property="og:title" content={`${sermon.title} — ${sermon.preacher}`} />
+        <meta property="og:description" content={sermon.summary?.substring(0, 200).replace(/[#*_]/g, '') || `Watch this sermon by ${sermon.preacher} at Ruach Tabernacle Assembly.`} />
+        <meta property="og:image" content={sermon.thumbnail_url || 'https://ruachtabernacle.org/church-photos/rhema-feast.jpg'} />
+        <meta property="og:image:width" content="1280" />
+        <meta property="og:image:height" content="720" />
+        <meta property="og:url" content={`https://ruachtabernacle.org/${sermon.slug}`} />
+        <meta property="og:site_name" content="Ruach Tabernacle Assembly" />
+        {sermon.youtube_url && <meta property="og:video" content={sermon.youtube_url} />}
+        {/* Twitter Card */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:site" content="@ruachtabernacle" />
+        <meta name="twitter:title" content={`${sermon.title} — ${sermon.preacher}`} />
+        <meta name="twitter:description" content={sermon.summary?.substring(0, 200).replace(/[#*_]/g, '') || `Watch this sermon at Ruach Tabernacle Assembly.`} />
+        <meta name="twitter:image" content={sermon.thumbnail_url || 'https://ruachtabernacle.org/church-photos/rhema-feast.jpg'} />
+        <meta name="twitter:label1" content="Preacher" />
+        <meta name="twitter:data1" content={sermon.preacher} />
+        {sermon.scripture && <><meta name="twitter:label2" content="Scripture" /><meta name="twitter:data2" content={sermon.scripture} /></>}
       </Head>
 
       <Layout>

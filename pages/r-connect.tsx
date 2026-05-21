@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ArrowRight, ChevronDown } from 'lucide-react';
+import { ArrowRight, ChevronDown, ArrowUpRight } from 'lucide-react';
 import { useState } from 'react';
 import Layout from '@/components/shared/Layout';
 
@@ -119,7 +119,7 @@ export default function RConnectPage() {
             </h2>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-5">
+          <div className="grid md:grid-cols-3 gap-5 mb-10">
             {[
               {
                 step: '01',
@@ -167,17 +167,25 @@ export default function RConnectPage() {
                     {s.label}
                   </p>
                   <h3 className="text-white text-2xl mb-3" style={H}>{s.title}</h3>
-                  <p className="text-[#8B95A8] text-sm leading-relaxed mb-7">{s.desc}</p>
-                  <Link
-                    href={s.href}
-                    className="inline-flex items-center gap-1.5 bg-[#BF0A30] hover:bg-[#9A0826] text-white font-bold text-xs uppercase tracking-wider px-5 py-3 rounded-xl transition-all shadow-lg shadow-[rgba(191,10,48,0.3)]"
-                    style={H}
-                  >
-                    Learn More <ArrowRight className="w-3.5 h-3.5" />
-                  </Link>
+                  <p className="text-[#8B95A8] text-sm leading-relaxed">{s.desc}</p>
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* Join Connect CTA */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-6 bg-[#BF0A30]/10 border border-[#BF0A30]/20 rounded-2xl px-8 py-6">
+            <div>
+              <p className="text-white font-black text-xl leading-tight mb-1" style={H}>Ready to take the first step?</p>
+              <p className="text-[#8B95A8] text-sm">Register for the next Connect Class and begin your Ruach journey.</p>
+            </div>
+            <Link
+              href="/connect/register"
+              className="flex-shrink-0 inline-flex items-center gap-2 bg-[#BF0A30] hover:bg-[#9A0826] text-white font-bold text-sm uppercase tracking-wider px-7 py-4 rounded-2xl transition-all hover:-translate-y-0.5 shadow-xl shadow-[rgba(191,10,48,0.35)] whitespace-nowrap"
+              style={H}
+            >
+              Join Connect <ArrowUpRight className="w-4 h-4" />
+            </Link>
           </div>
         </div>
       </section>

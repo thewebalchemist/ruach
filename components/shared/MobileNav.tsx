@@ -1,263 +1,155 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useState, useEffect } from 'react';
-import { Home, Sparkles, Tv2, Heart, Grid2X2, X, ChevronRight } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Home, Sparkles, Tv2, Heart, LogIn, BookOpen, Users } from 'lucide-react';
 
 const H = { fontFamily: 'Montserrat, sans-serif', fontWeight: 900 };
 
-interface Tab {
-  label: string;
-  href: string | null;
-  icon: React.ComponentType<{ style?: React.CSSProperties; className?: string }>;
-  isLive?: boolean;
-  isAsk?: boolean;
-}
-
-/* ─── Bottom tab config ──────────────────────────────────────────── */
-const TABS: Tab[] = [
-  { label: 'Home',  href: '/',    icon: Home },
-  { label: 'Ask',   href: null,   icon: Sparkles, isAsk: true },
-  { label: 'Live',  href: '/live', icon: Tv2, isLive: true },
-  { label: 'Give',  href: '/give', icon: Heart },
-  { label: 'More',  href: null,   icon: Grid2X2 },
-];
-
-/* ─── Slide-up sheet sections ────────────────────────────────────── */
-const MORE_SECTIONS = [
-  {
-    title: 'Visit',
-    items: [
-      { label: 'New Here?',       href: '/new-here',      desc: 'Plan your first visit' },
-      { label: 'Contact Us',      href: '/contact',       desc: 'Directions & hours' },
-      { label: 'Events',          href: '/r-events',      desc: 'Upcoming gatherings' },
-    ],
-  },
-  {
-    title: 'About',
-    items: [
-      { label: 'Who We Are',      href: '/who-we-are',      desc: 'Mission, vision & beliefs' },
-      { label: 'All About Ruach', href: '/all-about-ruach', desc: 'Everything you want to know' },
-      { label: 'Our Team',        href: '/our-team',        desc: 'Meet our leadership' },
-    ],
-  },
-  {
-    title: 'Connect & Grow',
-    items: [
-      { label: 'R-Connect',       href: '/r-connect',     desc: 'Connect, grow & serve' },
-      { label: 'Crosspoints',     href: '/r-crosspoints', desc: 'Home church groups' },
-      { label: 'Discipleship',    href: '/discipleship',  desc: 'Grow in faith' },
-    ],
-  },
-  {
-    title: 'Communities',
-    items: [
-      { label: 'All Communities', href: '/r-communities', desc: 'Find your circle' },
-      { label: 'R-Kids Church',   href: '/r-kids-church', desc: 'Ages 0–12' },
-      { label: 'The Bridge',      href: '/the-bridge',    desc: 'Youth church' },
-      { label: 'Kingdom Woman',   href: '/kingdom-woman', desc: "Women's ministry" },
-      { label: 'R-Warriors',      href: '/r-warriors',    desc: "Men's ministry" },
-    ],
-  },
-  {
-    title: 'Media',
-    items: [
-      { label: 'Sermons',         href: '/sermons',       desc: 'Watch messages' },
-      { label: 'Watch Live',      href: '/live',          desc: 'Sunday service stream' },
-      { label: 'R-Media',         href: '/r-media',       desc: 'Production team' },
-    ],
-  },
+const LOGIN_PORTALS = [
+  { label: 'Connect Class',  desc: 'Students & teachers',    href: '/connect',      icon: BookOpen, color: '#BF0A30' },
+  { label: 'Discipleship',   desc: 'Members & facilitators', href: '/discipleship', icon: Users,    color: '#7C3AED' },
+  { label: 'Crosspoint',     desc: 'Join your home church',  href: '/crosspoint',   icon: Home,     color: '#0891B2' },
 ];
 
 export default function MobileNav() {
   const router = useRouter();
-  const [sheetOpen, setSheetOpen] = useState(false);
+  const [loginOpen, setLoginOpen] = useState(false);
+  const loginRef = useRef<HTMLDivElement>(null);
 
-  /* Close sheet on route change */
-  useEffect(() => { setSheetOpen(false); }, [router.pathname]);
+  useEffect(() => { setLoginOpen(false); }, [router.pathname]);
 
-  /* Prevent body scroll when sheet is open */
   useEffect(() => {
-    document.body.style.overflow = sheetOpen ? 'hidden' : '';
-    return () => { document.body.style.overflow = ''; };
-  }, [sheetOpen]);
+    if (!loginOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (loginRef.current && !loginRef.current.contains(e.target as Node)) {
+        setLoginOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [loginOpen]);
 
-  const isActive = (href: string | null) => {
-    if (!href) return false;
-    return href === '/' ? router.pathname === '/' : router.pathname.startsWith(href);
-  };
+  const active = (href: string) =>
+    href === '/' ? router.pathname === '/' : router.pathname.startsWith(href);
+
+  const btnCls = 'flex flex-col items-center justify-center gap-0.5 w-[60px] h-12 rounded-2xl transition-all active:scale-95';
 
   return (
     <>
-      {/* ── Bottom tab bar ──────────────────────────────────────── */}
-      <nav
-        className="fixed bottom-0 left-0 right-0 z-50 lg:hidden"
-        style={{
-          paddingBottom: 'env(safe-area-inset-bottom, 0px)',
-          background: 'rgba(8,10,14,0.96)',
-          backdropFilter: 'blur(24px) saturate(180%)',
-          WebkitBackdropFilter: 'blur(24px) saturate(180%)',
-          borderTop: '1px solid rgba(255,255,255,0.08)',
-          boxShadow: '0 -4px 30px rgba(0,0,0,0.6)',
-        }}
-      >
-        <div className="flex items-stretch h-[60px] max-w-lg mx-auto px-1">
-          {TABS.map((tab) => {
-            const { label, href, icon: Icon, isLive, isAsk } = tab;
-            const isMore = href === null && !isAsk;
-            const active = isMore ? sheetOpen : isAsk ? false : isActive(href);
-
-            const handleClick = () => {
-              if (isMore) setSheetOpen((v) => !v);
-              if (isAsk) window.dispatchEvent(new CustomEvent('toggleAskRuach'));
-            };
-
-            const inner = (
-              <>
-                {/* Top active line */}
-                {active && (
-                  <span
-                    className="absolute top-0 left-1/2 -translate-x-1/2 w-6 h-[2px] rounded-full bg-[#BF0A30]"
-                    style={{ boxShadow: '0 0 8px rgba(191,10,48,0.9)' }}
-                  />
-                )}
-
-                {isLive ? (
-                  <span
-                    className="relative flex items-center justify-center w-10 h-10 rounded-2xl"
-                    style={{
-                      background: active ? '#BF0A30' : 'rgba(191,10,48,0.15)',
-                      border: '1px solid rgba(191,10,48,0.35)',
-                    }}
-                  >
-                    <Icon style={{ width: 18, height: 18 }} className={active ? 'text-white' : 'text-[#BF0A30]'} />
-                    <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-red-500 border border-[#0A0C10] animate-pulse" />
-                  </span>
-                ) : (
-                  <Icon
-                    style={{ width: 20, height: 20 }}
-                    className={`transition-colors ${active ? 'text-[#BF0A30]' : 'text-white/50'}`}
-                  />
-                )}
-
-                <span
-                  className={`text-[9px] font-bold uppercase tracking-wide leading-none transition-colors ${
-                    active ? 'text-[#BF0A30]' : 'text-white/45'
-                  }`}
-                  style={H}
-                >
-                  {label}
-                </span>
-              </>
-            );
-
-            const cls = 'flex-1 flex flex-col items-center justify-center gap-0.5 relative active:opacity-70 transition-opacity';
-
-            return isMore || isAsk ? (
-              <button key={label} onClick={handleClick} className={cls}>
-                {inner}
-              </button>
-            ) : (
-              <Link key={href} href={href as string} className={cls}>
-                {inner}
-              </Link>
-            );
-          })}
-        </div>
-      </nav>
-
-      {/* ── More slide-up sheet ──────────────────────────────────── */}
-      {sheetOpen && (
-        <div
-          className="fixed inset-0 z-[60] lg:hidden"
-          onClick={() => setSheetOpen(false)}
-        >
-          {/* Scrim */}
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-
-          {/* Sheet */}
-          <div
-            className="absolute bottom-0 left-0 right-0 rounded-t-3xl overflow-hidden"
-            style={{
-              background: 'rgba(12,14,20,0.99)',
-              border: '1px solid rgba(255,255,255,0.10)',
-              maxHeight: '88vh',
-              paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 72px)',
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Handle + header */}
-            <div className="flex items-center justify-between px-6 pt-5 pb-4">
-              <div className="absolute top-3 left-1/2 -translate-x-1/2 w-10 h-1 rounded-full bg-white/20" />
-              <p className="text-white text-sm font-black uppercase tracking-widest pt-2" style={H}>Menu</p>
-              <button
-                onClick={() => setSheetOpen(false)}
-                className="w-8 h-8 flex items-center justify-center rounded-xl bg-white/8 text-white/60 hover:text-white transition-colors mt-2"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* Scrollable content */}
-            <div className="overflow-y-auto px-4 pb-4" style={{ maxHeight: 'calc(88vh - 80px)' }}>
-
-              {/* Quick actions row */}
-              <div className="grid grid-cols-3 gap-2 mb-5">
-                {[
-                  { label: 'New Here?', href: '/new-here',  emoji: '👋' },
-                  { label: 'Events',    href: '/r-events',  emoji: '📅' },
-                  { label: 'Contact',   href: '/contact',   emoji: '📍' },
-                ].map((q) => (
-                  <Link
-                    key={q.href}
-                    href={q.href}
-                    className="flex flex-col items-center gap-1.5 py-4 rounded-2xl bg-white/5 border border-white/8 hover:bg-white/10 transition-colors"
-                  >
-                    <span className="text-2xl leading-none">{q.emoji}</span>
-                    <span className="text-[10px] font-black uppercase tracking-wide text-white/75" style={H}>{q.label}</span>
-                  </Link>
-                ))}
-              </div>
-
-              {/* Divider */}
-              <div className="border-t border-white/8 mb-4" />
-
-              {/* Sections */}
-              {MORE_SECTIONS.map((section) => (
-                <div key={section.title} className="mb-5">
-                  <p className="text-[#BF0A30] text-[10px] font-black uppercase tracking-widest px-2 mb-2" style={H}>
-                    {section.title}
-                  </p>
-                  <div className="space-y-0.5">
-                    {section.items.map((item) => {
-                      const active = router.pathname === item.href || (item.href !== '/' && router.pathname.startsWith(item.href));
-                      return (
-                        <Link
-                          key={item.href}
-                          href={item.href}
-                          className={`flex items-center justify-between px-4 py-3 rounded-xl transition-colors ${
-                            active ? 'bg-[rgba(191,10,48,0.12)]' : 'hover:bg-white/5'
-                          }`}
-                        >
-                          <div>
-                            <p
-                              className={`text-[11px] font-black uppercase tracking-widest ${active ? 'text-[#BF0A30]' : 'text-white/85'}`}
-                              style={H}
-                            >
-                              {item.label}
-                            </p>
-                            <p className="text-[10px] text-white/35 mt-0.5">{item.desc}</p>
-                          </div>
-                          <ChevronRight className={`w-3.5 h-3.5 flex-shrink-0 ${active ? 'text-[#BF0A30]' : 'text-white/25'}`} />
-                        </Link>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+      {/* Scrim behind login dropdown */}
+      {loginOpen && (
+        <div className="fixed inset-0 z-[58] lg:hidden" onClick={() => setLoginOpen(false)}>
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
         </div>
       )}
+
+      {/* Floating island */}
+      <div
+        className="fixed left-0 right-0 z-[59] lg:hidden flex justify-center pointer-events-none"
+        style={{ bottom: 'max(16px, env(safe-area-inset-bottom, 16px))' }}
+      >
+        <nav
+          className="flex items-center pointer-events-auto"
+          style={{
+            background: 'rgba(8,10,14,0.97)',
+            backdropFilter: 'blur(28px) saturate(180%)',
+            WebkitBackdropFilter: 'blur(28px) saturate(180%)',
+            borderRadius: '28px',
+            border: '1px solid rgba(255,255,255,0.10)',
+            boxShadow: '0 8px 40px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.05)',
+            padding: '6px 8px',
+            gap: '2px',
+          }}
+        >
+          {/* Home */}
+          <Link href="/" className={btnCls}>
+            <Home style={{ width: 20, height: 20 }} className={active('/') ? 'text-[#BF0A30]' : 'text-white/50'} />
+            <span className={`text-[9px] font-bold uppercase tracking-wide leading-none ${active('/') ? 'text-[#BF0A30]' : 'text-white/40'}`} style={H}>Home</span>
+          </Link>
+
+          {/* Ask */}
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent('toggleAskRuach'))}
+            className={btnCls}
+          >
+            <Sparkles style={{ width: 20, height: 20 }} className="text-white/50" />
+            <span className="text-[9px] font-bold uppercase tracking-wide leading-none text-white/40" style={H}>Ask</span>
+          </button>
+
+          {/* Give — center accent button */}
+          <Link
+            href="/give"
+            className="flex flex-col items-center justify-center w-[60px] h-[56px] rounded-2xl mx-1 transition-all active:scale-95"
+            style={{
+              background: 'linear-gradient(135deg, #BF0A30 0%, #9A0826 100%)',
+              boxShadow: '0 4px 20px rgba(191,10,48,0.55)',
+            }}
+          >
+            <Heart style={{ width: 20, height: 20 }} className="text-white" />
+            <span className="text-[9px] font-bold uppercase tracking-wide leading-none text-white mt-0.5" style={H}>Give</span>
+          </Link>
+
+          {/* Live */}
+          <Link href="/live" className={btnCls}>
+            <span
+              className="relative flex items-center justify-center w-9 h-7 rounded-xl"
+              style={active('/live')
+                ? { background: '#BF0A30' }
+                : { background: 'rgba(191,10,48,0.12)', border: '1px solid rgba(191,10,48,0.25)' }}
+            >
+              <Tv2 style={{ width: 15, height: 15 }} className={active('/live') ? 'text-white' : 'text-[#BF0A30]'} />
+              <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-red-500 border border-[#080A0E] animate-pulse" />
+            </span>
+            <span className={`text-[9px] font-bold uppercase tracking-wide leading-none ${active('/live') ? 'text-[#BF0A30]' : 'text-white/40'}`} style={H}>Live</span>
+          </Link>
+
+          {/* Login with portal dropdown */}
+          <div className="relative" ref={loginRef}>
+            <button
+              onClick={() => setLoginOpen(v => !v)}
+              className={`${btnCls} ${loginOpen ? 'bg-white/8' : ''}`}
+            >
+              <LogIn style={{ width: 20, height: 20 }} className={loginOpen ? 'text-white' : 'text-white/50'} />
+              <span className={`text-[9px] font-bold uppercase tracking-wide leading-none ${loginOpen ? 'text-white' : 'text-white/40'}`} style={H}>Login</span>
+            </button>
+
+            {loginOpen && (
+              <div
+                className="absolute bottom-[calc(100%+14px)] right-0 w-[200px] rounded-2xl overflow-hidden"
+                style={{
+                  background: 'rgba(10,12,18,0.99)',
+                  border: '1px solid rgba(255,255,255,0.12)',
+                  boxShadow: '0 16px 48px rgba(0,0,0,0.85)',
+                }}
+              >
+                <p className="px-4 pt-4 pb-2 text-white/35 text-[9px] font-bold uppercase tracking-widest" style={H}>Sign in to</p>
+                {LOGIN_PORTALS.map((p) => {
+                  const Icon = p.icon;
+                  return (
+                    <Link
+                      key={p.href}
+                      href={p.href}
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors"
+                    >
+                      <div
+                        className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
+                        style={{ background: `${p.color}22` }}
+                      >
+                        <Icon style={{ width: 14, height: 14, color: p.color }} />
+                      </div>
+                      <div>
+                        <p className="text-white text-[11px] font-bold leading-tight" style={H}>{p.label}</p>
+                        <p className="text-white/35 text-[10px] mt-0.5">{p.desc}</p>
+                      </div>
+                    </Link>
+                  );
+                })}
+                <div className="h-2" />
+              </div>
+            )}
+          </div>
+        </nav>
+      </div>
     </>
   );
 }

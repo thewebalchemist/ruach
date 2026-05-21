@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
+import { SEO } from '@/components/shared/SEO';
 import {
   Send,
   Sparkles,
@@ -158,10 +159,11 @@ export default function ChatPage() {
 
   return (
     <>
-      <Head>
-        <title>Ask Ruach | Chat with AI | RuachOnline</title>
-        <meta name="description" content="Ask Ruach - Your AI assistant for questions about our church, services, and events." />
-      </Head>
+      <SEO
+        title="Ask Ruach AI"
+        description="Ask Ruach — your AI church assistant. Get instant answers about services, events, directions, Connect Class, and anything about Ruach Tabernacle Assembly."
+        url="/ask"
+      />
 
       <div className={`min-h-screen flex ${isDark ? 'bg-[#101622] text-white' : 'bg-gray-50 text-gray-900'}`}>
         {/* Sidebar */}

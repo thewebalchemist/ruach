@@ -122,80 +122,65 @@ export default function AdminLogin() {
   const otpComplete = otp.every(d => d);
 
   return (
-    <div className="min-h-screen flex bg-white dark:bg-[#0A0A0A]">
+    <div className="min-h-screen relative overflow-hidden bg-[#0A0000]">
 
-      {/* ── Left branding panel ────────────────────────────────────────────── */}
-      <div
-        className="hidden lg:flex lg:w-[45%] flex-col justify-between p-12 relative overflow-hidden"
-        style={{ backgroundImage: "url('/images/connect-bg.jpg')", backgroundSize: 'cover', backgroundPosition: 'center' }}
-      >
-        {/* Reduced overlay so background image shows through */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#0A0A0A]/82 via-[#1a0505]/72 to-[#BF0A30]/38" />
+      {/* Full-screen background */}
+      <img
+        src="/church-photos/dec-2024.jpg"
+        alt=""
+        aria-hidden
+        className="absolute inset-0 w-full h-full object-cover opacity-55"
+      />
+      <div className="absolute inset-0 bg-gradient-to-br from-[#0A0000]/92 via-[#6A0010]/65 to-[#BF0A30]/18" />
 
-        {/* Logo */}
-        <div className="relative z-10 flex items-center gap-3">
-          <img src="/images/ruaach.png" alt="Ruach" className="w-11 h-11 rounded-full ring-2 ring-white/20" />
+      {/* Content */}
+      <div className="relative z-10 min-h-screen flex flex-col lg:flex-row">
+
+        {/* ── Left branding — desktop only ──────────────────────────────────── */}
+        <div className="hidden lg:flex lg:w-[42%] flex-col justify-between p-12">
+          <div className="flex items-center gap-3">
+            <img src="/brand/ruach-logo.png" alt="Ruach Tabernacle" className="h-10 w-auto" />
+          </div>
+
           <div>
-            <p className="text-white font-bold text-base leading-tight">RuachConnect</p>
-            <p className="text-white/50 text-xs">Admin & Management Portal</p>
-          </div>
-        </div>
+            <p className="text-[#BF0A30] text-xs font-bold uppercase tracking-widest mb-4">Admin Portal</p>
+            <h1 className="text-4xl font-black text-white leading-tight mb-8 tracking-tight">
+              Kingdom<br />
+              Management<br />
+              <span className="text-[#BF0A30]">Portal.</span>
+            </h1>
 
-        {/* Center content */}
-        <div className="relative z-10">
-          <h1 className="text-4xl font-black text-white leading-tight mb-6 tracking-tight">
-            Kingdom<br />
-            Management<br />
-            <span className="text-[#BF0A30]">Portal</span>
-          </h1>
-
-          {/* Rev Julian Kyula */}
-          <div className="border-l-2 border-[#D4AF37] pl-4 mb-8">
-            <div className="w-full h-32 rounded-xl overflow-hidden mb-4 bg-white/5 border border-white/10">
-              <img
-                src="/images/rev-julian.jpg"
-                alt="Rev. Julian Kyula"
-                className="w-full h-full object-cover object-top"
-              />
-            </div>
-            <p className="text-white/85 text-sm italic leading-relaxed mb-3">
-              "We are building a platform of excellence, order and the beauty of
-              God's Kingdom. Welcome to the house."
-            </p>
-            <p className="text-[#D4AF37] text-xs font-bold">Rev. Julian Kyula</p>
-            <p className="text-white/40 text-xs">Visionary & Founder, Ruach Assemblies</p>
-          </div>
-
-          {/* God · Work · Community */}
-          <div className="grid grid-cols-3 gap-3">
-            {[
-              { label: 'God',       icon: Heart,  desc: 'Faith first' },
-              { label: 'Work',      icon: Zap,    desc: 'Your calling' },
-              { label: 'Community', icon: Users,  desc: 'Together' },
-            ].map(({ label, icon: Icon, desc }) => (
-              <div key={label} className="bg-white/8 backdrop-blur border border-white/10 rounded-xl p-3 text-center">
-                <Icon className="w-4 h-4 text-[#D4AF37] mx-auto mb-1.5" />
-                <p className="text-white font-bold text-xs leading-tight">{label}</p>
-                <p className="text-white/40 text-[10px] mt-0.5">{desc}</p>
+            <div className="bg-white/8 backdrop-blur-md border border-white/12 rounded-2xl p-6">
+              <p className="text-white/85 text-sm italic leading-relaxed mb-4">
+                &ldquo;We are building a platform of excellence, order and the beauty of
+                God&apos;s Kingdom. Welcome to the house.&rdquo;
+              </p>
+              <div className="flex items-center gap-3">
+                <img src="/brand/rev-julian.png" alt="Rev. Julian Kyula" className="w-10 h-10 rounded-full object-cover object-top border border-[#D4AF37]/30"
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                <div>
+                  <p className="text-[#D4AF37] text-xs font-bold">Rev. Julian Kyula</p>
+                  <p className="text-white/40 text-[11px]">Visionary & Founder</p>
+                </div>
               </div>
-            ))}
+            </div>
           </div>
+
+          <p className="text-white/25 text-xs">© 2026 Ruach Assemblies</p>
         </div>
 
-        <p className="relative z-10 text-white/30 text-xs">
-          © 2026 Ruach Assemblies. Purpose Centre Church.
-        </p>
-      </div>
+        {/* ── Form panel ────────────────────────────────────────────────────── */}
+        <div className="flex-1 flex items-center justify-center p-5 lg:p-12 min-h-screen">
+          <div className="w-full max-w-[420px]">
 
-      {/* ── Right auth panel ─────────────────────────────────────────────────── */}
-      <div className="flex-1 flex items-center justify-center p-6 lg:p-12 relative">
-        <div className="w-full max-w-md">
+            {/* Mobile logo */}
+            <div className="flex flex-col items-center mb-7 lg:hidden">
+              <img src="/brand/ruach-logo.png" alt="Ruach Tabernacle" className="h-12 w-auto mb-3" />
+              <p className="text-white/70 text-sm">Admin Portal</p>
+            </div>
 
-          {/* Mobile logo */}
-          <div className="flex items-center gap-3 mb-8 lg:hidden">
-            <img src="/images/ruaach.png" alt="Ruach" className="w-9 h-9 rounded-full" />
-            <span className="font-bold text-gray-900 dark:text-white">RuachConnect</span>
-          </div>
+            {/* Card */}
+            <div className="bg-white dark:bg-[#0F0F0F] rounded-3xl shadow-2xl p-7 sm:p-8">
 
           {/* ── STEP: Choose method ─────────────────────────────────────────── */}
           {step === 'method' && (
@@ -362,16 +347,29 @@ export default function AdminLogin() {
               </form>
             </div>
           )}
-        </div>
+            </div>{/* end card */}
 
-        {/* Mode toggle — bottom right */}
-        <button
-          onClick={toggleMode}
-          className="absolute bottom-6 right-6 flex items-center gap-2 px-3 py-1.5 bg-gray-100 dark:bg-[#1E1E1E] border border-gray-200 dark:border-[#2D2D2D] rounded-xl text-xs font-semibold text-gray-500 dark:text-gray-400 hover:border-[#BF0A30]/40 transition-colors"
-        >
-          <span className={`w-1.5 h-1.5 rounded-full ${isDemoMode ? 'bg-amber-400' : 'bg-green-500'}`} />
-          {isDemoMode ? 'Demo Mode' : 'Live Mode'}
-        </button>
+            {/* Footer links */}
+            <div className="flex flex-wrap justify-center gap-x-5 gap-y-2 mt-6">
+              <Link href="/connect" className="text-white/50 text-xs hover:text-white transition-colors">Connect Portal</Link>
+              <span className="text-white/20 text-xs">·</span>
+              <Link href="/discipleship" className="text-white/50 text-xs hover:text-white transition-colors">Discipleship</Link>
+              <span className="text-white/20 text-xs">·</span>
+              <Link href="/crosspoint" className="text-white/50 text-xs hover:text-white transition-colors">Crosspoint</Link>
+            </div>
+
+            {/* Mode toggle */}
+            <div className="flex justify-center mt-4">
+              <button
+                onClick={toggleMode}
+                className="flex items-center gap-2 px-3 py-1.5 bg-white/8 border border-white/12 rounded-xl text-xs font-semibold text-white/50 hover:text-white transition-colors"
+              >
+                <span className={`w-1.5 h-1.5 rounded-full ${isDemoMode ? 'bg-amber-400' : 'bg-green-500'}`} />
+                {isDemoMode ? 'Demo Mode' : 'Live Mode'}
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

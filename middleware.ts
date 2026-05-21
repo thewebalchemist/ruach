@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-const PROTECTED_ADMIN  = ['/admin'];
+const PROTECTED_ADMIN  = ['/admin', '/control-panel'];
 const PROTECTED_MEMBER = ['/member', '/connect/dashboard', '/discipleship/dashboard', '/notifications'];
 
 export function middleware(request: NextRequest) {
@@ -34,6 +34,7 @@ export function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     '/admin/:path*',
+    '/control-panel/:path*',
     '/member/:path*',
     '/connect/dashboard/:path*',
     '/discipleship/dashboard/:path*',

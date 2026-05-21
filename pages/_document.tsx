@@ -1,7 +1,7 @@
 import { Html, Head, Main, NextScript } from 'next/document';
 
 // Place your Google Search Console verification meta content value here:
-const GOOGLE_SITE_VERIFICATION = process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || '';
+const GOOGLE_SITE_VERIFICATION = process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || 'chk8boBGW8ULmGORL1lTISWXoh6x1Kf5OUELQ8bxxeY';
 
 export default function Document() {
   return (
@@ -15,9 +15,7 @@ export default function Document() {
         />
         <meta name="theme-color" content="#0A0C10" />
         {/* Google Search Console — add NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION to your .env */}
-        {GOOGLE_SITE_VERIFICATION && (
-          <meta name="google-site-verification" content={GOOGLE_SITE_VERIFICATION} />
-        )}
+        <meta name="google-site-verification" content={GOOGLE_SITE_VERIFICATION} />
         {/* Favicons */}
         <link rel="icon" type="image/png" href="/brand/icon.png" />
         <link rel="apple-touch-icon" href="/brand/icon.png" />

@@ -126,11 +126,26 @@ async function fetchSermonSummaries(): Promise<SermonSummary[]> {
 }
 
 /**
+ * Hardcoded common Q&A — always in the prompt, zero DB latency.
+ * These answer the most frequent questions before the AI has to reason.
+ */
+const COMMON_QA = [
+  { q: 'What time are your Sunday services?', a: 'We have three Sunday services: First Service at 8:00 AM – 9:30 AM, Second Service at 10:00 AM – 12:00 PM, and Third Service at 12:30 PM – 2:00 PM.' },
+  { q: 'Where is Ruach Tabernacle located?', a: 'We are at Rhema Grounds, Rhema Avenue, off Northern Bypass Road, next to Shell Windsor, Nairobi, Kenya.' },
+  { q: 'How do I join Connect Class?', a: 'Register at ruachtabernacle.org/connect/register. Connect Class is our official onboarding program — it runs in terms and covers our faith, church, and community.' },
+  { q: 'What is a Crosspoint?', a: 'Crosspoints are our home churches — weekly gatherings of 15–30 people by geographic zone (North, South, East, West). Every member is encouraged to join one.' },
+  { q: 'How do I give or tithe?', a: 'Give at ruachtabernacle.org/give — we accept M-Pesa and card. Your giving supports the mission of the church.' },
+  { q: 'Do you have programs for children?', a: 'Yes! R-Kids Church runs during all Sunday services with age-appropriate teaching, games, and activities. All volunteers are vetted for your children\'s safety.' },
+  { q: 'How do I watch sermons online?', a: 'Visit ruachtabernacle.org/sermons for the full library, or watch live at ruachtabernacle.org/live every Sunday.' },
+  { q: 'What is Discipleship?', a: 'Discipleship is our equipping program for church members who have completed Connect Class. It provides deeper spiritual training and leadership development.' },
+];
+
+/**
  * Build the system prompt with all knowledge
  */
 export function buildSystemPrompt(knowledge: KnowledgeBase): string {
   const { church_info, events, faqs, sermons } = knowledge;
-  
+
   let prompt = `You are "Ask Ruach", the friendly AI assistant for ${church_info?.name || 'Ruach Assemblies'} church.
 
 ## YOUR PERSONALITY
@@ -151,7 +166,10 @@ export function buildSystemPrompt(knowledge: KnowledgeBase): string {
 8. DO NOT use markdown formatting like ** for bold or * for italics
 9. You may use emojis sparingly when appropriate 😊
 
-## YOUR KNOWLEDGE BASE
+## INSTANT ANSWERS — USE THESE FIRST (no lookup needed)
+${COMMON_QA.map(qa => `Q: ${qa.q}\nA: ${qa.a}`).join('\n\n')}
+
+## YOUR KNOWLEDGE BASE (live data)
 
 `;
 

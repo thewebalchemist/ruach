@@ -99,7 +99,7 @@ export default function HomePage({ latestSermon, isLive }: PageProps) {
           ref={videoRef}
           className="absolute inset-0 w-full h-full object-cover opacity-55"
           autoPlay muted loop playsInline preload="auto"
-          poster="/church-photos/church.jpg"
+          poster="/church-photos/dec-2024.jpg"
         >
           <source src="/videos/welcome-to-ruach.mp4" type="video/mp4" />
         </video>
@@ -171,16 +171,16 @@ export default function HomePage({ latestSermon, isLive }: PageProps) {
         </button>
 
         {/* Content */}
-        <div className="relative z-10 max-w-7xl mx-auto px-6 sm:px-8 lg:px-16 pb-24 sm:pb-28 pt-28 sm:pt-32 w-full">
+        <div className="relative z-10 max-w-7xl mx-auto px-5 sm:px-8 lg:px-16 pb-20 sm:pb-28 pt-24 sm:pt-32 w-full">
           {/* Mixed typography headline — Montserrat + Playfair Display italic */}
-          <h1 className="text-white leading-[0.95] tracking-tight mb-8">
-            <span className="block text-5xl sm:text-6xl md:text-7xl lg:text-[96px]" style={H}>Raising</span>
-            <span className="block text-5xl sm:text-6xl md:text-7xl lg:text-[96px]" style={serif}>Kingdom</span>
-            <span className="block text-5xl sm:text-6xl md:text-7xl lg:text-[96px] text-[#BF0A30]" style={H}>Champions</span>
+          <h1 className="text-white leading-[0.95] tracking-tight mb-6 sm:mb-8">
+            <span className="block text-[42px] sm:text-6xl md:text-7xl lg:text-[96px]" style={H}>Raising</span>
+            <span className="block text-[42px] sm:text-6xl md:text-7xl lg:text-[96px]" style={serif}>Kingdom</span>
+            <span className="block text-[42px] sm:text-6xl md:text-7xl lg:text-[96px] text-[#BF0A30]" style={H}>Champions</span>
           </h1>
 
           {/* Sub-copy */}
-          <p className="text-white/70 text-base sm:text-lg md:text-xl max-w-lg mb-8 leading-relaxed">
+          <p className="text-white/70 text-sm sm:text-lg md:text-xl max-w-lg mb-7 leading-relaxed">
             A church for people who want to live out their God-given purpose —
             <span style={serif}> in business, family, and beyond.</span>
           </p>
@@ -501,7 +501,7 @@ export default function HomePage({ latestSermon, isLive }: PageProps) {
                 <img
                   src={img.src}
                   alt={img.alt}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover rounded-3xl"
                   onError={(e) => { (e.target as HTMLImageElement).src = '/church-photos/rhema-feast.jpg'; }}
                 />
                 {i === 0 && (
@@ -548,13 +548,13 @@ export default function HomePage({ latestSermon, isLive }: PageProps) {
                 label: 'The Word',
                 title: 'Practical, powerful teaching',
                 body: 'Every message is rooted in Scripture and designed to equip you for real life — in your home, your business, and your community.',
-                img: '/church-photos/advancing-kingdom.jpg',
+                img: '/church-photos/aug-2025-a.jpg',
               },
               {
                 label: 'Community',
                 title: 'People doing life together',
                 body: 'You were never meant to do life alone. At Ruach, you\'ll find your people — in Crosspoints, communities, and Sunday services.',
-                img: '/church-photos/aug-2025-a.jpg',
+                img: '/church-photos/IMG_1716.jpg',
               },
             ].map((item) => (
               <div key={item.label} className="group relative rounded-3xl overflow-hidden" style={{ aspectRatio: '3/4' }}>

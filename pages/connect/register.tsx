@@ -8,7 +8,7 @@ import { supabase } from '@/lib/supabase';
 type Step = 1 | 2 | 3;
 type Mode = 'new' | 'legacy';
 
-interface CohortOption { id: string; name: string; year: number; }
+interface CohortOption { id: string; name: string; year: number; start_date?: string; end_date?: string; class_type?: string; }
 
 interface FormData {
   firstName: string; lastName: string; email: string; phone: string;
@@ -41,13 +41,23 @@ export default function ConnectRegister() {
   const [error,   setError]   = useState('');
   const [success, setSuccess] = useState(false);
   const [cohorts, setCohorts] = useState<CohortOption[]>([]);
+  const [selectedCohort, setSelectedCohort] = useState<CohortOption | null>(null);
+  const [registeredEmail, setRegisteredEmail] = useState('');
 
   async function loadCohorts() {
     const { data } = await db.from('connect_cohorts')
-      .select('id, name, year')
+      .select('id, cohort_name, year, start_date, end_date, class_type')
       .eq('status', 'registration-open')
-      .order('year', { ascending: false });
-    setCohorts((data ?? []) as CohortOption[]);
+      .order('start_date', { ascending: true });
+    const mapped = (data ?? []).map((c: any) => ({
+      id: c.id,
+      name: c.cohort_name,
+      year: c.year,
+      start_date: c.start_date,
+      end_date: c.end_date,
+      class_type: c.class_type,
+    }));
+    setCohorts(mapped as CohortOption[]);
   }
 
   function set(field: keyof FormData, value: string) {
@@ -157,6 +167,8 @@ export default function ConnectRegister() {
       body:    JSON.stringify({ userId }),
     });
 
+    setRegisteredEmail(form.email);
+    setSelectedCohort(cohorts.find(c => c.id === form.cohortId) || null);
     setSuccess(true);
   }
 
@@ -186,21 +198,66 @@ export default function ConnectRegister() {
   if (success) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-[#0F0F0F] p-6">
-        <div className="max-w-md w-full text-center">
-          <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <CheckCircle className="w-10 h-10 text-green-600" />
+        <div className="max-w-lg w-full">
+          {/* Success card */}
+          <div className="bg-white dark:bg-[#1A1A1A] rounded-3xl border border-gray-100 dark:border-[#2A2A2A] p-8 text-center shadow-xl">
+            <div className="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-5">
+              <CheckCircle className="w-10 h-10 text-green-600 dark:text-green-400" />
+            </div>
+            <h1 className="text-2xl font-black text-gray-900 dark:text-white mb-2">
+              {mode === 'new' ? 'You\'re registered!' : 'Request Submitted!'}
+            </h1>
+            <p className="text-gray-500 dark:text-gray-400 mb-6 text-sm leading-relaxed">
+              {mode === 'new'
+                ? `Welcome to Ruach Tabernacle! We've sent your admission details to ${registeredEmail}.`
+                : 'Your legacy member request has been submitted. Our admin team will review and contact you within 3–5 business days.'}
+            </p>
+
+            {mode === 'new' && selectedCohort && (
+              <div className="bg-[#BF0A30]/6 dark:bg-[#BF0A30]/12 border border-[#BF0A30]/15 rounded-2xl p-5 mb-6 text-left">
+                <p className="text-xs font-bold text-[#BF0A30] uppercase tracking-wider mb-3">Your Connect Cohort</p>
+                <p className="font-bold text-gray-900 dark:text-white mb-2">{selectedCohort.name}</p>
+                {selectedCohort.start_date && (
+                  <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 mb-1">
+                    <span className="text-gray-400">Starts:</span>
+                    <span className="font-semibold text-gray-900 dark:text-white">
+                      {new Date(selectedCohort.start_date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                    </span>
+                  </div>
+                )}
+                {selectedCohort.end_date && (
+                  <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 mb-1">
+                    <span className="text-gray-400">Ends:</span>
+                    <span className="font-semibold text-gray-900 dark:text-white">
+                      {new Date(selectedCohort.end_date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                    </span>
+                  </div>
+                )}
+                {selectedCohort.class_type && (
+                  <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                    <span className="text-gray-400">Format:</span>
+                    <span className="capitalize font-medium text-gray-700 dark:text-gray-300">{selectedCohort.class_type}</span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {mode === 'new' && (
+              <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900 rounded-2xl p-4 mb-6 text-left">
+                <p className="text-xs font-bold text-blue-700 dark:text-blue-400 uppercase tracking-wider mb-2">How to sign in</p>
+                <p className="text-sm text-blue-800 dark:text-blue-300">
+                  Use your <strong>phone number (OTP)</strong> or your <strong>email + password</strong> you just set to log in at the Connect portal.
+                </p>
+              </div>
+            )}
+
+            <Link
+              href="/connect"
+              className="block w-full py-3 px-8 bg-[#BF0A30] hover:bg-[#A00828] text-white rounded-2xl font-bold transition-colors"
+            >
+              Sign In to Connect Portal
+            </Link>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
-            {mode === 'new' ? 'Registration Successful!' : 'Request Submitted!'}
-          </h1>
-          <p className="text-gray-500 dark:text-gray-400 mb-8">
-            {mode === 'new'
-              ? 'Welcome to Connect Class! Check your email for your admission number and class details.'
-              : 'Your legacy member request has been submitted. Our admin team will review and contact you within 3–5 business days.'}
-          </p>
-          <Link href="/connect" className="inline-block py-3 px-8 bg-[#BF0A30] text-white rounded-xl font-semibold hover:bg-[#B00325]">
-            Go to Sign In
-          </Link>
         </div>
       </div>
     );
@@ -366,13 +423,33 @@ export default function ConnectRegister() {
                     <label className={labelClass}>Select Cohort *</label>
                     {cohorts.length === 0 ? (
                       <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 rounded-xl p-4">
-                        <p className="text-amber-700 dark:text-amber-300 text-sm">No cohorts are currently open for registration.</p>
+                        <p className="text-amber-700 dark:text-amber-300 text-sm font-semibold mb-1">No cohorts open for registration</p>
+                        <p className="text-amber-600 dark:text-amber-400 text-xs">Check back soon or contact us to find out when the next Connect Class opens.</p>
                       </div>
                     ) : (
-                      <select value={form.cohortId} onChange={e => set('cohortId', e.target.value)} className={inputClass}>
-                        <option value="">Select a cohort...</option>
-                        {cohorts.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                      </select>
+                      <div className="space-y-2">
+                        {cohorts.map(c => (
+                          <button
+                            key={c.id}
+                            type="button"
+                            onClick={() => set('cohortId', c.id)}
+                            className={`w-full text-left p-4 rounded-xl border-2 transition-all ${
+                              form.cohortId === c.id
+                                ? 'border-[#BF0A30] bg-[#BF0A30]/5'
+                                : 'border-gray-200 dark:border-[#2D2D2D] hover:border-gray-300 dark:hover:border-[#3D3D3D]'
+                            }`}
+                          >
+                            <p className={`font-semibold text-sm ${form.cohortId === c.id ? 'text-[#BF0A30]' : 'text-gray-900 dark:text-white'}`}>{c.name}</p>
+                            {c.start_date && (
+                              <p className="text-xs text-gray-500 mt-1">
+                                Starts {new Date(c.start_date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                                {c.end_date ? ` · Ends ${new Date(c.end_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long' })}` : ''}
+                              </p>
+                            )}
+                            {c.class_type && <p className="text-xs text-gray-400 mt-0.5 capitalize">{c.class_type}</p>}
+                          </button>
+                        ))}
+                      </div>
                     )}
                   </div>
                   <div>
