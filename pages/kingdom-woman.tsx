@@ -57,14 +57,14 @@ export default function KingdomWomanPage() {
             Kingdom Woman. &nbsp; Kingdom Woman.
           </span>
         </div>
-        <div className="relative max-w-7xl mx-auto px-8 lg:px-16 pb-20 pt-36 w-full">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 pb-20 pt-36 w-full">
           <span
             className="inline-block mb-5 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest text-white border border-white/15"
             style={{ ...H, background: 'rgba(191,10,48,0.18)' }}
           >
             Women Ministry
           </span>
-          <h1 className="text-5xl md:text-7xl text-white tracking-tight leading-tight mb-4" style={H}>
+          <h1 className="text-[38px] sm:text-5xl md:text-[58px] text-white tracking-tight leading-tight mb-4" style={H}>
             Kingdom <br />
             <span style={serif}>Woman</span>
           </h1>
@@ -104,7 +104,7 @@ export default function KingdomWomanPage() {
 
       {/* ABOUT SECTION */}
       <section className="bg-[#F5F0E8] py-24">
-        <div className="max-w-7xl mx-auto px-8 lg:px-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
           <div className="grid md:grid-cols-2 gap-16 items-start">
             {/* Left */}
             <div>
@@ -165,7 +165,7 @@ export default function KingdomWomanPage() {
 
       {/* PHOTO GRID */}
       <section className="bg-[#0A0C10] py-20">
-        <div className="max-w-7xl mx-auto px-8 lg:px-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
           <div className="mb-12">
             <p className="text-[#BF0A30] text-xs font-black uppercase tracking-widest mb-3" style={H}>Our Community</p>
             <h2 className="text-4xl md:text-5xl text-white leading-tight" style={H}>
@@ -209,7 +209,7 @@ export default function KingdomWomanPage() {
 
       {/* CTA */}
       <section className="bg-[#BF0A30] py-16">
-        <div className="max-w-7xl mx-auto px-8 lg:px-16 text-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 text-center">
           <h2 className="text-4xl md:text-5xl text-white mb-4 leading-tight" style={H}>
             Join Kingdom Woman this Sunday.
           </h2>

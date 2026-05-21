@@ -58,14 +58,14 @@ export default function REventsPage() {
           </span>
         </div>
 
-        <div className="relative max-w-7xl mx-auto px-8 lg:px-16 pb-24 pt-36 w-full">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 pb-24 pt-36 w-full">
           <span
             className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-white border border-white/15 bg-white/5 mb-6"
             style={H}
           >
             What&apos;s Coming
           </span>
-          <h1 className="text-5xl md:text-6xl lg:text-[78px] text-white leading-[1.05] tracking-tight mb-5" style={H}>
+          <h1 className="text-[38px] sm:text-5xl md:text-[58px] text-white leading-[1.05] tracking-tight mb-5" style={H}>
             Events
           </h1>
           <p className="text-[#8B95A8] text-lg max-w-md leading-relaxed" style={serif}>
@@ -100,7 +100,7 @@ export default function REventsPage() {
 
       {/* EVENTS SECTION */}
       <section className="bg-[#0A0C10] py-24">
-        <div className="max-w-7xl mx-auto px-8 lg:px-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
           <div className="flex items-center gap-4 mb-12">
             <span
               className="inline-flex items-center px-3 py-1 rounded-full bg-[#BF0A30]/15 text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest border border-[#BF0A30]/20"
@@ -179,7 +179,7 @@ export default function REventsPage() {
 
       {/* PAST EVENTS NOTE */}
       <section className="bg-[#F5F0E8] py-16">
-        <div className="max-w-3xl mx-auto px-8 lg:px-16 text-center">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-12 text-center">
           <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-4" style={H}>
             More from Ruach
           </p>

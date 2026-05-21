@@ -53,14 +53,14 @@ export default function RCommunitiesPage() {
             R-Communities. &nbsp; R-Communities.
           </span>
         </div>
-        <div className="relative max-w-7xl mx-auto px-8 lg:px-16 pb-20 pt-36 w-full">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 pb-20 pt-36 w-full">
           <span
             className="inline-block mb-5 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest text-white border border-white/15"
             style={{ ...H, background: 'rgba(191,10,48,0.18)' }}
           >
             R-Communities
           </span>
-          <h1 className="text-5xl md:text-7xl text-white tracking-tight leading-tight mb-4" style={H}>
+          <h1 className="text-[38px] sm:text-5xl md:text-[58px] text-white tracking-tight leading-tight mb-4" style={H}>
             Find Your <br />
             <span style={serif}>Circle.</span>
           </h1>
@@ -100,7 +100,7 @@ export default function RCommunitiesPage() {
 
       {/* TAGLINE SECTION */}
       <section className="bg-[#F5F0E8] py-14 text-center">
-        <div className="max-w-2xl mx-auto px-8 lg:px-16">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-12">
           <h2 className="text-3xl md:text-4xl text-[#111827] mb-5 leading-tight" style={H}>
             Have people to do life with!
           </h2>
@@ -135,7 +135,7 @@ export default function RCommunitiesPage() {
 
       {/* COMMUNITIES GRID */}
       <section className="bg-[#0A0C10] py-20">
-        <div className="max-w-7xl mx-auto px-8 lg:px-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
           <div className="mb-12">
             <p className="text-[#BF0A30] text-xs font-black uppercase tracking-widest mb-3" style={H}>Find Your Place</p>
             <h2 className="text-4xl md:text-5xl text-white leading-tight" style={H}>
@@ -178,7 +178,7 @@ export default function RCommunitiesPage() {
 
       {/* CTA */}
       <section className="bg-[#BF0A30] py-16">
-        <div className="max-w-7xl mx-auto px-8 lg:px-16 text-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 text-center">
           <h2 className="text-4xl md:text-5xl text-white mb-4 leading-tight" style={H}>
             Your community is waiting.
           </h2>

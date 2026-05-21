@@ -38,14 +38,14 @@ export default function RCrosspointsPage() {
           </span>
         </div>
 
-        <div className="relative max-w-7xl mx-auto px-8 lg:px-16 pb-24 pt-36 w-full">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 pb-24 pt-36 w-full">
           <span
             className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-white border border-white/15 bg-white/5 mb-6"
             style={H}
           >
             Small Groups
           </span>
-          <h1 className="text-5xl md:text-6xl lg:text-[78px] text-white leading-[1.05] tracking-tight mb-5" style={H}>
+          <h1 className="text-[38px] sm:text-5xl md:text-[58px] text-white leading-[1.05] tracking-tight mb-5" style={H}>
             R-Crosspoints
           </h1>
           <p className="text-[#8B95A8] text-lg max-w-md leading-relaxed" style={serif}>
@@ -80,7 +80,7 @@ export default function RCrosspointsPage() {
 
       {/* WHAT ARE CROSSPOINTS */}
       <section className="bg-[#F5F0E8] py-24">
-        <div className="max-w-7xl mx-auto px-8 lg:px-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
           <div className="grid md:grid-cols-2 gap-16 items-start">
             <div>
               <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-5" style={H}>
@@ -122,7 +122,7 @@ export default function RCrosspointsPage() {
 
       {/* STATS STRIP */}
       <section className="bg-[#0A0C10] py-16">
-        <div className="max-w-7xl mx-auto px-8 lg:px-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
           <div className="grid md:grid-cols-3 gap-5">
             {[
               { stat: '10–20', label: 'People per group', desc: 'Small enough to truly know each other. Big enough to make an impact.' },
@@ -164,7 +164,7 @@ export default function RCrosspointsPage() {
 
       {/* HOW TO JOIN */}
       <section className="bg-[#F5F0E8] py-20">
-        <div className="max-w-7xl mx-auto px-8 lg:px-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
           <div className="text-center mb-14">
             <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-4" style={H}>
               Getting Started

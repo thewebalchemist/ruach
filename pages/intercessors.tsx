@@ -18,9 +18,9 @@ export default function IntercessorsPage() {
         </div>
         <div className="spirit-orb spirit-breathe absolute w-[500px] h-[500px] bg-[#BF0A30]"
           style={{ top: '10%', right: '5%', filter: 'blur(120px)', opacity: 0.12, ['--spirit-dur' as string]: '15s' }} />
-        <div className="relative max-w-7xl mx-auto px-8 lg:px-16 pb-20 pt-32 w-full">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 pb-20 pt-32 w-full">
           <p className="text-[#BF0A30] text-xs font-bold uppercase tracking-widest mb-4" style={H}>Prayer Ministry</p>
-          <h1 className="text-5xl md:text-7xl text-white leading-tight mb-4" style={H}>Intercessors</h1>
+          <h1 className="text-[38px] sm:text-5xl md:text-[58px] text-white leading-tight mb-4" style={H}>Intercessors</h1>
           <p className="text-white/60 text-lg max-w-lg" style={serif}>
             Standing in the gap. Holding the ground.
           </p>
@@ -28,7 +28,7 @@ export default function IntercessorsPage() {
       </section>
 
       <section className="bg-[#F5F0E8] py-24">
-        <div className="max-w-7xl mx-auto px-8 lg:px-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
           <div className="max-w-2xl">
             <p className="text-[#BF0A30] text-xs font-bold uppercase tracking-widest mb-5" style={H}>Who We Are</p>
             <h2 className="text-4xl md:text-5xl text-[#111827] mb-6 leading-tight" style={H}>

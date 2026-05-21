@@ -86,14 +86,14 @@ export default function ContactPage() {
           className="spirit-orb spirit-breathe absolute w-[500px] h-[500px] bg-[#BF0A30]"
           style={{ top: '5%', right: '-5%', filter: 'blur(150px)', opacity: 0.09, ['--spirit-dur' as string]: '13s' }}
         />
-        <div className="relative max-w-7xl mx-auto px-8 lg:px-16 pb-20 pt-32 w-full">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 pb-20 pt-32 w-full">
           <div
             className="inline-flex items-center gap-2 text-[#F87171] text-[10px] font-bold uppercase tracking-widest px-4 py-2 rounded-full mb-6"
             style={{ background: 'rgba(191,10,48,0.18)', border: '1px solid rgba(191,10,48,0.30)' }}
           >
             <span style={H}>Get In Touch</span>
           </div>
-          <h1 className="text-5xl md:text-7xl text-white leading-tight tracking-tight mb-5" style={H}>
+          <h1 className="text-[38px] sm:text-5xl md:text-[58px] text-white leading-tight tracking-tight mb-5" style={H}>
             We&apos;d Love to<br /><span style={serif}>Hear From You</span>
           </h1>
           <p className="text-[#8B95A8] text-lg max-w-md leading-relaxed">
@@ -128,7 +128,7 @@ export default function ContactPage() {
 
       {/* ── QUICK INFO STRIP ──────────────────────────────────────── */}
       <section className="bg-[#0A0C10] pt-20 pb-4">
-        <div className="max-w-7xl mx-auto px-8 lg:px-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {[
               {
@@ -179,7 +179,7 @@ export default function ContactPage() {
 
       {/* ── MAP + FORM ────────────────────────────────────────────── */}
       <section className="bg-[#0A0C10] py-16">
-        <div className="max-w-7xl mx-auto px-8 lg:px-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
           <div className="grid lg:grid-cols-2 gap-6">
 
             {/* Map */}
@@ -325,7 +325,7 @@ export default function ContactPage() {
 
       {/* ── ASSEMBLIES ────────────────────────────────────────────── */}
       <section className="bg-[#0A0C10] py-16 border-t border-white/5">
-        <div className="max-w-7xl mx-auto px-8 lg:px-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-12">
             <div>
               <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-3" style={H}>

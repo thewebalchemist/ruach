@@ -37,11 +37,11 @@ export default function NewHerePage() {
           </span>
         </div>
 
-        <div className="relative max-w-7xl mx-auto px-8 lg:px-16 pb-24 pt-36 w-full">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 pb-24 pt-36 w-full">
           <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-5" style={H}>
             New Here?
           </p>
-          <h1 className="text-5xl md:text-6xl lg:text-[80px] text-white leading-[1.05] tracking-tight mb-6" style={H}>
+          <h1 className="text-[38px] sm:text-5xl md:text-[58px] text-white leading-[1.05] tracking-tight mb-6" style={H}>
             Come as a guest,<br />
             <span style={serif}>Stay as family.</span>
           </h1>
@@ -112,7 +112,7 @@ export default function NewHerePage() {
           YOU'RE SO LOVED
       ══════════════════════════════════════════════ */}
       <section className="bg-[#F5F0E8] py-20">
-        <div className="max-w-7xl mx-auto px-8 lg:px-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
 
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-12">
             <h2 className="text-4xl md:text-5xl text-[#111827] leading-[1.1]" style={H}>
@@ -146,7 +146,7 @@ export default function NewHerePage() {
                 <div className="flex flex-col sm:flex-row sm:items-end gap-6 sm:gap-0">
                   {[
                     { n: 'First Service',  t: '8:00',  suf: 'AM'    },
-                    { n: 'Second Service', t: '10:00', suf: '– Noon' },
+                    { n: 'Second Service', t: '10:00', suf: 'AM'     },
                     { n: 'Third Service',  t: '12:30', suf: 'PM'     },
                   ].map((s, i) => (
                     <div key={s.n} className={`flex-1 ${i > 0 ? 'sm:border-l sm:border-white/10 sm:pl-8 lg:pl-12' : ''}`}>
@@ -262,7 +262,7 @@ export default function NewHerePage() {
           KIDS — Dark background
       ══════════════════════════════════════════════ */}
       <section className="bg-[#0A0C10] py-20">
-        <div className="max-w-7xl mx-auto px-8 lg:px-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
           <div className="grid md:grid-cols-2 gap-10 lg:gap-16 items-center">
             <div className="relative rounded-3xl overflow-hidden aspect-[4/3]">
               <img
@@ -311,7 +311,7 @@ export default function NewHerePage() {
           <div className="absolute inset-0 bg-[#0A0C10]/80" />
         </div>
 
-        <div className="relative max-w-7xl mx-auto px-8 lg:px-16">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
           {/* Section header */}
           <div className="mb-14">
             <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-3" style={H}>

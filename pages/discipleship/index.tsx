@@ -4,14 +4,8 @@
 import { useState, useRef, KeyboardEvent } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import {
-  Loader2, Shield, ArrowLeft, ChevronRight, Mail,
-  Eye, EyeOff, BookOpen, Star, Flame, Users, FlaskConical
-} from 'lucide-react';
+import { Loader2, Shield, ArrowLeft, ChevronRight, Mail, Eye, EyeOff, BookOpen, Star, Flame, Users } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
-import { useMode } from '@/context/ModeContext';
-
-const MOCK_OTP = '123456';
 
 type Step = 'login' | 'otp' | 'email-form';
 type Tab  = 'student' | 'teacher';
@@ -28,7 +22,6 @@ interface ProfileResult { role: string; member_id: string | null; }
 
 export default function DiscipleshipLogin() {
   const router = useRouter();
-  const { isDemoMode, toggleMode } = useMode();
 
   const [tab,       setTab]       = useState<Tab>('student');
   const [step,      setStep]      = useState<Step>('login');
@@ -56,12 +49,9 @@ export default function DiscipleshipLogin() {
 
   async function sendOtp() {
     setError(''); setLoading(true);
-    await new Promise(r => setTimeout(r, 900));
-    if (!isDemoMode) {
-      const { error: e } = await supabase.auth.signInWithOtp({ phone: formatted });
-      if (e) { setError(e.message); setLoading(false); return; }
-    }
+    const { error: e } = await supabase.auth.signInWithOtp({ phone: formatted });
     setLoading(false);
+    if (e) { setError(e.message); return; }
     startCountdown(60);
     setStep('otp');
   }
@@ -79,15 +69,6 @@ export default function DiscipleshipLogin() {
 
   async function verifyOtp(code: string) {
     setError(''); setLoading(true);
-    if (isDemoMode) {
-      await new Promise(r => setTimeout(r, 800));
-      setLoading(false);
-      if (code !== MOCK_OTP) {
-        setError('Demo code: ' + MOCK_OTP);
-        setOtp(['', '', '', '', '', '']); otpRefs.current[0]?.focus(); return;
-      }
-      router.push(tab === 'teacher' ? '/discipleship/dashboard' : '/discipleship/student'); return;
-    }
     const { data, error: e } = await supabase.auth.verifyOtp({ phone: formatted, token: code, type: 'sms' });
     if (e || !data.session) {
       setError(e?.message ?? 'Invalid OTP.');
@@ -98,11 +79,6 @@ export default function DiscipleshipLogin() {
 
   async function handleEmailLogin(e: React.FormEvent) {
     e.preventDefault(); setError(''); setLoading(true);
-    if (isDemoMode) {
-      await new Promise(r => setTimeout(r, 800));
-      setLoading(false);
-      router.push(tab === 'teacher' ? '/discipleship/dashboard' : '/discipleship/student'); return;
-    }
     const { data, error: ae } = await supabase.auth.signInWithPassword({ email, password });
     if (ae || !data.session) { setError(ae?.message ?? 'Invalid credentials.'); setLoading(false); return; }
     await redirectByRole(data.session.user.id);
@@ -120,7 +96,7 @@ export default function DiscipleshipLogin() {
   function reset() { setStep('login'); setOtp(['', '', '', '', '', '']); setError(''); }
 
   return (
-    <div className="min-h-screen flex bg-white dark:bg-[#0A0A0A]">
+    <div className="min-h-screen flex bg-[#0A0A0A]">
 
       {/* ── Left branding panel */}
       <div
@@ -183,20 +159,20 @@ export default function DiscipleshipLogin() {
             <div className="w-9 h-9 bg-[#2D1060] rounded-xl flex items-center justify-center">
               <BookOpen className="w-5 h-5 text-[#D4AF37]" />
             </div>
-            <span className="font-bold text-gray-900 dark:text-white">Discipleship</span>
+            <span className="font-bold text-white">Discipleship</span>
           </div>
 
           {/* ── Login step */}
           {step === 'login' && (
             <div className="animate-fade-in">
-              <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-1 tracking-tight">Welcome back</h2>
-              <p className="text-gray-500 dark:text-gray-400 mb-6 text-sm">Sign in to your discipleship portal</p>
+              <h2 className="text-2xl font-black text-white mb-1 tracking-tight">Welcome back</h2>
+              <p className="text-gray-400 mb-6 text-sm">Sign in to your discipleship portal</p>
 
-              <div className="flex bg-gray-100 dark:bg-[#1A1A1A] rounded-2xl p-1 mb-6">
+              <div className="flex bg-[#1A1A1A] rounded-2xl p-1 mb-6">
                 {(['student', 'teacher'] as Tab[]).map(t => (
                   <button key={t} onClick={() => setTab(t)}
                     className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-                      tab === t ? 'bg-white dark:bg-[#2D2D2D] text-[#2D1060] shadow-sm' : 'text-gray-500'
+                      tab === t ? 'bg-[#2D2D2D] text-[#D4AF37] shadow-sm' : 'text-gray-500 hover:text-gray-300'
                     }`}
                   >
                     {t === 'student' ? 'Member' : 'Facilitator'}
@@ -204,44 +180,40 @@ export default function DiscipleshipLogin() {
                 ))}
               </div>
 
-              <div className="bg-[#2D1060]/6 dark:bg-[#2D1060]/15 border border-[#2D1060]/15 rounded-xl p-4 mb-6">
+              <div className="bg-[#2D1060]/15 border border-[#2D1060]/25 rounded-xl p-4 mb-6">
                 {tab === 'student' ? (
                   <>
-                    <p className="text-sm font-semibold text-gray-900 dark:text-white mb-1">Member access</p>
-                    <p className="text-xs text-gray-500">Access your discipleship journey, course materials, and progress.</p>
-                    <p className="text-xs text-gray-400 mt-2">
+                    <p className="text-sm font-semibold text-white mb-1">Member access</p>
+                    <p className="text-xs text-gray-400">Access your discipleship journey, course materials, and progress.</p>
+                    <p className="text-xs text-gray-500 mt-2">
                       Must have completed Connect Class.{' '}
                       <Link href="/connect" className="text-[#BF0A30] font-semibold hover:underline">Not done Connect? Start here →</Link>
                     </p>
                   </>
                 ) : (
                   <>
-                    <p className="text-sm font-semibold text-gray-900 dark:text-white mb-1">Facilitator access</p>
-                    <p className="text-xs text-gray-500">Manage discipleship cohorts, track progress, and run sessions.</p>
+                    <p className="text-sm font-semibold text-white mb-1">Facilitator access</p>
+                    <p className="text-xs text-gray-400">Manage discipleship cohorts, track progress, and run sessions.</p>
                   </>
                 )}
               </div>
 
               <div className="form-group">
                 <label className="form-label">Phone Number</label>
-                <div className="flex">
-                  <div className="phone-prefix">+254</div>
+                <div className="flex gap-0">
+                  <div className="flex items-center px-3 bg-[#1A1E28] border border-r-0 border-white/[0.08] rounded-l-2xl text-white/50 text-sm font-medium flex-shrink-0">
+                    +254
+                  </div>
                   <input
                     type="tel" value={phone}
                     onChange={e => { setPhone(e.target.value); setError(''); }}
-                    placeholder="7XX XXX XXX" className="input phone-input"
+                    placeholder="7XX XXX XXX" className="input flex-1"
+                    style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
                     onKeyDown={e => e.key === 'Enter' && phone && sendOtp()}
                   />
                 </div>
                 <p className="form-help">OTP sent via SMS · Kenyan numbers only</p>
               </div>
-
-              {isDemoMode && (
-                <div className="flex items-center gap-2 mb-4 px-3 py-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl text-xs text-amber-700 dark:text-amber-400">
-                  <FlaskConical className="w-3.5 h-3.5 flex-shrink-0" />
-                  Demo — OTP is <strong className="ml-1">{MOCK_OTP}</strong>
-                </div>
-              )}
 
               {error && <div className="alert alert-error text-sm mb-4">{error}</div>}
 
@@ -263,15 +235,14 @@ export default function DiscipleshipLogin() {
           {/* ── OTP step */}
           {step === 'otp' && (
             <div className="animate-fade-in">
-              <button onClick={reset} className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-800 dark:hover:text-white mb-6 transition-colors">
+              <button onClick={reset} className="flex items-center gap-2 text-sm text-gray-500 hover:text-white mb-6 transition-colors">
                 <ArrowLeft className="w-4 h-4" /> Back
               </button>
-              <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-5" style={{ background: '#2D106018' }}>
-                <Shield className="w-7 h-7" style={{ color: '#2D1060' }} />
+              <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-5 bg-[#2D1060]/20">
+                <Shield className="w-7 h-7 text-[#D4AF37]" />
               </div>
-              <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-1">Enter OTP</h2>
-              <p className="text-gray-500 text-sm mb-2">Code sent to <strong className="text-gray-800 dark:text-gray-200">{formatted}</strong></p>
-              {isDemoMode && <p className="text-xs text-amber-600 mb-5 bg-amber-50 dark:bg-amber-900/20 px-3 py-2 rounded-xl border border-amber-200">Demo code: <strong>{MOCK_OTP}</strong></p>}
+              <h2 className="text-2xl font-black text-white mb-1">Enter OTP</h2>
+              <p className="text-gray-400 text-sm mb-6">Code sent to <span className="font-semibold text-gray-200">{formatted}</span></p>
               <div className="flex gap-2.5 mb-6">
                 {otp.map((digit, i) => (
                   <input key={i} ref={el => { otpRefs.current[i] = el; }}
@@ -283,26 +254,26 @@ export default function DiscipleshipLogin() {
                 ))}
               </div>
               {error && <div className="alert alert-error text-sm mb-4">{error}</div>}
-              {loading && <div className="flex justify-center py-3 mb-4"><Loader2 className="w-5 h-5 animate-spin" style={{ color: '#2D1060' }} /></div>}
+              {loading && <div className="flex justify-center py-3 mb-4"><Loader2 className="w-5 h-5 animate-spin text-[#D4AF37]" /></div>}
               <button onClick={() => verifyOtp(otp.join(''))} disabled={loading || !otpComplete}
                 className="w-full py-3.5 rounded-2xl text-white font-bold text-sm flex items-center justify-center transition-colors mb-4 disabled:opacity-50"
                 style={{ background: '#2D1060' }}>
                 Verify & Sign In
               </button>
               {countdown > 0
-                ? <p className="text-center text-sm text-gray-400">Resend in <strong>{countdown}s</strong></p>
-                : <button onClick={sendOtp} className="w-full text-center text-sm font-medium hover:underline" style={{ color: '#2D1060' }}>Resend OTP</button>}
+                ? <p className="text-center text-sm text-gray-400">Resend in <strong className="text-gray-300">{countdown}s</strong></p>
+                : <button onClick={sendOtp} className="w-full text-center text-sm font-medium text-[#BF0A30] hover:underline">Resend OTP</button>}
             </div>
           )}
 
           {/* ── Email form */}
           {step === 'email-form' && (
             <div className="animate-fade-in">
-              <button onClick={() => { setStep('login'); setError(''); }} className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-800 dark:hover:text-white mb-6 transition-colors">
+              <button onClick={() => { setStep('login'); setError(''); }} className="flex items-center gap-2 text-sm text-gray-500 hover:text-white mb-6 transition-colors">
                 <ArrowLeft className="w-4 h-4" /> Back
               </button>
-              <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-1">Email Sign In</h2>
-              <p className="text-gray-500 text-sm mb-8">Sign in with your registered email and password</p>
+              <h2 className="text-2xl font-black text-white mb-1">Email Sign In</h2>
+              <p className="text-gray-400 text-sm mb-8">Sign in with your registered email and password</p>
               <form onSubmit={handleEmailLogin} className="space-y-4">
                 <div className="form-group">
                   <label className="form-label">Email</label>
@@ -312,12 +283,12 @@ export default function DiscipleshipLogin() {
                   <label className="form-label">Password</label>
                   <div className="relative">
                     <input type={showPwd ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" required className="input pr-12" />
-                    <button type="button" onClick={() => setShowPwd(!showPwd)} className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400">
+                    <button type="button" onClick={() => setShowPwd(!showPwd)} className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-500 hover:text-gray-300">
                       {showPwd ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
                 </div>
-                <Link href="/auth/forgot-password" className="block text-right text-sm font-medium hover:underline" style={{ color: '#2D1060' }}>
+                <Link href="/auth/forgot-password" className="block text-right text-sm font-medium text-[#BF0A30] hover:underline">
                   Forgot password?
                 </Link>
                 {error && <div className="alert alert-error text-sm">{error}</div>}
@@ -330,20 +301,14 @@ export default function DiscipleshipLogin() {
             </div>
           )}
 
-          <div className="mt-8 pt-6 border-t border-gray-100 dark:border-white/[0.05] flex flex-wrap gap-3 justify-center">
-            <Link href="/connect" className="text-sm text-gray-400 hover:text-[#BF0A30] transition-colors">Connect Portal</Link>
-            <span className="text-gray-200 dark:text-gray-700">·</span>
-            <Link href="/crosspoint" className="text-sm text-gray-400 hover:text-[#BF0A30] transition-colors">Crosspoints</Link>
+          <div className="mt-8 pt-6 border-t border-white/[0.06] flex flex-wrap gap-3 justify-center">
+            <Link href="/connect" className="text-sm text-gray-500 hover:text-[#BF0A30] transition-colors">Connect Portal</Link>
+            <span className="text-gray-700">·</span>
+            <Link href="/crosspoint" className="text-sm text-gray-500 hover:text-[#BF0A30] transition-colors">Crosspoints</Link>
+            <span className="text-gray-700">·</span>
+            <Link href="/" className="text-sm text-gray-500 hover:text-white transition-colors">Back to site</Link>
           </div>
         </div>
-
-        <button
-          onClick={toggleMode}
-          className="absolute bottom-6 right-6 flex items-center gap-2 px-3 py-1.5 bg-gray-100 dark:bg-[#1E1E1E] border border-gray-200 dark:border-[#2D2D2D] rounded-xl text-xs font-semibold text-gray-500 dark:text-gray-400 transition-colors"
-        >
-          <span className={`w-1.5 h-1.5 rounded-full ${isDemoMode ? 'bg-amber-400' : 'bg-green-500'}`} />
-          {isDemoMode ? 'Demo Mode' : 'Live Mode'}
-        </button>
       </div>
     </div>
   );

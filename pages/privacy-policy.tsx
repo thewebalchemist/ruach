@@ -11,14 +11,14 @@ export default function PrivacyPolicyPage() {
           <div className="absolute inset-0" style={{ backgroundImage: 'url(/church-photos/dark-background.png)', backgroundSize: 'cover', backgroundPosition: 'center' }} />
           <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
         </div>
-        <div className="relative max-w-7xl mx-auto px-8 lg:px-16 pb-16 pt-28 w-full">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 pb-16 pt-28 w-full">
           <p className="text-[#BF0A30] text-xs font-bold uppercase tracking-widest mb-4" style={H}>Legal</p>
           <h1 className="text-4xl md:text-6xl text-white leading-tight" style={H}>Privacy Policy</h1>
         </div>
       </section>
 
       <section className="bg-[#F5F0E8] py-20">
-        <div className="max-w-3xl mx-auto px-8 lg:px-16">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-12">
           <div className="prose prose-lg text-[#374151] max-w-none">
             <p className="text-sm text-[#6B7280] mb-10">Last updated: May 2026</p>
 

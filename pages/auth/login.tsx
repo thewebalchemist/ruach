@@ -1,14 +1,11 @@
 // pages/auth/login.tsx
-// Admin & staff login — OTP primary, email fallback, demo/live mode toggle
+// Admin & staff login — OTP primary, email fallback
 
 import { useState, FormEvent, useRef, KeyboardEvent } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import { Eye, EyeOff, Loader2, Mail, ChevronRight, ArrowLeft, Shield, Heart, Zap, Users, FlaskConical } from 'lucide-react';
+import { Eye, EyeOff, Loader2, Mail, ChevronRight, ArrowLeft, Shield } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
-import { useMode } from '@/context/ModeContext';
-
-const MOCK_OTP = '123456';
 
 type Step = 'method' | 'otp' | 'email-form';
 interface ProfileResult { role: string; member_id: string | null; }
@@ -27,7 +24,6 @@ function isValidKenyanPhone(phone: string): boolean {
 
 export default function AdminLogin() {
   const router = useRouter();
-  const { isDemoMode, toggleMode } = useMode();
 
   const [step,      setStep]      = useState<Step>('method');
   const [phone,     setPhone]     = useState('');
@@ -55,10 +51,8 @@ export default function AdminLogin() {
   async function handleSendOtp() {
     if (!phoneValid) { setError('Please enter a valid Kenyan phone number'); return; }
     setError(''); setLoading(true);
-    await new Promise(r => setTimeout(r, 1200));
-    setLoading(false);
-    if (isDemoMode) { startCountdown(60); setStep('otp'); return; }
     const { error: e } = await supabase.auth.signInWithOtp({ phone: formattedPhone });
+    setLoading(false);
     if (e) { setError(e.message); return; }
     startCountdown(60); setStep('otp');
   }
@@ -76,15 +70,6 @@ export default function AdminLogin() {
 
   async function verifyOtp(code: string) {
     setError(''); setLoading(true);
-    if (isDemoMode) {
-      await new Promise(r => setTimeout(r, 900));
-      setLoading(false);
-      if (code !== MOCK_OTP) {
-        setError('Invalid code. Demo OTP is ' + MOCK_OTP);
-        setOtp(['','','','','','']); otpRefs.current[0]?.focus(); return;
-      }
-      router.push('/admin'); return;
-    }
     const { data, error: e } = await supabase.auth.verifyOtp({ phone: formattedPhone, token: code, type: 'sms' });
     if (e || !data.session) {
       setError(e?.message ?? 'Invalid OTP. Please try again.');
@@ -96,11 +81,6 @@ export default function AdminLogin() {
 
   async function handleEmailLogin(e: FormEvent) {
     e.preventDefault(); setError(''); setLoading(true);
-    if (isDemoMode) {
-      await new Promise(r => setTimeout(r, 800));
-      setLoading(false);
-      router.push('/admin'); return;
-    }
     const { data, error: authError } = await supabase.auth.signInWithPassword({ email, password });
     if (authError || !data.session) {
       setError(authError?.message ?? 'Invalid email or password.');
@@ -138,32 +118,20 @@ export default function AdminLogin() {
 
         {/* ── Left branding — desktop only ──────────────────────────────────── */}
         <div className="hidden lg:flex lg:w-[42%] flex-col justify-between p-12">
-          <div className="flex items-center gap-3">
+          <Link href="/" className="flex items-center gap-3">
             <img src="/brand/ruach-logo.png" alt="Ruach Tabernacle" className="h-10 w-auto" />
-          </div>
+          </Link>
 
           <div>
             <p className="text-[#BF0A30] text-xs font-bold uppercase tracking-widest mb-4">Admin Portal</p>
-            <h1 className="text-4xl font-black text-white leading-tight mb-8 tracking-tight">
+            <h1 className="text-4xl font-black text-white leading-tight mb-4 tracking-tight">
               Kingdom<br />
               Management<br />
               <span className="text-[#BF0A30]">Portal.</span>
             </h1>
-
-            <div className="bg-white/8 backdrop-blur-md border border-white/12 rounded-2xl p-6">
-              <p className="text-white/85 text-sm italic leading-relaxed mb-4">
-                &ldquo;We are building a platform of excellence, order and the beauty of
-                God&apos;s Kingdom. Welcome to the house.&rdquo;
-              </p>
-              <div className="flex items-center gap-3">
-                <img src="/brand/rev-julian.png" alt="Rev. Julian Kyula" className="w-10 h-10 rounded-full object-cover object-top border border-[#D4AF37]/30"
-                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-                <div>
-                  <p className="text-[#D4AF37] text-xs font-bold">Rev. Julian Kyula</p>
-                  <p className="text-white/40 text-[11px]">Visionary & Founder</p>
-                </div>
-              </div>
-            </div>
+            <p className="text-white/40 text-sm leading-relaxed max-w-xs">
+              Securely manage sermons, events, members, and ministry operations for Ruach Tabernacle.
+            </p>
           </div>
 
           <p className="text-white/25 text-xs">© 2026 Ruach Assemblies</p>
@@ -175,34 +143,39 @@ export default function AdminLogin() {
 
             {/* Mobile logo */}
             <div className="flex flex-col items-center mb-7 lg:hidden">
-              <img src="/brand/ruach-logo.png" alt="Ruach Tabernacle" className="h-12 w-auto mb-3" />
+              <Link href="/">
+                <img src="/brand/ruach-logo.png" alt="Ruach Tabernacle" className="h-12 w-auto mb-3" />
+              </Link>
               <p className="text-white/70 text-sm">Admin Portal</p>
             </div>
 
             {/* Card */}
-            <div className="bg-white dark:bg-[#0F0F0F] rounded-3xl shadow-2xl p-7 sm:p-8">
+            <div className="bg-[#0F0F0F] rounded-3xl shadow-2xl p-7 sm:p-8 border border-white/[0.07]">
 
           {/* ── STEP: Choose method ─────────────────────────────────────────── */}
           {step === 'method' && (
             <div className="animate-fade-in">
-              <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-1 tracking-tight">
+              <h2 className="text-2xl font-black text-white mb-1 tracking-tight">
                 Welcome back
               </h2>
-              <p className="text-gray-500 dark:text-gray-400 mb-8 text-sm">
+              <p className="text-gray-400 mb-8 text-sm">
                 Sign in to access the admin portal
               </p>
 
               <div className="space-y-3 mb-6">
                 <div className="form-group">
                   <label className="form-label">Phone Number</label>
-                  <div className="flex">
-                    <div className="phone-prefix">+254</div>
+                  <div className="flex gap-0">
+                    <div className="flex items-center px-3 bg-[#1A1E28] border border-r-0 border-white/[0.08] rounded-l-2xl text-white/50 text-sm font-medium flex-shrink-0">
+                      +254
+                    </div>
                     <input
                       type="tel"
                       value={phone}
                       onChange={e => { setPhone(e.target.value); setError(''); }}
                       placeholder="7XX XXX XXX"
-                      className="input phone-input"
+                      className="input rounded-l-none flex-1"
+                      style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
                       onKeyDown={e => e.key === 'Enter' && handleSendOtp()}
                     />
                   </div>
@@ -210,13 +183,6 @@ export default function AdminLogin() {
                 </div>
 
                 {error && <div className="alert alert-error text-sm">{error}</div>}
-
-                {isDemoMode && (
-                  <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl text-xs text-amber-700 dark:text-amber-400">
-                    <FlaskConical className="w-3.5 h-3.5 flex-shrink-0" />
-                    Demo mode — use any number, OTP code is <strong className="ml-1">{MOCK_OTP}</strong>
-                  </div>
-                )}
 
                 <button
                   onClick={handleSendOtp}
@@ -235,12 +201,12 @@ export default function AdminLogin() {
                 <Mail className="w-4 h-4" /> Continue with Email
               </button>
 
-              <div className="mt-8 pt-6 border-t border-gray-100 dark:border-white/[0.05] flex flex-wrap gap-3 justify-center">
-                <Link href="/connect" className="text-sm text-gray-400 hover:text-[#BF0A30] transition-colors">Connect Portal</Link>
-                <span className="text-gray-200 dark:text-gray-700">·</span>
-                <Link href="/discipleship" className="text-sm text-gray-400 hover:text-[#BF0A30] transition-colors">Discipleship</Link>
-                <span className="text-gray-200 dark:text-gray-700">·</span>
-                <Link href="/crosspoint" className="text-sm text-gray-400 hover:text-[#BF0A30] transition-colors">Crosspoints</Link>
+              <div className="mt-8 pt-6 border-t border-white/[0.05] flex flex-wrap gap-3 justify-center">
+                <Link href="/connect" className="text-sm text-gray-500 hover:text-[#BF0A30] transition-colors">Connect Portal</Link>
+                <span className="text-gray-700">·</span>
+                <Link href="/discipleship" className="text-sm text-gray-500 hover:text-[#BF0A30] transition-colors">Discipleship</Link>
+                <span className="text-gray-700">·</span>
+                <Link href="/crosspoint" className="text-sm text-gray-500 hover:text-[#BF0A30] transition-colors">Crosspoints</Link>
               </div>
             </div>
           )}
@@ -249,7 +215,7 @@ export default function AdminLogin() {
           {step === 'otp' && (
             <div className="animate-fade-in">
               <button onClick={() => { setStep('method'); setOtp(['','','','','','']); setError(''); }}
-                className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-800 dark:hover:text-white mb-6 transition-colors">
+                className="flex items-center gap-2 text-sm text-gray-500 hover:text-white mb-6 transition-colors">
                 <ArrowLeft className="w-4 h-4" /> Back
               </button>
 
@@ -257,15 +223,10 @@ export default function AdminLogin() {
                 <Shield className="w-7 h-7 text-[#BF0A30]" />
               </div>
 
-              <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-1 tracking-tight">Enter OTP</h2>
-              <p className="text-gray-500 dark:text-gray-400 mb-2 text-sm">
-                Code sent to <span className="font-semibold text-gray-700 dark:text-gray-200">{formattedPhone}</span>
+              <h2 className="text-2xl font-black text-white mb-1 tracking-tight">Enter OTP</h2>
+              <p className="text-gray-400 mb-6 text-sm">
+                Code sent to <span className="font-semibold text-gray-200">{formattedPhone}</span>
               </p>
-              {isDemoMode && (
-                <p className="text-xs text-amber-600 dark:text-amber-400 mb-6 bg-amber-50 dark:bg-amber-900/20 px-3 py-2 rounded-xl border border-amber-200 dark:border-amber-800">
-                  Demo code: <strong>{MOCK_OTP}</strong>
-                </p>
-              )}
 
               <div className="flex gap-3 mb-6">
                 {otp.map((digit, i) => (
@@ -293,8 +254,8 @@ export default function AdminLogin() {
               </button>
 
               {countdown > 0 ? (
-                <p className="text-center text-sm text-gray-400">
-                  Resend in <span className="font-semibold text-gray-700 dark:text-gray-300">{countdown}s</span>
+                <p className="text-center text-sm text-gray-500">
+                  Resend in <span className="font-semibold text-gray-300">{countdown}s</span>
                 </p>
               ) : (
                 <button onClick={handleSendOtp} className="w-full text-center text-sm text-[#BF0A30] hover:underline font-medium">
@@ -308,12 +269,12 @@ export default function AdminLogin() {
           {step === 'email-form' && (
             <div className="animate-fade-in">
               <button onClick={() => { setStep('method'); setError(''); }}
-                className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-800 dark:hover:text-white mb-6 transition-colors">
+                className="flex items-center gap-2 text-sm text-gray-500 hover:text-white mb-6 transition-colors">
                 <ArrowLeft className="w-4 h-4" /> Back
               </button>
 
-              <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-1 tracking-tight">Email Sign In</h2>
-              <p className="text-gray-500 dark:text-gray-400 mb-8 text-sm">Admin and staff portal access</p>
+              <h2 className="text-2xl font-black text-white mb-1 tracking-tight">Email Sign In</h2>
+              <p className="text-gray-400 mb-8 text-sm">Admin and staff portal access</p>
 
               <form onSubmit={handleEmailLogin} className="space-y-5">
                 <div className="form-group">
@@ -327,7 +288,7 @@ export default function AdminLogin() {
                     <input type={showPwd ? 'text' : 'password'} value={password}
                       onChange={e => setPassword(e.target.value)} placeholder="••••••••" required className="input pr-12" />
                     <button type="button" onClick={() => setShowPwd(!showPwd)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-500 hover:text-gray-300">
                       {showPwd ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
@@ -355,18 +316,7 @@ export default function AdminLogin() {
               <span className="text-white/20 text-xs">·</span>
               <Link href="/discipleship" className="text-white/50 text-xs hover:text-white transition-colors">Discipleship</Link>
               <span className="text-white/20 text-xs">·</span>
-              <Link href="/crosspoint" className="text-white/50 text-xs hover:text-white transition-colors">Crosspoint</Link>
-            </div>
-
-            {/* Mode toggle */}
-            <div className="flex justify-center mt-4">
-              <button
-                onClick={toggleMode}
-                className="flex items-center gap-2 px-3 py-1.5 bg-white/8 border border-white/12 rounded-xl text-xs font-semibold text-white/50 hover:text-white transition-colors"
-              >
-                <span className={`w-1.5 h-1.5 rounded-full ${isDemoMode ? 'bg-amber-400' : 'bg-green-500'}`} />
-                {isDemoMode ? 'Demo Mode' : 'Live Mode'}
-              </button>
+              <Link href="/" className="text-white/50 text-xs hover:text-white transition-colors">Back to site</Link>
             </div>
           </div>
         </div>

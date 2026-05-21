@@ -80,9 +80,9 @@ export default function AboutPage() {
             You&apos;re Family. &nbsp; You&apos;re Family.
           </span>
         </div>
-        <div className="relative max-w-7xl mx-auto px-8 lg:px-16 pb-20 pt-32 w-full">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 pb-20 pt-32 w-full">
           <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-4" style={H}>Who We Are</p>
-          <h1 className="text-5xl md:text-7xl text-white leading-tight tracking-tight mb-5" style={H}>
+          <h1 className="text-[38px] sm:text-5xl md:text-[58px] text-white leading-tight tracking-tight mb-5" style={H}>
             You&apos;re<br /><span style={serif}>Family.</span>
           </h1>
           <p className="text-[#8B95A8] text-lg max-w-md leading-relaxed">
@@ -93,7 +93,7 @@ export default function AboutPage() {
 
       {/* ── AFFIRMATION ───────────────────────────────────────────── */}
       <section className="bg-[#F5F0E8] py-16">
-        <div className="max-w-3xl mx-auto px-8 lg:px-16 text-center">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-12 text-center">
           <div
             className="rounded-3xl px-10 py-12"
             style={{ background: 'rgba(191,10,48,0.08)', border: '1px solid rgba(191,10,48,0.15)' }}
@@ -114,7 +114,7 @@ export default function AboutPage() {
 
       {/* ── MISSION ───────────────────────────────────────────────── */}
       <section className="bg-[#0A0C10] py-24">
-        <div className="max-w-7xl mx-auto px-8 lg:px-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div>
               <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-4" style={H}>Our Mission</p>
@@ -157,7 +157,7 @@ export default function AboutPage() {
 
       {/* ── WHAT WE BELIEVE ───────────────────────────────────────── */}
       <section className="bg-[#F5F0E8] py-24">
-        <div className="max-w-7xl mx-auto px-8 lg:px-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
           <div className="text-center mb-14">
             <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-3" style={H}>Our Faith</p>
             <h2 className="text-4xl md:text-5xl text-[#111827] leading-tight" style={H}>
@@ -182,7 +182,7 @@ export default function AboutPage() {
 
       {/* ── BELIEFS ACCORDION ─────────────────────────────────────── */}
       <section className="bg-[#0A0C10] py-20">
-        <div className="max-w-3xl mx-auto px-8 lg:px-16">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-12">
           <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-3" style={H}>In Detail</p>
           <h2 className="text-3xl md:text-4xl text-white mb-10" style={H}>Our Core Beliefs</h2>
           <div className="space-y-3">
@@ -195,7 +195,7 @@ export default function AboutPage() {
 
       {/* ── RT KIDS ───────────────────────────────────────────────── */}
       <section className="bg-[#F5F0E8] py-20">
-        <div className="max-w-7xl mx-auto px-8 lg:px-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
           <div className="bg-[#000000] rounded-3xl overflow-hidden grid md:grid-cols-2">
             <div className="p-10 md:p-14 flex flex-col justify-center">
               <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-3" style={H}>For Families</p>

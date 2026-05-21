@@ -227,7 +227,7 @@ export default function AskRuachWidget() {
                     }}
                   >
                     <Loader2 className="w-3.5 h-3.5 animate-spin text-[#BF0A30]" />
-                    <span className="text-white/35 text-xs">Thinking...</span>
+                    <span className="text-white/35 text-xs">Meditating...</span>
                   </div>
                 </div>
               )}

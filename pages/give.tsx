@@ -58,12 +58,12 @@ export default function GivePage() {
             Give. &nbsp; Give. &nbsp; Give.
           </span>
         </div>
-        <div className="relative max-w-7xl mx-auto px-8 lg:px-16 pb-20 pt-32 w-full">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 pb-20 pt-32 w-full">
           <div className="inline-flex items-center gap-2 text-[#F87171] text-[10px] font-bold uppercase tracking-widest px-4 py-2 rounded-full mb-6"
             style={{ background: 'rgba(191,10,48,0.18)', border: '1px solid rgba(191,10,48,0.30)' }}>
             <span style={H}>Generosity</span>
           </div>
-          <h1 className="text-5xl md:text-7xl text-white leading-tight tracking-tight mb-5" style={H}>
+          <h1 className="text-[38px] sm:text-5xl md:text-[58px] text-white leading-tight tracking-tight mb-5" style={H}>
             Give to the<br /><span style={serif}>Work of God</span>
           </h1>
           <blockquote className="text-[#8B95A8] text-base italic max-w-lg leading-relaxed" style={serif}>
@@ -94,7 +94,7 @@ export default function GivePage() {
 
       {/* ── WAYS TO GIVE ──────────────────────────────────────────── */}
       <section className="bg-[#0A0C10] py-24">
-        <div className="max-w-7xl mx-auto px-8 lg:px-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
           <div className="mb-14">
             <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-3" style={H}>Ways to Give</p>
             <h2 className="text-4xl md:text-5xl text-white mb-4 leading-tight" style={H}>
@@ -190,7 +190,7 @@ export default function GivePage() {
 
       {/* ── WHY WE GIVE ───────────────────────────────────────────── */}
       <section className="bg-[#F5F0E8] py-20">
-        <div className="max-w-7xl mx-auto px-8 lg:px-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
           <div className="grid lg:grid-cols-2 gap-16 items-start">
             <div>
               <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-4" style={H}>Why We Give</p>
@@ -221,7 +221,7 @@ export default function GivePage() {
 
       {/* ── FAQ ───────────────────────────────────────────────────── */}
       <section className="bg-[#0A0C10] py-20">
-        <div className="max-w-3xl mx-auto px-8 lg:px-16">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-12">
           <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-3" style={H}>Common Questions</p>
           <h2 className="text-3xl md:text-4xl text-white mb-10" style={H}>
             FAQs on<br /><span style={serif}>Giving</span>

@@ -84,7 +84,7 @@ export default function HomePage({ latestSermon, isLive }: PageProps) {
       {/* ══════════════════════════════════════════════
           HERO — Video background + Spirit animations
       ══════════════════════════════════════════════ */}
-      <section className="relative min-h-screen flex flex-col justify-end overflow-hidden bg-[#0A0C10]">
+      <section className="relative min-h-screen flex flex-col justify-center overflow-hidden bg-[#0A0C10]">
 
         {/* Fallback image — shown before/if video fails */}
         <img
@@ -171,12 +171,12 @@ export default function HomePage({ latestSermon, isLive }: PageProps) {
         </button>
 
         {/* Content */}
-        <div className="relative z-10 max-w-7xl mx-auto px-5 sm:px-8 lg:px-16 pb-20 sm:pb-28 pt-24 sm:pt-32 w-full">
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-24 sm:py-32 w-full">
           {/* Mixed typography headline — Montserrat + Playfair Display italic */}
           <h1 className="text-white leading-[0.95] tracking-tight mb-6 sm:mb-8">
-            <span className="block text-[42px] sm:text-6xl md:text-7xl lg:text-[96px]" style={H}>Raising</span>
-            <span className="block text-[42px] sm:text-6xl md:text-7xl lg:text-[96px]" style={serif}>Kingdom</span>
-            <span className="block text-[42px] sm:text-6xl md:text-7xl lg:text-[96px] text-[#BF0A30]" style={H}>Champions</span>
+            <span className="block text-[50px] sm:text-6xl md:text-7xl lg:text-[96px]" style={H}>Raising</span>
+            <span className="block text-[50px] sm:text-6xl md:text-7xl lg:text-[96px]" style={serif}>Kingdom</span>
+            <span className="block text-[50px] sm:text-6xl md:text-7xl lg:text-[96px] text-[#BF0A30]" style={H}>Champions</span>
           </h1>
 
           {/* Sub-copy */}
@@ -247,7 +247,7 @@ export default function HomePage({ latestSermon, isLive }: PageProps) {
           INFO CARDS — Masonry bento grid
       ══════════════════════════════════════════════ */}
       <section id="services" className="bg-[#F5F0E8] py-20">
-        <div className="max-w-7xl mx-auto px-8 lg:px-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-12">
             <h2 className="text-4xl md:text-5xl text-[#111827] leading-[1.1]" style={H}>
               We can&apos;t wait to<br />
@@ -268,12 +268,22 @@ export default function HomePage({ latestSermon, isLive }: PageProps) {
           >
 
             {/* ── SERVICE TIMES — wide dark card (col-span-2) */}
-            <div className="md:col-span-2 rounded-3xl bg-[#000000] p-8 flex flex-col min-h-[260px]">
-              <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-8" style={H}>Every Sunday</p>
-              <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-6 items-end">
+            <div className="md:col-span-2 rounded-3xl bg-[#000000] p-8 flex flex-col min-h-[260px] relative overflow-hidden">
+              {/* Background image fading on the right */}
+              <div className="absolute right-0 top-0 bottom-0 w-2/5 md:w-1/3 pointer-events-none">
+                <img
+                  src="/church-photos/worship-ruach.jpg"
+                  alt=""
+                  className="w-full h-full object-cover opacity-35"
+                  aria-hidden
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-[#000000] via-[#000000]/50 to-transparent" />
+              </div>
+              <p className="relative text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-8" style={H}>Every Sunday</p>
+              <div className="relative flex-1 grid grid-cols-1 sm:grid-cols-3 gap-6 items-end">
                 {[
                   { n: 'First Service',  t: '8:00',  suf: 'AM'    },
-                  { n: 'Second Service', t: '10:00', suf: '– Noon' },
+                  { n: 'Second Service', t: '10:00', suf: 'AM'     },
                   { n: 'Third Service',  t: '12:30', suf: 'PM'    },
                 ].map((s, i) => (
                   <div key={s.n} className={i > 0 ? 'sm:border-l sm:border-white/10 sm:pl-6' : ''}>
@@ -285,7 +295,7 @@ export default function HomePage({ latestSermon, isLive }: PageProps) {
                   </div>
                 ))}
               </div>
-              <p className="text-white/20 text-[10px] uppercase tracking-wider mt-8" style={H}>
+              <p className="relative text-white/20 text-[10px] uppercase tracking-wider mt-8" style={H}>
                 Northern Bypass, next to Shell Windsor · Nairobi
               </p>
             </div>
@@ -373,7 +383,7 @@ export default function HomePage({ latestSermon, isLive }: PageProps) {
           />
           <div className="absolute inset-0 bg-[#0A0C10]/70" />
         </div>
-        <div className="relative max-w-7xl mx-auto px-8 lg:px-16 grid md:grid-cols-2 gap-6">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 grid md:grid-cols-2 gap-6">
           {/* We're people like you */}
           <div className="rounded-3xl p-10" style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.1)' }}>
             <p className="text-[#BF0A30] text-xs font-bold uppercase tracking-widest mb-3" style={H}>New Here?</p>
@@ -424,7 +434,7 @@ export default function HomePage({ latestSermon, isLive }: PageProps) {
           COMMUNITIES — "There is a place for Everybody"
       ════════════════════════════════════ */}
       <section className="bg-[#F5F0E8] py-24">
-        <div className="max-w-7xl mx-auto px-8 lg:px-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-14">
             <h2 className="text-4xl md:text-5xl text-[#111827] leading-[1.05]" style={H}>
               There is a place here<br />
@@ -468,7 +478,7 @@ export default function HomePage({ latestSermon, isLive }: PageProps) {
           IMPACT — Stats + Rhema Feast
       ══════════════════════════════ */}
       <section className="bg-[#0A0C10] py-20">
-        <div className="max-w-7xl mx-auto px-8 lg:px-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
           <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-3 text-center" style={H}>Our Impact</p>
           <h2 className="text-3xl md:text-5xl font-black text-white text-center mb-3 leading-tight" style={H}>
             God Is Moving<br /><span style={serif}>at Ruach</span>
@@ -483,8 +493,8 @@ export default function HomePage({ latestSermon, isLive }: PageProps) {
               { number: '5',       label: 'Nairobi Assemblies',          sub: 'And still planting' },
               { number: '18+',     label: 'Years of Ministry',           sub: 'Since 2007' },
             ].map((s) => (
-              <div key={s.label} className="text-center p-6 rounded-2xl bg-[#12151C] border border-white/5">
-                <p className="text-3xl md:text-4xl font-black text-[#BF0A30] mb-1" style={H}>{s.number}</p>
+              <div key={s.label} className="text-center p-4 sm:p-6 rounded-2xl bg-[#12151C] border border-white/5">
+                <p className="text-xl md:text-2xl font-black text-[#BF0A30] mb-1 leading-tight" style={H}>{s.number}</p>
                 <p className="text-white text-xs font-bold mb-0.5" style={H}>{s.label}</p>
                 <p className="text-[#8B95A8] text-[10px]">{s.sub}</p>
               </div>
@@ -523,7 +533,7 @@ export default function HomePage({ latestSermon, isLive }: PageProps) {
           WHAT TO EXPECT — 3 pillars
       ═════════════════════════════════════ */}
       <section className="bg-[#F5F0E8] py-24">
-        <div className="max-w-7xl mx-auto px-8 lg:px-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-14">
             <div>
               <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-3" style={H}>What to Expect</p>
@@ -576,7 +586,7 @@ export default function HomePage({ latestSermon, isLive }: PageProps) {
           UPCOMING EVENT — 7 Days of Glory
       ════════════════════════════════ */}
       <section className="bg-[#000] py-24">
-        <div className="max-w-7xl mx-auto px-8 lg:px-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
           <div className="flex items-center gap-3 mb-10">
             <CalendarDays className="w-4 h-4 text-[#BF0A30]" />
             <span className="text-white/40 text-xs font-bold uppercase tracking-widest" style={H}>Upcoming Event</span>
@@ -634,7 +644,7 @@ export default function HomePage({ latestSermon, isLive }: PageProps) {
           LATEST SERMON — YouTube embed
       ════════════════════════════════ */}
       <section className="bg-[#0A0C10] py-24 border-t border-white/5">
-        <div className="max-w-7xl mx-auto px-8 lg:px-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-12">
             <div>
               <p className="text-[#BF0A30] text-xs font-bold uppercase tracking-widest mb-3" style={H}>Latest Sermon</p>
@@ -681,7 +691,7 @@ export default function HomePage({ latestSermon, isLive }: PageProps) {
         }}
       >
         <div className="absolute inset-0 bg-[#0A0C10]/88" />
-        <div className="relative z-10 max-w-7xl mx-auto px-8 lg:px-16">
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
           <div className="grid lg:grid-cols-3 gap-16">
             <div>
               <h2 className="text-4xl text-white mb-4" style={H}>FAQs</h2>

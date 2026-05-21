@@ -163,7 +163,7 @@ export default function TeamMemberPage({ member }: Props) {
           style={{ filter: 'blur(140px)', opacity: 0.07 }}
         />
 
-        <div className="relative max-w-7xl mx-auto px-8 lg:px-16">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
           <Link
             href="/our-team"
             className="inline-flex items-center gap-2 text-[#8B95A8] hover:text-white text-xs font-bold uppercase tracking-widest mb-12 transition-colors"
@@ -191,7 +191,7 @@ export default function TeamMemberPage({ member }: Props) {
           BIO — text left, portrait + card right
       ══════════════════════════════════════════════ */}
       <section className="bg-[#F5F0E8] py-20">
-        <div className="max-w-7xl mx-auto px-8 lg:px-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
           <div className="grid lg:grid-cols-3 gap-12 lg:gap-16">
 
             {/* Main bio */}

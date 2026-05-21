@@ -13,7 +13,7 @@ export default function VideoPlayer({ streamUrl, isLive }: VideoPlayerProps) {
     // Fetch default video URL from API
     const fetchDefaultVideo = async () => {
       try {
-        const response = await fetch('/api/stream');
+        const response = await fetch('/api/stream/settings');
         const data = await response.json();
         setDefaultVideo(data.defaultYoutubeUrl || '');
       } catch (error) {

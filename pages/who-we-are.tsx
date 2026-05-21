@@ -185,9 +185,9 @@ export default function WhoWeArePage() {
             Who We Are. &nbsp; Who We Are.
           </span>
         </div>
-        <div className="relative max-w-7xl mx-auto px-8 lg:px-16 pb-24 pt-36 w-full">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 pb-24 pt-36 w-full">
           <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-5" style={H}>Who We Are</p>
-          <h1 className="text-5xl md:text-6xl lg:text-[80px] text-white tracking-tight mb-6 leading-[1.05]" style={H}>
+          <h1 className="text-[38px] sm:text-5xl md:text-[58px] text-white tracking-tight mb-6 leading-[1.05]" style={H}>
             God-focused.<br />
             <span style={serif}>Service-oriented.</span><br />
             Community-driven.
@@ -235,7 +235,7 @@ export default function WhoWeArePage() {
           THREE PURSUITS — staircase layout
       ══════════════════════════════════════════════ */}
       <section className="bg-[#F5F0E8] py-20">
-        <div className="max-w-7xl mx-auto px-8 lg:px-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
           <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-4" style={H}>
             Know Our Pursuits
           </p>
@@ -274,7 +274,7 @@ export default function WhoWeArePage() {
           STATEMENT OF BELIEF + VISION / MISSION
       ══════════════════════════════════════════════ */}
       <section className="bg-[#0A0C10] py-20 border-t border-white/5">
-        <div className="max-w-7xl mx-auto px-8 lg:px-16 grid lg:grid-cols-2 gap-16 items-start">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 grid lg:grid-cols-2 gap-16 items-start">
 
           {/* Statement */}
           <div>
@@ -361,7 +361,7 @@ export default function WhoWeArePage() {
         }}
       >
         <div className="absolute inset-0 bg-[#0A0C10]/90" />
-        <div className="relative z-10 max-w-7xl mx-auto px-8 lg:px-16">
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
 
           {/* Mobile: small image strip */}
           <div className="flex gap-3 overflow-x-auto pb-4 mb-10 scrollbar-hide md:hidden">
@@ -498,7 +498,7 @@ export default function WhoWeArePage() {
           ESSENTIAL BELIEFS — one open at a time
       ══════════════════════════════════════════════ */}
       <section className="bg-[#0A0C10] py-20">
-        <div className="max-w-7xl mx-auto px-8 lg:px-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
           <div className="text-center mb-14">
             <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-3" style={H}>
               What We Believe
@@ -537,7 +537,7 @@ export default function WhoWeArePage() {
           <div className="absolute inset-0 bg-[#0A0C10]/80" />
         </div>
 
-        <div className="relative max-w-7xl mx-auto px-8 lg:px-16">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
           <div className="mb-14">
             <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-3" style={H}>
               A Word from Our Leaders

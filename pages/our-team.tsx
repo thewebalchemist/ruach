@@ -120,11 +120,11 @@ export default function OurTeamPage() {
             Meet the Team. &nbsp; Meet the Team.
           </span>
         </div>
-        <div className="relative max-w-7xl mx-auto px-8 lg:px-16 pb-24 pt-36 w-full">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 pb-24 pt-36 w-full">
           <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-5" style={H}>
             R-Leadership
           </p>
-          <h1 className="text-5xl md:text-6xl lg:text-[80px] text-white tracking-tight mb-6 leading-[1.05]" style={H}>
+          <h1 className="text-[38px] sm:text-5xl md:text-[58px] text-white tracking-tight mb-6 leading-[1.05]" style={H}>
             Meet Our<br />
             <span style={serif}>God-given Team.</span>
           </h1>
@@ -178,7 +178,7 @@ export default function OurTeamPage() {
           />
           <div className="absolute inset-0 bg-[#0A0C10]/80" />
         </div>
-        <div className="relative max-w-7xl mx-auto px-8 lg:px-16">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
           <div className="mb-14">
             <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-3" style={H}>
               Senior Leadership
@@ -255,7 +255,7 @@ export default function OurTeamPage() {
           ASSOCIATE PASTORS — community card style
       ══════════════════════════════════════════════ */}
       <section className="bg-[#F5F0E8] py-20">
-        <div className="max-w-7xl mx-auto px-8 lg:px-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-14">
             <div>
               <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-3" style={H}>
@@ -313,7 +313,7 @@ export default function OurTeamPage() {
           ELDER BOARD — dark, 3-col description + cards
       ══════════════════════════════════════════════ */}
       <section className="bg-[#0A0C10] py-20">
-        <div className="max-w-7xl mx-auto px-8 lg:px-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
           <div className="grid lg:grid-cols-3 gap-16 items-start">
 
             {/* Left: description */}
