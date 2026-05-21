@@ -1,18 +1,26 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useState, useEffect } from 'react';
-import { Home, Play, Tv2, Heart, Grid2X2, X, ChevronRight } from 'lucide-react';
+import { Home, Sparkles, Tv2, Heart, Grid2X2, X, ChevronRight } from 'lucide-react';
 
 const H = { fontFamily: 'Montserrat, sans-serif', fontWeight: 900 };
 
+interface Tab {
+  label: string;
+  href: string | null;
+  icon: React.ComponentType<{ style?: React.CSSProperties; className?: string }>;
+  isLive?: boolean;
+  isAsk?: boolean;
+}
+
 /* ─── Bottom tab config ──────────────────────────────────────────── */
-const TABS = [
-  { label: 'Home',    href: '/',         icon: Home },
-  { label: 'Sermons', href: '/sermons',   icon: Play },
-  { label: 'Live',    href: '/live',      icon: Tv2,  isLive: true },
-  { label: 'Give',    href: '/give',      icon: Heart },
-  { label: 'More',    href: null,         icon: Grid2X2 },
-] as const;
+const TABS: Tab[] = [
+  { label: 'Home',  href: '/',    icon: Home },
+  { label: 'Ask',   href: null,   icon: Sparkles, isAsk: true },
+  { label: 'Live',  href: '/live', icon: Tv2, isLive: true },
+  { label: 'Give',  href: '/give', icon: Heart },
+  { label: 'More',  href: null,   icon: Grid2X2 },
+];
 
 /* ─── Slide-up sheet sections ────────────────────────────────────── */
 const MORE_SECTIONS = [
@@ -93,13 +101,14 @@ export default function MobileNav() {
         }}
       >
         <div className="flex items-stretch h-[60px] max-w-lg mx-auto px-1">
-          {TABS.map(({ label, href, icon: Icon, ...rest }) => {
-            const isLive = 'isLive' in rest && rest.isLive;
-            const isMore = href === null;
-            const active = isMore ? sheetOpen : isActive(href);
+          {TABS.map((tab) => {
+            const { label, href, icon: Icon, isLive, isAsk } = tab;
+            const isMore = href === null && !isAsk;
+            const active = isMore ? sheetOpen : isAsk ? false : isActive(href);
 
             const handleClick = () => {
               if (isMore) setSheetOpen((v) => !v);
+              if (isAsk) window.dispatchEvent(new CustomEvent('toggleAskRuach'));
             };
 
             const inner = (
@@ -143,8 +152,8 @@ export default function MobileNav() {
 
             const cls = 'flex-1 flex flex-col items-center justify-center gap-0.5 relative active:opacity-70 transition-opacity';
 
-            return isMore ? (
-              <button key="more" onClick={handleClick} className={cls}>
+            return isMore || isAsk ? (
+              <button key={label} onClick={handleClick} className={cls}>
                 {inner}
               </button>
             ) : (

@@ -4,6 +4,7 @@ import AnnouncementBar from './AnnouncementBar';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import MobileNav from './MobileNav';
+import AskRuachWidget from './AskRuachWidget';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -155,6 +156,7 @@ export default function Layout({ children, title, description, image, noFooter, 
         <main>{children}</main>
         {!noFooter && !isFullscreen && <Footer />}
         <MobileNav />
+        <AskRuachWidget />
       </div>
     </>
   );

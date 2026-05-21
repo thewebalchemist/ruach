@@ -59,73 +59,73 @@ const TIMELINE = [
   },
 ];
 
-const BELIEFS = [
+const BELIEFS: { title: string; text: string; scripture: string }[] = [
   {
     title: 'God',
     text: 'We believe there is one true God, eternally existent in three persons: The Father, Son, and Holy Spirit. These three are co-equal and co-eternal, which is the Trinity.',
-    ref: 'Genesis 1:1-3; Deuteronomy 6:4; Matthew 3:16-17; John 1:1-3',
+    scripture: 'Genesis 1:1-3; Deuteronomy 6:4; Matthew 3:16-17; John 1:1-3',
   },
   {
     title: 'The Word of God',
     text: 'The Holy Bible, and only the Bible, is the authoritative Word of God. It alone is the final authority in determining all doctrinal truths. In its original writing, it is inspired, infallible and inerrant.',
-    ref: '2 Timothy 3:16; 2 Peter 1:20-21',
+    scripture: '2 Timothy 3:16; 2 Peter 1:20-21',
   },
   {
     title: 'Incarnation',
     text: 'We believe in the deity of our Lord Jesus Christ, in His virgin birth, in His sinless life, in His miracles, in His vicarious and atoning death, in His bodily resurrection, and in His personal future return.',
-    ref: '',
+    scripture: '',
   },
   {
     title: 'The Gospel',
     text: 'We believe that Jesus is the Messiah, the Son of the Living God and that He was crucified on a cross for our sins and that He was raised from the dead three days later.',
-    ref: '1 Corinthians 15:1-8',
+    scripture: '1 Corinthians 15:1-8',
   },
   {
     title: 'Salvation',
     text: "We believe in the fall and sinfulness of man and that the only means of being cleansed from sin is through repentance and faith in the redeeming blood of Christ.",
-    ref: '',
+    scripture: '',
   },
   {
     title: 'The Holy Spirit',
     text: 'We believe that all who believe the Gospel are born again by the Holy Spirit and become children of God and heirs of eternal life.',
-    ref: '',
+    scripture: '',
   },
   {
     title: 'The Church',
     text: 'We believe in the universal church, a living spiritual body of which Christ is the head and all regenerated persons are members.',
-    ref: '',
+    scripture: '',
   },
   {
     title: 'Marriage',
     text: 'We believe that God created marriage as a lifelong, exclusive covenant between one man and one woman, reflecting the relationship between Christ and His Church.',
-    ref: '',
+    scripture: '',
   },
   {
     title: 'Man',
     text: "We believe humans were created in the image of God and placed in a sinless paradise to have fellowship with Him. But because of disobedience to God's Word sin entered the world and fellowship with God was broken; and relationship between humans became strained. Humans through their own efforts cannot restore this brokenness.",
-    ref: 'Genesis 1:26-27, 31; 3:1-8; 11:1-9; Romans 3:9-10, 23; 5:12-14; Ephesians 2:13',
+    scripture: 'Genesis 1:26-27, 31; 3:1-8; 11:1-9; Romans 3:9-10, 23; 5:12-14; Ephesians 2:13',
   },
   {
     title: 'The Blessed Hope',
     text: "We believe in the blessed hope, the imminent return of Christ for overcoming believers. We believe that Jesus Christ will physically return to set up His Kingdom. This will occur at a time no one knows except the Father. At His return the resurrection of Christ-Followers and non-Christ-Followers will take place. Heaven will be the eternal dwelling place for all Believers in the Gospel of Jesus Christ. The devil, who is working in the world to destroy the souls of people, along with all his angels, and all whose names are not written in the Book of Life, will eternally perish in the lake of fire, which is Hell.",
-    ref: 'Matthew 4:1-11; 5:3, 12; 6:20; 24:30; 25:34, 41; Mark 9:43-48; John 8:24, 44; Acts 1:9-11; Hebrews 9:27; Revelation 14:9-11; 20:1-15; 21-22',
+    scripture: 'Matthew 4:1-11; 5:3, 12; 6:20; 24:30; 25:34, 41; Mark 9:43-48; John 8:24, 44; Acts 1:9-11; Hebrews 9:27; Revelation 14:9-11; 20:1-15; 21-22',
   },
   {
     title: 'The Christian Life',
     text: "We believe in the ongoing process of spiritual growth of the Christian through the Holy Spirit and God's Word. Each person is to grow in their knowledge of God's Word and in developing and employing their spiritual gifts through the Church so others may come to know Christ and the Church be built up into maturity.",
-    ref: 'John 8:31-32; 14:16-17; 16:13; 17:17; Romans 12:4-8; 1 Corinthians 12-14; Galatians 5:22-23; 2 Timothy 3:16-17; Hebrews 5:11-14',
+    scripture: 'John 8:31-32; 14:16-17; 16:13; 17:17; Romans 12:4-8; 1 Corinthians 12-14; Galatians 5:22-23; 2 Timothy 3:16-17; Hebrews 5:11-14',
   },
   {
     title: 'Ordinances',
     text: "We practice two ordinances: (1) Water Baptism by immersion after repenting of one's sins and receiving the gift of salvation. And (2) Holy Communion (the Lord's Supper) as a symbolic remembrance of Christ's suffering and death for our salvation. We also practice baby dedication. Baby dedication is not a guarantee of salvation but a parental commitment to raise the child in a godly way.",
-    ref: '',
+    scripture: '',
   },
 ];
 
 function BeliefItem({
-  title, text, ref: reference, isOpen, onToggle,
+  title, text, scripture, isOpen, onToggle,
 }: {
-  title: string; text: string; ref: string; isOpen: boolean; onToggle: () => void;
+  title: string; text: string; scripture: string; isOpen: boolean; onToggle: () => void;
 }) {
   return (
     <div className="border border-white/10 rounded-2xl overflow-hidden">
@@ -141,8 +141,8 @@ function BeliefItem({
       {isOpen && (
         <div className="px-6 pb-6 pt-3 bg-white/[0.03]">
           <p className="text-[#8B95A8] text-sm leading-relaxed">{text}</p>
-          {reference && (
-            <p className="text-[#BF0A30] text-xs mt-3 font-medium leading-relaxed">{reference}</p>
+          {scripture && (
+            <p className="text-[#BF0A30] text-xs mt-3 font-medium leading-relaxed">{scripture}</p>
           )}
         </div>
       )}
@@ -513,7 +513,9 @@ export default function WhoWeArePage() {
             {BELIEFS.map((b, i) => (
               <BeliefItem
                 key={b.title}
-                {...b}
+                title={b.title}
+                text={b.text}
+                scripture={b.scripture}
                 isOpen={openBelief === i}
                 onToggle={() => setOpenBelief(openBelief === i ? null : i)}
               />

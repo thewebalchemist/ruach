@@ -22,15 +22,6 @@ const FAQS = [
   { q: 'How do I actually meet people?', a: 'Large churches can feel anonymous but your Crosspoint is where you can find belonging. There are groups where you will build genuine friendships and get real support. We also recommend the R-Connect Class for anyone looking to officially join the Ruach family.' },
 ];
 
-const GALLERY = [
-  '/church-photos/rhema-feast.jpg',
-  '/church-photos/june-2025.jpg',
-  '/church-photos/aug-2025-a.jpg',
-  '/church-photos/aug-2025-b.jpg',
-  '/church-photos/advancing-kingdom.jpg',
-  '/church-photos/dec-2024.jpg',
-];
-
 function FaqItem({ q, a }: { q: string; a: string }) {
   const [open, setOpen] = useState(false);
   return (
@@ -62,9 +53,9 @@ export default function AllAboutRuachPage() {
       <section className="relative min-h-[60vh] flex items-end bg-[#0A0C10] overflow-hidden">
         <div className="absolute inset-0">
           <img
-            src="/church-photos/rhema-feast.jpg"
+            src="/church-photos/worship-ruach.jpg"
             alt="All About Ruach"
-            className="w-full h-full object-cover opacity-35"
+            className="w-full h-full object-cover opacity-40"
             onError={(e) => { (e.target as HTMLImageElement).src = '/church-photos/IMG_1716.jpg'; }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[#0A0C10] via-[#0A0C10]/60 to-transparent" />
@@ -89,34 +80,76 @@ export default function AllAboutRuachPage() {
       </section>
 
       {/* ── BRANCHES ──────────────────────────────────────────────── */}
-      <section className="bg-[#F5F0E8] py-16">
+      <section className="bg-[#0A0C10] py-20 border-t border-white/5">
         <div className="max-w-7xl mx-auto px-8 lg:px-16">
-          <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-4 text-center" style={H}>Our Locations Across Nairobi</p>
-          <h2 className="text-3xl md:text-4xl text-[#111827] text-center mb-10" style={H}>
-            5 Assemblies.<br /><span style={serif}>One family.</span>
-          </h2>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-14">
+            <div>
+              <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-3" style={H}>
+                Our Locations
+              </p>
+              <h2 className="text-4xl md:text-5xl text-white leading-tight" style={H}>
+                5 Assemblies.<br />
+                <span style={serif}>One family.</span>
+              </h2>
+            </div>
+            <p className="text-[#8B95A8] max-w-xs text-sm leading-relaxed">
+              We have established several assemblies across Nairobi to bring the church closer to you.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            {/* Flagship — spans 2 cols */}
+            <div
+              className="lg:col-span-2 rounded-3xl relative overflow-hidden min-h-[220px] flex flex-col justify-between p-8"
+              style={{ background: 'linear-gradient(135deg, #BF0A30 0%, #7A0020 100%)' }}
+            >
+              <div className="absolute -top-8 -right-8 w-40 h-40 bg-white/5 rounded-full pointer-events-none" />
+              <div className="absolute -bottom-10 -left-6 w-32 h-32 bg-white/5 rounded-full pointer-events-none" />
+              <div className="relative">
+                <span
+                  className="inline-block text-white text-[9px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full mb-4"
+                  style={{ background: 'rgba(255,255,255,0.2)' }}
+                >
+                  Flagship HQ
+                </span>
+                <p className="text-white font-black text-2xl leading-tight mb-1" style={H}>
+                  Ruach Tabernacle
+                </p>
+                <p className="text-red-200 text-sm">Rhema Grounds, Northern Bypass</p>
+              </div>
+              <div className="relative">
+                <p className="text-red-200/70 text-xs mt-6 leading-relaxed">
+                  Every Sunday · 8AM · 10AM · 12:30PM
+                </p>
+              </div>
+            </div>
+
+            {/* Other assemblies */}
             {[
-              { name: 'Ruach Tabernacle', sub: 'Rhema Grounds, Windsor', main: true },
-              { name: 'Ruach West',       sub: 'Mövenpick Hotel, Westlands' },
-              { name: 'Ruach East',       sub: 'ICD Road, Mombasa Road' },
-              { name: 'Ruach South',      sub: 'Waterfront Mall, Karen' },
-              { name: 'Ruach Rivers',     sub: 'Havilah Ranch, Northern Bypass' },
+              { name: 'Ruach West',   sub: 'Mövenpick Hotel, Westlands',              n: '02' },
+              { name: 'Ruach East',   sub: 'ICD Road, off Mombasa Road',              n: '03' },
+              { name: 'Ruach South',  sub: 'Waterfront Mall, Karen',                  n: '04' },
+              { name: 'Ruach Rivers', sub: 'Havilah Ranch, Northern Bypass',          n: '05' },
             ].map((b) => (
               <div
                 key={b.name}
-                className={`rounded-2xl p-5 text-center ${b.main ? 'bg-[#BF0A30] col-span-2 md:col-span-1' : 'bg-[#000000]'}`}
+                className="rounded-3xl p-7 flex flex-col justify-between min-h-[180px]"
+                style={{
+                  background: 'rgba(18,21,28,0.9)',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                }}
               >
-                <p className="text-white text-sm font-black" style={H}>{b.name}</p>
-                <p className={`text-xs mt-1 ${b.main ? 'text-red-200' : 'text-[#8B95A8]'}`}>{b.sub}</p>
-                {b.main && (
-                  <span
-                    className="mt-2 inline-block text-white text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded-full"
-                    style={{ background: 'rgba(255,255,255,0.2)' }}
-                  >
-                    Flagship HQ
-                  </span>
-                )}
+                <div>
+                  <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-3" style={H}>
+                    {b.n}
+                  </p>
+                  <p className="text-white font-black text-lg leading-tight mb-2" style={H}>{b.name}</p>
+                  <p className="text-[#8B95A8] text-xs leading-relaxed">{b.sub}</p>
+                </div>
+                <div
+                  className="mt-5 h-px w-8"
+                  style={{ background: 'rgba(191,10,48,0.4)' }}
+                />
               </div>
             ))}
           </div>
@@ -135,33 +168,6 @@ export default function AllAboutRuachPage() {
           </div>
           <div className="space-y-3">
             {FAQS.map((f, i) => <FaqItem key={i} q={f.q} a={f.a} />)}
-          </div>
-        </div>
-      </section>
-
-      {/* ── GALLERY ───────────────────────────────────────────────── */}
-      <section className="bg-[#F5F0E8] py-16">
-        <div className="max-w-7xl mx-auto px-8 lg:px-16">
-          <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-3" style={H}>Life at Ruach</p>
-          <h2 className="text-4xl text-[#111827] mb-10" style={H}>
-            Here&apos;s What<br /><span style={serif}>to Expect</span>
-          </h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            {GALLERY.map((src, i) => (
-              <div
-                key={i}
-                className={`rounded-2xl overflow-hidden ${i === 0 ? 'md:row-span-2' : ''}`}
-                style={{ minHeight: i === 0 ? '360px' : '180px' }}
-              >
-                <img
-                  src={src}
-                  alt={`Ruach ${i + 1}`}
-                  className="w-full h-full object-cover"
-                  loading="lazy"
-                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                />
-              </div>
-            ))}
           </div>
         </div>
       </section>
