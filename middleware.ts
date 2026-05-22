@@ -1,19 +1,25 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-const PROTECTED_ADMIN  = ['/admin', '/control-panel'];
-const PROTECTED_MEMBER = ['/member', '/connect/dashboard', '/discipleship/dashboard', '/notifications'];
+const ADMIN_ROUTES  = ['/admin', '/control-panel'];
+const MEMBER_ROUTES = ['/member', '/connect/dashboard', '/discipleship/dashboard', '/notifications'];
+
+// These are the login pages themselves — never redirect them
+const LOGIN_PAGES = ['/member/login', '/member/onboarding'];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  const isAdminRoute  = PROTECTED_ADMIN.some(p  => pathname.startsWith(p));
-  const isMemberRoute = PROTECTED_MEMBER.some(p => pathname.startsWith(p));
+  // Never intercept login/onboarding pages even though they start with /member
+  if (LOGIN_PAGES.some(p => pathname === p || pathname.startsWith(p + '/'))) {
+    return NextResponse.next();
+  }
+
+  const isAdminRoute  = ADMIN_ROUTES.some(p  => pathname.startsWith(p));
+  const isMemberRoute = MEMBER_ROUTES.some(p => pathname.startsWith(p));
 
   if (!isAdminRoute && !isMemberRoute) return NextResponse.next();
 
-  // Supabase stores the auth token in a cookie whose name includes the project ref.
-  // We do a broad check: any cookie that contains the Supabase URL project ref.
   const projectRef = (process.env.NEXT_PUBLIC_SUPABASE_URL ?? '')
     .split('//')[1]
     ?.split('.')[0];
@@ -22,13 +28,19 @@ export function middleware(request: NextRequest) {
     !!request.cookies.get('sb-access-token') ||
     (projectRef ? !!request.cookies.get(`sb-${projectRef}-auth-token`) : false);
 
-  if (!hasSession) {
-    const loginUrl = new URL('/auth/login', request.url);
-    loginUrl.searchParams.set('redirectTo', pathname);
-    return NextResponse.redirect(loginUrl);
+  if (hasSession) return NextResponse.next();
+
+  // Admin/control-panel → admin login
+  if (isAdminRoute) {
+    const url = new URL('/auth/login', request.url);
+    url.searchParams.set('redirectTo', pathname);
+    return NextResponse.redirect(url);
   }
 
-  return NextResponse.next();
+  // Member routes → member login
+  const url = new URL('/member/login', request.url);
+  url.searchParams.set('redirectTo', pathname);
+  return NextResponse.redirect(url);
 }
 
 export const config = {

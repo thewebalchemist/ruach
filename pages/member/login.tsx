@@ -1,6 +1,7 @@
-// pages/crosspoint/index.tsx
-// Crosspoint leader portal — same design as Connect portal
-// After auth, looks up the user's crosspoint leadership role and routes accordingly
+// pages/member/login.tsx
+// Member portal login — for full members (graduated Connect, Discipleship, Crosspoint)
+// After auth routes admin → /admin, member → /member (or redirectTo param)
+// Students who have not graduated are rejected with a helpful message.
 
 import { useState, useRef, KeyboardEvent } from 'react';
 import { useRouter } from 'next/router';
@@ -23,7 +24,7 @@ function isValidPhone(phone: string): boolean {
   return /^\+254[17]\d{8}$/.test(phone);
 }
 
-export default function CrosspointLogin() {
+export default function MemberLogin() {
   const router = useRouter();
 
   const [step,      setStep]      = useState<Step>('login');
@@ -94,28 +95,15 @@ export default function CrosspointLogin() {
 
     if (['admin', 'pastor'].includes(role)) { router.push('/admin'); return; }
 
-    // Look up crosspoint leadership role
-    const { data: membership } = await (supabase as any)
-      .from('crosspoint_memberships')
-      .select('crosspoint_id, role')
-      .eq('user_id', userId)
-      .in('role', ['leader', 'assistant', 'treasurer'])
-      .eq('status', 'active')
-      .limit(1)
-      .maybeSingle();
-
-    if (membership) {
-      router.push(`/crosspoint/${membership.crosspoint_id}`); return;
-    }
-
-    // Not a crosspoint leader — send to member dashboard if they have a member ID
     if (profile?.member_id) {
-      router.push('/member'); return;
+      const redirectTo = (router.query.redirectTo as string) || '/member';
+      router.push(redirectTo); return;
     }
 
-    // Not even a member yet
-    setError('You must be a Ruach member and a Crosspoint leader to access this portal.');
-    await supabase.auth.signOut(); setLoading(false);
+    // Signed in but not yet a member (still a Connect student)
+    setError('You haven\'t graduated from Connect Class yet. Please use the Connect portal to continue your journey.');
+    await supabase.auth.signOut();
+    setLoading(false);
   }
 
   function reset() { setStep('login'); setOtp(['','','','','','']); setError(''); setPhone(''); }
@@ -137,17 +125,17 @@ export default function CrosspointLogin() {
           </Link>
 
           <div>
-            <p className="text-[#BF0A30] text-xs font-bold uppercase tracking-widest mb-4">Crosspoint</p>
+            <p className="text-[#BF0A30] text-xs font-bold uppercase tracking-widest mb-4">Member Portal</p>
             <h1 className="text-4xl font-black text-white leading-tight mb-8 tracking-tight">
-              Lead Your<br />
-              Home<br />
-              <span className="text-[#BF0A30]">Church.</span>
+              Welcome<br />
+              Home to<br />
+              <span className="text-[#BF0A30]">Ruach.</span>
             </h1>
 
             <div className="bg-white/8 backdrop-blur-md border border-white/12 rounded-2xl p-6">
               <p className="text-white/85 text-sm italic leading-relaxed mb-4">
-                &ldquo;Crosspoints are the heartbeat of Ruach — small communities where real
-                life happens, real faith grows, and no one walks alone.&rdquo;
+                &ldquo;You are not just a church attendee — you are family. This is your home,
+                your community, and your place to grow and serve.&rdquo;
               </p>
               <div className="flex items-center gap-3">
                 <img src="/brand/rev-julian.png" alt="Rev. Julian Kyula" className="w-10 h-10 rounded-full object-cover object-top border border-[#D4AF37]/30"
@@ -170,7 +158,7 @@ export default function CrosspointLogin() {
             {/* Mobile logo */}
             <div className="flex flex-col items-center mb-7 lg:hidden">
               <Link href="/"><img src="/brand/ruach-logo.png" alt="Ruach Tabernacle" className="h-12 w-auto mb-3" /></Link>
-              <p className="text-white/70 text-sm">Crosspoint Leader Portal</p>
+              <p className="text-white/70 text-sm">Member Portal</p>
             </div>
 
             {/* Card */}
@@ -179,17 +167,13 @@ export default function CrosspointLogin() {
               {/* ── Login step ───────────────────────────────────────────── */}
               {step === 'login' && (
                 <div className="animate-fade-in">
-                  <h2 className="text-2xl font-black text-white mb-1 tracking-tight">Leader access</h2>
-                  <p className="text-gray-400 mb-8 text-sm">Sign in to manage your Crosspoint</p>
+                  <h2 className="text-2xl font-black text-white mb-1 tracking-tight">Welcome back</h2>
+                  <p className="text-gray-400 mb-8 text-sm">Sign in to your member dashboard</p>
 
                   <div className="bg-[#BF0A30]/12 border border-[#BF0A30]/20 rounded-xl p-4 mb-6">
-                    <p className="text-sm font-semibold text-white mb-1">Crosspoint Leaders</p>
+                    <p className="text-sm font-semibold text-white mb-1">Member access</p>
                     <p className="text-xs text-gray-400">
-                      Sign in to manage attendance, connect your members, and access this week&apos;s module.
-                    </p>
-                    <p className="text-xs text-gray-500 mt-2">
-                      Regular members access Crosspoints via the{' '}
-                      <Link href="/member/login" className="text-[#BF0A30] font-semibold hover:underline">Member Portal →</Link>
+                      Access your member dashboard, Discipleship progress, and Crosspoint home church.
                     </p>
                   </div>
 
@@ -221,6 +205,13 @@ export default function CrosspointLogin() {
                   <button onClick={() => setStep('email-form')} className="btn btn-secondary w-full gap-2 mt-4">
                     <Mail className="w-4 h-4" /> Sign in with Email
                   </button>
+
+                  <p className="mt-6 text-center text-sm text-gray-500">
+                    Not yet a member?{' '}
+                    <Link href="/connect/register" className="text-[#BF0A30] font-semibold hover:underline">
+                      Start with Connect Class
+                    </Link>
+                  </p>
                 </div>
               )}
 
@@ -271,7 +262,7 @@ export default function CrosspointLogin() {
                     className="flex items-center gap-2 text-sm text-gray-500 hover:text-white mb-6 transition-colors">
                     <ArrowLeft className="w-4 h-4" /> Back
                   </button>
-                  <h2 className="text-2xl font-black text-white mb-1 tracking-tight">Leader Sign In</h2>
+                  <h2 className="text-2xl font-black text-white mb-1 tracking-tight">Email Sign In</h2>
                   <p className="text-gray-400 mb-8 text-sm">Use your email and password</p>
                   <form onSubmit={handleEmailLogin} className="space-y-4">
                     <div className="form-group">
@@ -305,9 +296,9 @@ export default function CrosspointLogin() {
 
             {/* Footer */}
             <div className="flex flex-wrap justify-center gap-x-5 gap-y-2 mt-6">
-              <Link href="/member/login" className="text-white/50 text-xs hover:text-white transition-colors">Member Portal</Link>
-              <span className="text-white/20 text-xs">·</span>
               <Link href="/connect" className="text-white/50 text-xs hover:text-white transition-colors">Connect Portal</Link>
+              <span className="text-white/20 text-xs">·</span>
+              <Link href="/discipleship" className="text-white/50 text-xs hover:text-white transition-colors">Discipleship</Link>
               <span className="text-white/20 text-xs">·</span>
               <Link href="/" className="text-white/50 text-xs hover:text-white transition-colors">Back to site</Link>
             </div>

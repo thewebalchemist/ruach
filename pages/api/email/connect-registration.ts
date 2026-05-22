@@ -4,6 +4,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { sendConnectRegistrationConfirmation } from '@/lib/email';
+import { createNotification } from '@/lib/notify';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).end();
@@ -37,9 +38,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       cohortName:      cohort.name,
       whatsappLink:    cohort.whatsapp_link ?? undefined,
     });
-    res.status(200).json({ ok: true });
   } catch (err: any) {
     console.error('Email error:', err);
-    res.status(500).json({ error: err.message });
+    // Non-fatal — registration already recorded
   }
+
+  // In-app notification
+  await createNotification(
+    userId,
+    'notice',
+    'Welcome to Connect Class!',
+    `Your registration for ${cohort.name} has been confirmed. Admission number: ${student.admission_number}.`,
+    '/connect/student',
+  );
+
+  res.status(200).json({ ok: true });
 }

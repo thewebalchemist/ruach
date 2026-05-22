@@ -181,7 +181,7 @@ function DashboardTab({ stats, sermons, events }: { stats: any; sermons: Sermon[
                   <span className="text-[#BF0A30] text-xs font-bold">{new Date(event.event_date).toLocaleDateString('en-US', { month: 'short' })}</span>
                   <span className="text-[#BF0A30] text-lg font-bold leading-none">{new Date(event.event_date).getDate()}</span>
                 </div>
-                <div className="flex-1 min-w-0"><p className="font-medium text-gray-900 dark:text-white text-sm truncate">{event.title}</p><p className="text-xs text-gray-500">{event.event_time} • {event.location}</p></div>
+                <div className="flex-1 min-w-0"><p className="font-medium text-gray-900 dark:text-white text-sm truncate">{event.title}</p><p className="text-xs text-gray-500">{event.start_time} • {event.location}</p></div>
               </div>
             ))}
             {events.filter(e => new Date(e.event_date) >= new Date()).length === 0 && <p className="text-gray-500 text-sm text-center py-8">No upcoming events</p>}
@@ -316,10 +316,10 @@ function SeriesTab({ series, onRefresh }: { series: Series[]; onRefresh: () => v
 }
 
 function EventsTab({ events, onRefresh }: { events: Event[]; onRefresh: () => void }) {
-  const [form, setForm] = useState({ title: '', description: '', event_date: '', event_time: '', location: '', category: 'general' as EventCategory, repeat_weekly: false, chatbot_announcement: false });
+  const [form, setForm] = useState({ title: '', description: '', event_date: '', start_time: '', location: '', category: 'general' as EventCategory, repeat_weekly: false, chatbot_announcement: false });
   const handleSave = async () => {
     if (!form.title || !form.event_date) { alert('Fill title and date'); return; }
-    try { await supabase.from('events').insert([{ ...form, chatbot_enabled: true }]); setForm({ title: '', description: '', event_date: '', event_time: '', location: '', category: 'general', repeat_weekly: false, chatbot_announcement: false }); onRefresh(); } catch (error) { console.error(error); }
+    try { await supabase.from('events').insert([{ ...form, chatbot_enabled: true }]); setForm({ title: '', description: '', event_date: '', start_time: '', location: '', category: 'general', repeat_weekly: false, chatbot_announcement: false }); onRefresh(); } catch (error) { console.error(error); }
   };
   const handleDelete = async (id: number) => { if (!confirm('Delete?')) return; await supabase.from('events').delete().eq('id', id); onRefresh(); };
   return (
@@ -330,7 +330,7 @@ function EventsTab({ events, onRefresh }: { events: Event[]; onRefresh: () => vo
           {events.map((event) => (
             <div key={event.id} className="flex items-center gap-3 p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50">
               <div className="w-12 h-12 rounded-xl bg-[#BF0A30]/10 flex flex-col items-center justify-center flex-shrink-0"><span className="text-[#BF0A30] text-xs font-bold">{new Date(event.event_date).toLocaleDateString('en-US', { month: 'short' })}</span><span className="text-[#BF0A30] text-lg font-bold leading-none">{new Date(event.event_date).getDate()}</span></div>
-              <div className="flex-1 min-w-0"><p className="font-medium text-gray-900 dark:text-white">{event.title}</p><p className="text-sm text-gray-500">{event.event_time} • {event.location}</p></div>
+              <div className="flex-1 min-w-0"><p className="font-medium text-gray-900 dark:text-white">{event.title}</p><p className="text-sm text-gray-500">{event.start_time} • {event.location}</p></div>
               <span className={`px-2 py-1 text-xs font-medium rounded-lg ${event.category === 'service' ? 'bg-blue-100 text-blue-700' : event.category === 'youth' ? 'bg-orange-100 text-orange-700' : 'bg-green-100 text-green-700'}`}>{event.category}</span>
               <button onClick={() => handleDelete(event.id)} className="p-2 text-gray-400 hover:text-red-600 rounded-lg"><Trash2 className="w-4 h-4" /></button>
             </div>
@@ -341,7 +341,7 @@ function EventsTab({ events, onRefresh }: { events: Event[]; onRefresh: () => vo
         <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Add Event</h3>
         <div className="space-y-4">
           <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Title</label><input type="text" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white" /></div>
-          <div className="grid grid-cols-2 gap-3"><div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date</label><input type="date" value={form.event_date} onChange={(e) => setForm({ ...form, event_date: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white" /></div><div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Time</label><input type="time" value={form.event_time} onChange={(e) => setForm({ ...form, event_time: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white" /></div></div>
+          <div className="grid grid-cols-2 gap-3"><div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date</label><input type="date" value={form.event_date} onChange={(e) => setForm({ ...form, event_date: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white" /></div><div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Time</label><input type="time" value={form.start_time} onChange={(e) => setForm({ ...form, start_time: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white" /></div></div>
           <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label><select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value as EventCategory })} className="w-full px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white"><option value="service">Service</option><option value="youth">Youth</option><option value="community">Community</option><option value="prayer">Prayer</option><option value="general">General</option></select></div>
           <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Location</label><input type="text" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white" /></div>
           <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label><textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} className="w-full px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white" /></div>

@@ -1,27 +1,19 @@
 import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/router';
 import {
-  LiveKitRoom,
-  VideoConference,
-  useParticipants,
-  RoomAudioRenderer,
+  LiveKitRoom, VideoConference, useParticipants, RoomAudioRenderer,
 } from '@livekit/components-react';
 import '@livekit/components-styles';
 import { supabase } from '@/lib/supabase';
-import {
-  Users, Loader2, AlertCircle, CheckCircle2, LogOut,
-} from 'lucide-react';
+import { Users, Loader2, AlertCircle, CheckCircle2, LogOut } from 'lucide-react';
 import Link from 'next/link';
 
 const H = { fontFamily: 'Montserrat, sans-serif', fontWeight: 900 };
 const MIN_ATTENDANCE_MINUTES = 30;
 
-// ── Auto-attendance tracker (runs inside LiveKitRoom) ─────────────────────────
 function AttendanceTracker({
   userId, sessionId, onAttended,
-}: {
-  userId: string; sessionId: string; onAttended: () => void;
-}) {
+}: { userId: string; sessionId: string; onAttended: () => void }) {
   const attendedRef = useRef(false);
   const joinTime    = useRef(Date.now());
 
@@ -35,12 +27,10 @@ function AttendanceTracker({
           await fetch('/api/classroom/attendance', {
             method:  'POST',
             headers: { 'Content-Type': 'application/json' },
-            body:    JSON.stringify({ userId, sessionId, cohortType: 'connect' }),
+            body:    JSON.stringify({ userId, sessionId, cohortType: 'discipleship' }),
           });
           onAttended();
-        } catch (e) {
-          console.error('[attendance]', e);
-        }
+        } catch (e) { console.error('[attendance]', e); }
       }
     }, 60_000);
     return () => clearInterval(iv);
@@ -49,7 +39,6 @@ function AttendanceTracker({
   return null;
 }
 
-// ── Teacher attendance panel ──────────────────────────────────────────────────
 function TeacherPanel({ sessionId }: { sessionId: string }) {
   const [students, setStudents] = useState<any[]>([]);
   const [attended, setAttended] = useState<Set<string>>(new Set());
@@ -58,16 +47,16 @@ function TeacherPanel({ sessionId }: { sessionId: string }) {
   useEffect(() => {
     async function load() {
       const { data: sess } = await supabase
-        .from('connect_sessions').select('cohort_id').eq('id', sessionId).single();
+        .from('discipleship_sessions').select('cohort_id').eq('id', sessionId).single();
       if (!sess) return;
-      const { data: stu } = await supabase
-        .from('connect_students')
+      const { data: stu } = await (supabase as any)
+        .from('discipleship_students')
         .select('id, user_id, profiles(first_name, last_name)')
-        .eq('cohort_id', sess.cohort_id)
+        .eq('cohort_id', (sess as any).cohort_id)
         .eq('status', 'enrolled');
       if (stu) setStudents(stu);
-      const { data: att } = await supabase
-        .from('connect_attendance').select('student_id')
+      const { data: att } = await (supabase as any)
+        .from('discipleship_attendance').select('student_id')
         .eq('session_id', sessionId).eq('present', true);
       if (att) setAttended(new Set(att.map((a: any) => a.student_id)));
     }
@@ -76,11 +65,11 @@ function TeacherPanel({ sessionId }: { sessionId: string }) {
 
   async function toggle(studentId: string) {
     if (attended.has(studentId)) {
-      await supabase.from('connect_attendance')
+      await (supabase as any).from('discipleship_attendance')
         .delete().eq('student_id', studentId).eq('session_id', sessionId);
       setAttended(p => { const s = new Set(p); s.delete(studentId); return s; });
     } else {
-      await supabase.from('connect_attendance').upsert(
+      await (supabase as any).from('discipleship_attendance').upsert(
         { student_id: studentId, session_id: sessionId, present: true, marked_at: new Date().toISOString() },
         { onConflict: 'student_id,session_id' },
       );
@@ -116,35 +105,34 @@ function TeacherPanel({ sessionId }: { sessionId: string }) {
   );
 }
 
-// ── Main page ─────────────────────────────────────────────────────────────────
-export default function ConnectClassroomPage() {
+export default function DiscipleshipClassroomPage() {
   const router    = useRouter();
   const sessionId = router.query.sessionId as string | undefined;
 
   type State = 'loading' | 'ready' | 'error' | 'left';
-  const [state, setState]       = useState<State>('loading');
+  const [state,     setState]     = useState<State>('loading');
   const [tokenData, setTokenData] = useState<any>(null);
-  const [userId, setUserId]     = useState('');
-  const [session, setSession]   = useState<any>(null);
-  const [error, setError]       = useState('');
-  const [attended, setAttended] = useState(false);
-  const [showPanel, setPanel]   = useState(false);
+  const [userId,    setUserId]    = useState('');
+  const [session,   setSession]   = useState<any>(null);
+  const [error,     setError]     = useState('');
+  const [attended,  setAttended]  = useState(false);
+  const [showPanel, setPanel]     = useState(false);
 
   useEffect(() => {
     if (!sessionId) return;
     (async () => {
       const { data: { session: auth } } = await supabase.auth.getSession();
-      if (!auth) { router.push(`/connect?redirect=/connect/classroom/${sessionId}`); return; }
+      if (!auth) { router.push(`/discipleship?redirect=/discipleship/classroom/${sessionId}`); return; }
       setUserId(auth.user.id);
 
-      const { data: sess } = await supabase
-        .from('connect_sessions').select('id, title, session_number').eq('id', sessionId).single();
+      const { data: sess } = await (supabase as any)
+        .from('discipleship_sessions').select('id, title, session_number').eq('id', sessionId).single();
       setSession(sess);
 
       const res = await fetch('/api/classroom/token', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${auth.access_token}` },
-        body: JSON.stringify({ sessionId, cohortType: 'connect' }),
+        body: JSON.stringify({ sessionId, cohortType: 'discipleship' }),
       });
       if (!res.ok) { const j = await res.json(); setError(j.message ?? 'Failed to join'); setState('error'); return; }
       setTokenData(await res.json());
@@ -167,7 +155,7 @@ export default function ConnectClassroomPage() {
         <AlertCircle className="w-12 h-12 text-[#BF0A30] mx-auto mb-4" />
         <h2 className="text-white font-black text-xl mb-2" style={H}>Cannot Join</h2>
         <p className="text-white/50 text-sm mb-6">{error}</p>
-        <Link href="/connect/student" className="btn btn-primary">Back to Dashboard</Link>
+        <Link href="/discipleship/student" className="btn btn-primary">Back to Dashboard</Link>
       </div>
     </div>
   );
@@ -186,18 +174,17 @@ export default function ConnectClassroomPage() {
             ? 'Great work today! Your attendance has been saved.'
             : 'You need to stay for at least 30 minutes for attendance to be recorded.'}
         </p>
-        <Link href="/connect/student" className="btn btn-primary">Back to Dashboard</Link>
+        <Link href="/discipleship/student" className="btn btn-primary">Back to Dashboard</Link>
       </div>
     </div>
   );
 
   return (
     <div className="fixed inset-0 bg-[#0A0C10] flex flex-col">
-      {/* Header */}
       <div className="flex items-center gap-3 px-4 py-2.5 flex-shrink-0"
         style={{ background: 'rgba(12,14,20,0.98)', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
         <div className="flex-1 min-w-0">
-          <p className="text-white font-black text-sm truncate" style={H}>{session?.title ?? 'Class Session'}</p>
+          <p className="text-white font-black text-sm truncate" style={H}>{session?.title ?? 'KDC Session'}</p>
           <p className="text-white/35 text-xs">Session {session?.session_number} · {tokenData?.participantName}
             {tokenData?.isTeacher && <span className="ml-2 text-[#BF0A30]">· Teacher</span>}
           </p>
@@ -220,7 +207,6 @@ export default function ConnectClassroomPage() {
         </button>
       </div>
 
-      {/* Room */}
       <div className="flex-1 flex overflow-hidden">
         <div className="flex-1 overflow-hidden">
           <LiveKitRoom

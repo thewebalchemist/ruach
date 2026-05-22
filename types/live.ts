@@ -199,7 +199,7 @@ export interface Event {
   title: string;
   description?: string | null;
   event_date: string;
-  event_time?: string | null;
+  start_time?: string | null;
   end_time?: string | null;
   location?: string | null;
   category: EventCategory;

@@ -1,17 +1,19 @@
 // pages/member/suggestions.tsx
 // Suggestion / feedback / complaint form for members
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import {
-  ArrowLeft, Send, CheckCircle, Clock, Check, MessageSquare
+  ArrowLeft, Send, CheckCircle, Clock, Check, MessageSquare, Loader2
 } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/context/AuthContext';
 
-const MOCK_DATA = true;
+const db = supabase as any;
 
 // ── Types ─────────────────────────────────────────────────────────────────────
-type SubmissionType = 'suggestion' | 'feedback' | 'concern' | 'complaint';
-type SubmissionStatus = 'received' | 'under review' | 'resolved';
+type SubmissionType = 'suggestion' | 'feedback' | 'complaint';
+type SubmissionStatus = 'pending' | 'reviewing' | 'resolved';
 
 interface Submission {
   id: string;
@@ -19,57 +21,32 @@ interface Submission {
   subject: string;
   message: string;
   status: SubmissionStatus;
-  date: string;
-  isAnonymous: boolean;
+  created_at: string;
+  is_anonymous: boolean;
 }
-
-// ── Mock Data ─────────────────────────────────────────────────────────────────
-const MOCK_SUBMISSIONS: Submission[] = [
-  {
-    id: 'sub-001',
-    type: 'suggestion',
-    subject: 'Sound quality during 2nd service',
-    message: 'The sound during the second service has been noticeably louder than usual. Could we calibrate the levels?',
-    status: 'under review',
-    date: '2026-04-26',
-    isAnonymous: true,
-  },
-  {
-    id: 'sub-002',
-    type: 'feedback',
-    subject: 'Connect Class Appreciation',
-    message: 'The Connect Class sessions were incredibly well organized and insightful. I left every session feeling equipped.',
-    status: 'resolved',
-    date: '2026-04-20',
-    isAnonymous: false,
-  },
-];
 
 const SUBMISSION_TYPES: { value: SubmissionType; label: string }[] = [
   { value: 'suggestion', label: 'Suggestion' },
   { value: 'feedback',   label: 'Feedback' },
-  { value: 'concern',    label: 'Concern' },
   { value: 'complaint',  label: 'Complaint' },
 ];
 
 const TYPE_COLORS: Record<SubmissionType, string> = {
   suggestion: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-900/40',
   feedback:   'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-200 dark:border-green-900/40',
-  concern:    'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-900/40',
   complaint:  'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 border-red-200 dark:border-red-900/40',
 };
 
 const TYPE_ACTIVE: Record<SubmissionType, string> = {
   suggestion: 'bg-blue-600 text-white border-blue-600 shadow-md',
   feedback:   'bg-green-600 text-white border-green-600 shadow-md',
-  concern:    'bg-amber-500 text-white border-amber-500 shadow-md',
   complaint:  'bg-red-600 text-white border-red-600 shadow-md',
 };
 
 const STATUS_CONFIG: Record<SubmissionStatus, { icon: React.ElementType; color: string; bg: string }> = {
-  'received':     { icon: CheckCircle, color: 'text-blue-600 dark:text-blue-400',  bg: 'bg-blue-100 dark:bg-blue-900/30' },
-  'under review': { icon: Clock,       color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-100 dark:bg-amber-900/30' },
-  'resolved':     { icon: Check,       color: 'text-green-600 dark:text-green-400', bg: 'bg-green-100 dark:bg-green-900/30' },
+  'pending':   { icon: Clock,       color: 'text-blue-600 dark:text-blue-400',   bg: 'bg-blue-100 dark:bg-blue-900/30' },
+  'reviewing': { icon: Clock,       color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-100 dark:bg-amber-900/30' },
+  'resolved':  { icon: Check,       color: 'text-green-600 dark:text-green-400', bg: 'bg-green-100 dark:bg-green-900/30' },
 };
 
 const DEPARTMENTS = [
@@ -96,39 +73,47 @@ function formatDate(dateStr: string) {
 
 export default function SuggestionsPage() {
   const router = useRouter();
+  const { profile } = useAuth();
 
-  const [type, setType] = useState<SubmissionType>('suggestion');
-  const [subject, setSubject] = useState('');
-  const [details, setDetails] = useState('');
+  const [type,        setType]        = useState<SubmissionType>('suggestion');
+  const [subject,     setSubject]     = useState('');
+  const [details,     setDetails]     = useState('');
   const [isAnonymous, setIsAnonymous] = useState(false);
-  const [name, setName] = useState('');
-  const [department, setDepartment] = useState('General');
-  const [submitted, setSubmitted] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [submissions, setSubmissions] = useState<Submission[]>(MOCK_SUBMISSIONS);
+  const [department,  setDepartment]  = useState('general');
+  const [submitted,   setSubmitted]   = useState(false);
+  const [isLoading,   setIsLoading]   = useState(false);
+  const [submissions, setSubmissions] = useState<Submission[]>([]);
 
-  function handleSubmit(e: React.FormEvent) {
+  useEffect(() => {
+    if (!profile?.id) return;
+    db.from('suggestions')
+      .select('id, type, subject, message, status, created_at, is_anonymous')
+      .eq('user_id', profile.id)
+      .order('created_at', { ascending: false })
+      .limit(10)
+      .then(({ data }: { data: any }) => setSubmissions((data ?? []) as Submission[]));
+  }, [profile?.id]);
+
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!subject.trim() || !details.trim()) return;
     setIsLoading(true);
-    setTimeout(() => {
-      const newSub: Submission = {
-        id: `sub-${Date.now()}`,
-        type,
-        subject: subject.trim(),
-        message: details.trim(),
-        status: 'received',
-        date: new Date().toISOString().split('T')[0],
-        isAnonymous,
-      };
-      setSubmissions(prev => [newSub, ...prev]);
-      setSubmitted(true);
-      setIsLoading(false);
-      setSubject('');
-      setDetails('');
-      setName('');
-      setIsAnonymous(false);
-    }, 1200);
+
+    const { data: newSub } = await db.from('suggestions').insert({
+      user_id:      profile?.id ?? null,
+      is_anonymous: isAnonymous,
+      type,
+      category:     department,
+      subject:      subject.trim(),
+      message:      details.trim(),
+    }).select('id, type, subject, message, status, created_at, is_anonymous').single();
+
+    if (newSub) setSubmissions(prev => [newSub as Submission, ...prev]);
+    setSubmitted(true);
+    setIsLoading(false);
+    setSubject('');
+    setDetails('');
+    setIsAnonymous(false);
   }
 
   return (
@@ -183,11 +168,11 @@ export default function SuggestionsPage() {
                     <button
                       type="button"
                       key={t.value}
-                      onClick={() => setType(t.value)}
+                      onClick={() => setType(t.value as SubmissionType)}
                       className={`px-4 py-2 rounded-full text-sm font-bold border transition-all ${
                         type === t.value
-                          ? TYPE_ACTIVE[t.value]
-                          : `${TYPE_COLORS[t.value]} hover:opacity-80`
+                          ? TYPE_ACTIVE[t.value as SubmissionType]
+                          : `${TYPE_COLORS[t.value as SubmissionType]} hover:opacity-80`
                       }`}
                     >
                       {t.label}
@@ -217,19 +202,6 @@ export default function SuggestionsPage() {
                 </button>
               </div>
 
-              {/* Name (if not anonymous) */}
-              {!isAnonymous && (
-                <div className="form-group !mb-0">
-                  <label className="form-label">Your Name <span className="text-gray-400 font-normal">(optional)</span></label>
-                  <input
-                    type="text"
-                    value={name}
-                    onChange={e => setName(e.target.value)}
-                    placeholder="e.g. David Mwangi"
-                    className="input"
-                  />
-                </div>
-              )}
 
               {/* Subject */}
               <div className="form-group !mb-0">
@@ -259,17 +231,14 @@ export default function SuggestionsPage() {
                 <span className="form-help">{details.length} characters — minimum 10</span>
               </div>
 
-              {/* Department */}
+              {/* Category */}
               <div className="form-group !mb-0">
-                <label className="form-label">Department <span className="text-gray-400 font-normal">(optional)</span></label>
-                <select
-                  value={department}
-                  onChange={e => setDepartment(e.target.value)}
-                  className="select"
-                >
-                  {DEPARTMENTS.map(dep => (
-                    <option key={dep} value={dep}>{dep}</option>
-                  ))}
+                <label className="form-label">Area <span className="text-gray-400 font-normal">(optional)</span></label>
+                <select value={department} onChange={e => setDepartment(e.target.value)} className="select">
+                  <option value="general">General</option>
+                  <option value="crosspoint">Crosspoint</option>
+                  <option value="service">Sunday Service</option>
+                  <option value="department">Ministry Department</option>
                 </select>
               </div>
 
@@ -279,7 +248,7 @@ export default function SuggestionsPage() {
                 className="btn btn-primary w-full"
               >
                 {isLoading
-                  ? <span className="spinner spinner-sm border-white border-t-transparent" />
+                  ? <Loader2 className="w-4 h-4 animate-spin" />
                   : <><Send className="w-4 h-4" />Submit {SUBMISSION_TYPES.find(t => t.value === type)?.label}</>
                 }
               </button>
@@ -293,20 +262,18 @@ export default function SuggestionsPage() {
             <h2 className="section-title mb-3">Your Previous Submissions</h2>
             <div className="space-y-3">
               {submissions.map(sub => {
-                const statusCfg = STATUS_CONFIG[sub.status];
+                const statusCfg = STATUS_CONFIG[sub.status] ?? STATUS_CONFIG['pending'];
                 const StatusIcon = statusCfg.icon;
+                const typeKey = sub.type as SubmissionType;
 
                 return (
-                  <div
-                    key={sub.id}
-                    className="bg-white dark:bg-[#1A1A1A] rounded-2xl border border-gray-200 dark:border-[#2D2D2D] p-4"
-                  >
+                  <div key={sub.id} className="bg-white dark:bg-[#1A1A1A] rounded-2xl border border-gray-200 dark:border-[#2D2D2D] p-4">
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${TYPE_COLORS[sub.type]}`}>
+                        <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${TYPE_COLORS[typeKey] ?? ''}`}>
                           {sub.type}
                         </span>
-                        {sub.isAnonymous && (
+                        {sub.is_anonymous && (
                           <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-gray-100 dark:bg-[#2D2D2D] text-gray-500 border border-gray-200 dark:border-[#3D3D3D]">
                             Anonymous
                           </span>
@@ -317,10 +284,9 @@ export default function SuggestionsPage() {
                         <span className={`text-[10px] font-bold capitalize ${statusCfg.color}`}>{sub.status}</span>
                       </div>
                     </div>
-
                     <h3 className="font-bold text-gray-900 dark:text-white text-sm mt-3">{sub.subject}</h3>
                     <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 leading-relaxed line-clamp-2">{sub.message}</p>
-                    <p className="text-xs text-gray-400 mt-2">{formatDate(sub.date)}</p>
+                    <p className="text-xs text-gray-400 mt-2">{formatDate(sub.created_at)}</p>
                   </div>
                 );
               })}

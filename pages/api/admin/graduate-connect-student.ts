@@ -6,6 +6,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { sendConnectGraduationNotice } from '@/lib/email';
+import { notifyAndSMS } from '@/lib/notify';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).end();
@@ -80,6 +81,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.error('Graduation email failed:', emailErr);
     // Non-fatal — graduation already recorded
   }
+
+  // 4. In-app notification + SMS
+  await notifyAndSMS({
+    userId,
+    type:       'graduation',
+    title:      'You have graduated! 🎓',
+    body:       `Congratulations on completing Connect Class (${cohort.name}). Your member ID is ${memberId}. Welcome to the family!`,
+    actionUrl:  '/member',
+    smsMessage: `Congratulations ${profile.first_name}! You have completed Ruach Connect Class. Your Member ID is ${memberId}. Visit ruachtabernacle.org/member to access your dashboard.`,
+  });
 
   return res.status(200).json({ ok: true, memberId });
 }

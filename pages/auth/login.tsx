@@ -1,7 +1,7 @@
 // pages/auth/login.tsx
 // Admin & staff login — OTP primary, email fallback
 
-import { useState, FormEvent, useRef, KeyboardEvent } from 'react';
+import { useState, FormEvent, useRef, KeyboardEvent, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { Eye, EyeOff, Loader2, Mail, ChevronRight, ArrowLeft, Shield } from 'lucide-react';
@@ -24,6 +24,15 @@ function isValidKenyanPhone(phone: string): boolean {
 
 export default function AdminLogin() {
   const router = useRouter();
+
+  // Only accessible via middleware redirect from /admin or /control-panel
+  useEffect(() => {
+    const redirectTo = router.query.redirectTo as string | undefined;
+    const isAdminRedirect = redirectTo?.startsWith('/admin') || redirectTo?.startsWith('/control-panel');
+    if (router.isReady && !isAdminRedirect) {
+      router.replace('/member/login');
+    }
+  }, [router.isReady, router.query.redirectTo]);
 
   const [step,      setStep]      = useState<Step>('method');
   const [phone,     setPhone]     = useState('');
@@ -93,10 +102,11 @@ export default function AdminLogin() {
     const { data: profileData } = await supabase.from('profiles').select('role, member_id').eq('id', userId).single();
     const profile = profileData as ProfileResult | null;
     const role    = profile?.role ?? '';
-    if (['admin', 'pastor'].includes(role)) router.push('/admin');
-    else if (['teacher', 'leader'].includes(role)) router.push('/connect/dashboard');
-    else if (profile?.member_id) router.push('/member');
-    else router.push('/connect/student');
+    if (['admin', 'pastor'].includes(role)) { router.push('/admin'); return; }
+    // Non-admins who land here get sent to the right portal
+    if (['teacher', 'leader'].includes(role)) { router.push('/connect/dashboard'); return; }
+    if (profile?.member_id) { router.push('/member'); return; }
+    router.push('/connect/student');
   }
 
   const otpComplete = otp.every(d => d);
@@ -123,15 +133,22 @@ export default function AdminLogin() {
           </Link>
 
           <div>
-            <p className="text-[#BF0A30] text-xs font-bold uppercase tracking-widest mb-4">Admin Portal</p>
+            <p className="text-[#BF0A30] text-xs font-bold uppercase tracking-widest mb-4">Admin &amp; Control Panel</p>
             <h1 className="text-4xl font-black text-white leading-tight mb-4 tracking-tight">
               Kingdom<br />
               Management<br />
               <span className="text-[#BF0A30]">Portal.</span>
             </h1>
             <p className="text-white/40 text-sm leading-relaxed max-w-xs">
-              Securely manage sermons, events, members, and ministry operations for Ruach Tabernacle.
+              For admins and pastors only. Manage sermons, events, members, and ministry operations.
             </p>
+            <div className="mt-6 bg-white/[0.05] border border-white/10 rounded-xl p-4">
+              <p className="text-white/50 text-xs">Not an admin?</p>
+              <div className="flex flex-col gap-1.5 mt-2">
+                <a href="/member/login" className="text-[#BF0A30] text-sm font-semibold hover:underline">Member Portal →</a>
+                <a href="/connect" className="text-white/50 text-sm hover:text-white hover:underline">Connect Portal →</a>
+              </div>
+            </div>
           </div>
 
           <p className="text-white/25 text-xs">© 2026 Ruach Assemblies</p>

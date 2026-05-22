@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import { Plus, Video, Edit, Trash2, Save, X, Loader2, Search, AlertCircle, CheckCircle, ExternalLink } from 'lucide-react';
+import { Plus, Video, Edit, Trash2, Save, X, Loader2, Search, AlertCircle, CheckCircle, ExternalLink, Sparkles, Music } from 'lucide-react';
 import CPLayout from '@/components/control-panel/CPLayout';
 import { supabase } from '@/lib/supabase';
 import { Sermon, Series } from '@/types';
 import { generateSlug, getYouTubeThumbnail } from '@/lib/utils';
+
+const CATEGORIES = ['faith', 'prayer', 'family', 'leadership', 'kingdom', 'worship', 'evangelism', 'other'] as const;
 
 function formatDate(d: string) {
   return new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
@@ -13,7 +15,8 @@ function formatDate(d: string) {
 
 const EMPTY_FORM = {
   title: '', preacher: '', youtube_url: '', series_id: '', service_date: '',
-  scripture: '', summary: '', tags: '', slug: ''
+  scripture: '', summary: '', tags: '', slug: '',
+  spotify_url: '', category: '', notes: '',
 };
 
 export default function SermonsCP() {
@@ -29,6 +32,7 @@ export default function SermonsCP() {
   const [saved, setSaved] = useState(false);
   const [deleting, setDeleting] = useState<number | null>(null);
   const [error, setError] = useState('');
+  const [generatingNotes, setGeneratingNotes] = useState(false);
 
   useEffect(() => {
     checkAuth();
@@ -63,18 +67,39 @@ export default function SermonsCP() {
   function openEdit(sermon: Sermon) {
     setEditing(sermon);
     setForm({
-      title: sermon.title,
-      preacher: sermon.preacher,
+      title:       sermon.title,
+      preacher:    sermon.preacher,
       youtube_url: sermon.youtube_url,
-      series_id: String(sermon.series_id || ''),
+      series_id:   String(sermon.series_id || ''),
       service_date: sermon.service_date,
-      scripture: sermon.scripture || '',
-      summary: sermon.summary || '',
-      tags: (sermon.tags || []).join(', '),
-      slug: sermon.slug,
+      scripture:   sermon.scripture || '',
+      summary:     sermon.summary || '',
+      tags:        (sermon.tags || []).join(', '),
+      slug:        sermon.slug,
+      spotify_url: (sermon as any).spotify_url || '',
+      category:    (sermon as any).category || '',
+      notes:       (sermon as any).notes || '',
     });
     setError('');
     setShowForm(true);
+  }
+
+  async function generateNotes() {
+    if (!form.title || !form.preacher) return;
+    setGeneratingNotes(true);
+    try {
+      const res = await fetch('/api/sermons/generate-notes', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ title: form.title, preacher: form.preacher, scripture: form.scripture, summary: form.summary }),
+      });
+      const data = await res.json();
+      if (data.notes) setForm(f => ({ ...f, notes: data.notes }));
+    } catch {
+      // silent
+    } finally {
+      setGeneratingNotes(false);
+    }
   }
 
   function set(k: keyof typeof EMPTY_FORM, v: string) {
@@ -95,16 +120,19 @@ export default function SermonsCP() {
     setSaving(true); setError('');
     const thumb = getYouTubeThumbnail(form.youtube_url);
     const payload = {
-      title: form.title,
-      preacher: form.preacher,
-      youtube_url: form.youtube_url,
-      series_id: form.series_id ? parseInt(form.series_id) : null,
-      service_date: form.service_date,
-      scripture: form.scripture || null,
-      summary: form.summary || null,
+      title:         form.title,
+      preacher:      form.preacher,
+      youtube_url:   form.youtube_url,
+      series_id:     form.series_id ? parseInt(form.series_id) : null,
+      service_date:  form.service_date,
+      scripture:     form.scripture || null,
+      summary:       form.summary || null,
       thumbnail_url: thumb || null,
-      tags: form.tags ? form.tags.split(',').map(t => t.trim()).filter(Boolean) : [],
-      slug: form.slug || generateSlug(form.title),
+      tags:          form.tags ? form.tags.split(',').map(t => t.trim()).filter(Boolean) : [],
+      slug:          form.slug || generateSlug(form.title),
+      spotify_url:   form.spotify_url || null,
+      category:      form.category || null,
+      notes:         form.notes || null,
     };
 
     let err;
@@ -274,6 +302,35 @@ export default function SermonsCP() {
                 <div>
                   <label className={lbl}>URL Slug</label>
                   <input value={form.slug} onChange={e => set('slug', e.target.value)} placeholder="auto-generated" className={inp} />
+                </div>
+                {/* ── New fields ── */}
+                <div>
+                  <label className={lbl}><Music className="inline w-3.5 h-3.5 mr-1" />Spotify URL (optional)</label>
+                  <input type="url" value={form.spotify_url} onChange={e => set('spotify_url', e.target.value)} placeholder="https://open.spotify.com/episode/..." className={inp} />
+                </div>
+                <div>
+                  <label className={lbl}>Category</label>
+                  <select value={form.category} onChange={e => set('category', e.target.value)} className={inp}>
+                    <option value="">— Select category —</option>
+                    {CATEGORIES.map(c => (
+                      <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="sm:col-span-2">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className={lbl + ' mb-0'}>Sermon Notes (Markdown)</label>
+                    <button type="button" onClick={generateNotes}
+                      disabled={!form.title || !form.preacher || generatingNotes}
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white text-xs font-semibold rounded-lg transition-colors">
+                      {generatingNotes ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+                      {generatingNotes ? 'Generating…' : 'Generate with AI'}
+                    </button>
+                  </div>
+                  <textarea value={form.notes} onChange={e => set('notes', e.target.value)}
+                    rows={8} placeholder="# Sermon Notes&#10;&#10;Notes in Markdown format…"
+                    className={`${inp} resize-y font-mono text-xs`} />
+                  <p className="text-xs text-gray-400 mt-1">Markdown — rendered on the sermon page under the Notes tab.</p>
                 </div>
               </div>
 

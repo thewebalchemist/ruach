@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { Plus, Calendar, Edit, Trash2, Save, X, Loader2, AlertCircle, CheckCircle, Search, MapPin, Clock } from 'lucide-react';
+import { Plus, Calendar, Edit, Trash2, Save, X, Loader2, AlertCircle, CheckCircle, Search, MapPin, Clock, LayoutList } from 'lucide-react';
 import CPLayout from '@/components/control-panel/CPLayout';
 import { supabase } from '@/lib/supabase';
 
@@ -8,7 +8,7 @@ interface DBEvent {
   id: number;
   title: string;
   event_date: string;
-  event_time: string | null;
+  start_time: string | null;
   location: string | null;
   description: string | null;
   is_public: boolean;
@@ -17,7 +17,7 @@ interface DBEvent {
 }
 
 const EMPTY_FORM = {
-  title: '', event_date: '', event_time: '', location: '',
+  title: '', event_date: '', start_time: '', location: '',
   description: '', is_public: true, chatbot_enabled: true, category: 'church-wide'
 };
 
@@ -28,11 +28,76 @@ function formatDate(d: string) {
 const inp = "w-full px-3 py-2.5 bg-gray-50 dark:bg-[#111] border border-gray-200 dark:border-[#333] rounded-xl text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#BF0A30]";
 const lbl = "block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide mb-1.5";
 
+function CalendarView({ events, onDayClick }: { events: DBEvent[]; onDayClick: (date: string) => void }) {
+  const todayDate = new Date();
+  const [year, setYear]   = useState(todayDate.getFullYear());
+  const [month, setMonth] = useState(todayDate.getMonth());
+
+  const firstDay  = new Date(year, month, 1).getDay();
+  const daysInMo  = new Date(year, month + 1, 0).getDate();
+  const monthName = new Date(year, month, 1).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+
+  const evByDay: Record<number, DBEvent[]> = {};
+  events.forEach(ev => {
+    const d = new Date(ev.event_date);
+    if (d.getFullYear() === year && d.getMonth() === month) {
+      const day = d.getDate();
+      if (!evByDay[day]) evByDay[day] = [];
+      evByDay[day].push(ev);
+    }
+  });
+
+  function prevMonth() { if (month === 0) { setMonth(11); setYear(y => y - 1); } else setMonth(m => m - 1); }
+  function nextMonth() { if (month === 11) { setMonth(0); setYear(y => y + 1); } else setMonth(m => m + 1); }
+
+  return (
+    <div className="bg-white dark:bg-[#1A1A1A] rounded-2xl border border-gray-100 dark:border-[#2A2A2A] overflow-hidden">
+      <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100 dark:border-[#2A2A2A]">
+        <button onClick={prevMonth} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-[#2A2A2A] text-gray-500 dark:text-gray-400 text-xl transition-colors">‹</button>
+        <span className="text-sm font-bold text-gray-900 dark:text-white">{monthName}</span>
+        <button onClick={nextMonth} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-[#2A2A2A] text-gray-500 dark:text-gray-400 text-xl transition-colors">›</button>
+      </div>
+      <div className="grid grid-cols-7 border-b border-gray-100 dark:border-[#2A2A2A]">
+        {['Su','Mo','Tu','We','Th','Fr','Sa'].map(d => (
+          <div key={d} className="py-2 text-center text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-600">{d}</div>
+        ))}
+      </div>
+      <div className="grid grid-cols-7">
+        {Array.from({ length: firstDay }).map((_, i) => (
+          <div key={`e${i}`} className="h-20 border-b border-r border-gray-50 dark:border-[#222]" />
+        ))}
+        {Array.from({ length: daysInMo }, (_, i) => i + 1).map(day => {
+          const isToday = year === todayDate.getFullYear() && month === todayDate.getMonth() && day === todayDate.getDate();
+          const dayEvs  = evByDay[day] ?? [];
+          const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+          return (
+            <div key={day} onClick={() => onDayClick(dateStr)}
+              className={`h-20 border-b border-r border-gray-50 dark:border-[#222] p-1 flex flex-col cursor-pointer group transition-colors hover:bg-gray-50 dark:hover:bg-[#222] ${isToday ? 'bg-[#BF0A30]/5 dark:bg-[#BF0A30]/10' : ''}`}>
+              <span className={`text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full mb-1 flex-shrink-0 ${isToday ? 'bg-[#BF0A30] text-white' : 'text-gray-500 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white'}`}>
+                {day}
+              </span>
+              <div className="flex flex-col gap-0.5 overflow-hidden">
+                {dayEvs.slice(0, 2).map(ev => (
+                  <span key={ev.id} className="text-[9px] font-semibold bg-[#BF0A30]/10 text-[#BF0A30] rounded px-1 truncate leading-tight py-0.5">
+                    {ev.title}
+                  </span>
+                ))}
+                {dayEvs.length > 2 && <span className="text-[9px] text-gray-400 dark:text-gray-600">+{dayEvs.length - 2}</span>}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export default function EventsCP() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [events, setEvents] = useState<DBEvent[]>([]);
   const [search, setSearch] = useState('');
+  const [view, setView] = useState<'list' | 'calendar'>('list');
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<DBEvent | null>(null);
   const [form, setForm] = useState<typeof EMPTY_FORM & { is_public: boolean; chatbot_enabled: boolean }>(EMPTY_FORM);
@@ -60,9 +125,9 @@ export default function EventsCP() {
     setLoading(false);
   }
 
-  function openNew() {
+  function openNew(date?: string) {
     setEditing(null);
-    setForm({ ...EMPTY_FORM, event_date: new Date().toISOString().split('T')[0] });
+    setForm({ ...EMPTY_FORM, event_date: date ?? new Date().toISOString().split('T')[0] });
     setError('');
     setShowForm(true);
   }
@@ -72,7 +137,7 @@ export default function EventsCP() {
     setForm({
       title: ev.title,
       event_date: ev.event_date,
-      event_time: ev.event_time || '',
+      start_time: ev.start_time || '',
       location: ev.location || '',
       description: ev.description || '',
       is_public: ev.is_public,
@@ -93,7 +158,7 @@ export default function EventsCP() {
     const payload = {
       title: form.title,
       event_date: form.event_date,
-      event_time: form.event_time || null,
+      start_time: form.start_time || null,
       location: form.location || null,
       description: form.description || null,
       is_public: form.is_public,
@@ -134,7 +199,7 @@ export default function EventsCP() {
       title="Events"
       subtitle={`${events.filter(e => e.event_date >= today).length} upcoming`}
       actions={
-        <button onClick={openNew} className="flex items-center gap-2 px-4 py-2 bg-[#BF0A30] text-white text-sm font-semibold rounded-xl hover:bg-[#A00828] transition-colors">
+        <button onClick={() => openNew()} className="flex items-center gap-2 px-4 py-2 bg-[#BF0A30] text-white text-sm font-semibold rounded-xl hover:bg-[#A00828] transition-colors">
           <Plus className="w-4 h-4" /> Add Event
         </button>
       }
@@ -146,22 +211,36 @@ export default function EventsCP() {
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search events…"
             className="w-full pl-9 pr-4 py-2.5 bg-white dark:bg-[#1A1A1A] border border-gray-200 dark:border-[#2A2A2A] rounded-xl text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#BF0A30]" />
         </div>
-        <div className="flex gap-1 bg-gray-100 dark:bg-[#1A1A1A] rounded-xl p-1">
-          {(['upcoming', 'past', 'all'] as const).map(f => (
-            <button key={f} onClick={() => setFilter(f)} className={`px-3 py-1.5 rounded-lg text-xs font-semibold capitalize transition-colors ${filter === f ? 'bg-white dark:bg-[#2A2A2A] text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400'}`}>{f}</button>
-          ))}
+        <div className="flex gap-2">
+          {view === 'list' && (
+            <div className="flex gap-1 bg-gray-100 dark:bg-[#1A1A1A] rounded-xl p-1">
+              {(['upcoming', 'past', 'all'] as const).map(f => (
+                <button key={f} onClick={() => setFilter(f)} className={`px-3 py-1.5 rounded-lg text-xs font-semibold capitalize transition-colors ${filter === f ? 'bg-white dark:bg-[#2A2A2A] text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400'}`}>{f}</button>
+              ))}
+            </div>
+          )}
+          <div className="flex gap-1 bg-gray-100 dark:bg-[#1A1A1A] rounded-xl p-1">
+            <button onClick={() => setView('list')} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${view === 'list' ? 'bg-white dark:bg-[#2A2A2A] text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400'}`}>
+              <LayoutList className="w-3.5 h-3.5" /> List
+            </button>
+            <button onClick={() => setView('calendar')} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${view === 'calendar' ? 'bg-white dark:bg-[#2A2A2A] text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400'}`}>
+              <Calendar className="w-3.5 h-3.5" /> Calendar
+            </button>
+          </div>
         </div>
       </div>
 
       {loading ? (
         <div className="flex justify-center py-16"><div className="w-8 h-8 border-2 border-[#BF0A30] border-t-transparent rounded-full animate-spin" /></div>
+      ) : view === 'calendar' ? (
+        <CalendarView events={events} onDayClick={(date) => openNew(date)} />
       ) : (
         <div className="space-y-2">
           {filtered.length === 0 ? (
             <div className="bg-white dark:bg-[#1A1A1A] rounded-2xl border border-gray-100 dark:border-[#2A2A2A] py-16 text-center">
               <Calendar className="w-10 h-10 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
               <p className="text-sm text-gray-500">No events found.</p>
-              <button onClick={openNew} className="mt-3 text-sm text-[#BF0A30] font-medium hover:underline">Add an event →</button>
+              <button onClick={() => openNew()} className="mt-3 text-sm text-[#BF0A30] font-medium hover:underline">Add an event →</button>
             </div>
           ) : filtered.map(e => {
             const isPast = e.event_date < today;
@@ -173,7 +252,7 @@ export default function EventsCP() {
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-gray-900 dark:text-white text-sm truncate">{e.title}</p>
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-0.5">
-                    <span className="text-xs text-gray-500 flex items-center gap-1"><Clock className="w-3 h-3" />{formatDate(e.event_date)}{e.event_time ? ` · ${e.event_time}` : ''}</span>
+                    <span className="text-xs text-gray-500 flex items-center gap-1"><Clock className="w-3 h-3" />{formatDate(e.event_date)}{e.start_time ? ` · ${e.start_time}` : ''}</span>
                     {e.location && <span className="text-xs text-gray-500 flex items-center gap-1"><MapPin className="w-3 h-3" />{e.location}</span>}
                   </div>
                 </div>
@@ -209,7 +288,7 @@ export default function EventsCP() {
                 </div>
                 <div>
                   <label className={lbl}>Time</label>
-                  <input type="time" value={form.event_time} onChange={e => set('event_time', e.target.value)} className={inp} />
+                  <input type="time" value={form.start_time} onChange={e => set('start_time', e.target.value)} className={inp} />
                 </div>
               </div>
               <div>

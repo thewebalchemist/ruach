@@ -5,7 +5,7 @@ import {
   ArrowLeft, Plus, Trash2, ChevronDown, ChevronUp,
   BookOpen, Save, Send, Clock, AlertCircle,
 } from 'lucide-react';
-import { ConnectLayout } from '@/components/connect/ConnectLayout';
+import { DiscipleshipLayout } from '@/components/connect/DiscipleshipLayout';
 import { supabase } from '@/lib/supabase';
 import type { ExamStatus } from '@/types';
 
@@ -21,7 +21,7 @@ interface DraftQuestion {
   expanded:       boolean;
 }
 
-interface Cohort  { id: string; name: string; }
+interface Cohort  { id: string; name: string; level: number; }
 interface Session { id: string; title: string; cohort_id: string; }
 
 const BLANK = (n: number): DraftQuestion => ({
@@ -36,11 +36,10 @@ const BLANK = (n: number): DraftQuestion => ({
 
 const H = { fontFamily: 'Montserrat, sans-serif', fontWeight: 900 };
 
-export default function NewExamPage() {
+export default function NewDiscipleshipExamPage() {
   const router = useRouter();
   const { cohort: cohortParam } = router.query as { cohort?: string };
 
-  // ── Meta ────────────────────────────────────────────────────────────────────
   const [title,          setTitle]          = useState('');
   const [description,    setDescription]    = useState('');
   const [cohortId,       setCohortId]       = useState(cohortParam ?? '');
@@ -53,54 +52,48 @@ export default function NewExamPage() {
   const [saving,         setSaving]         = useState(false);
   const [saveError,      setSaveError]      = useState('');
 
-  // ── Remote data ──────────────────────────────────────────────────────────────
-  const [cohorts,   setCohorts]   = useState<Cohort[]>([]);
-  const [sessions,  setSessions]  = useState<Session[]>([]);
+  const [cohorts,        setCohorts]        = useState<Cohort[]>([]);
+  const [sessions,       setSessions]       = useState<Session[]>([]);
   const [loadingCohorts, setLoadingCohorts] = useState(true);
 
   useEffect(() => {
-    supabase.from('connect_cohorts').select('id, name').order('created_at', { ascending: false })
-      .then(({ data }) => {
+    (supabase as any).from('discipleship_cohorts').select('id, name, level').order('level').order('created_at', { ascending: false })
+      .then(({ data }: { data: any }) => {
         const list = (data ?? []) as Cohort[];
         setCohorts(list);
         if (!cohortId && list.length) setCohortId(cohortParam ?? list[0].id);
         setLoadingCohorts(false);
       });
-  }, []);  // eslint-disable-line react-hooks/exhaustive-deps
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!cohortId) return;
-    supabase.from('connect_sessions').select('id, title, cohort_id').eq('cohort_id', cohortId)
+    (supabase as any).from('discipleship_sessions').select('id, title, cohort_id').eq('cohort_id', cohortId)
       .order('session_number', { ascending: true })
-      .then(({ data }) => setSessions((data ?? []) as Session[]));
+      .then(({ data }: { data: any }) => setSessions((data ?? []) as Session[]));
   }, [cohortId]);
 
-  // ── Derived ──────────────────────────────────────────────────────────────────
   const totalMarks = questions.reduce((s, q) => s + q.marks, 0);
   const passMark   = Math.round((passingPct / 100) * totalMarks);
 
-  // ── Question helpers ─────────────────────────────────────────────────────────
   const addQ    = () => setQuestions(p => [...p, BLANK(p.length)]);
   const removeQ = (id: string) => setQuestions(p => p.filter(q => q.id !== id));
   const updateQ = (id: string, patch: Partial<DraftQuestion>) =>
     setQuestions(p => p.map(q => q.id === id ? { ...q, ...patch } : q));
   const toggleExpand = (id: string) =>
     setQuestions(p => p.map(q => q.id === id ? { ...q, expanded: !q.expanded } : q));
-
   const setOption = (qId: string, i: number, val: string) =>
     setQuestions(p => p.map(q => {
       if (q.id !== qId) return q;
       const opts = [...q.options]; opts[i] = val;
       return { ...q, options: opts };
     }));
-
   const changeType = (qId: string, type: QType) =>
     setQuestions(p => p.map(q => {
       if (q.id !== qId) return q;
       const options = type === 'true-false' ? ['True', 'False'] : (q.options.length === 4 ? q.options : ['', '', '', '']);
       return { ...q, questionType: type, options, correctAnswers: [0] };
     }));
-
   const toggleCorrect = (qId: string, i: number) =>
     setQuestions(p => p.map(q => {
       if (q.id !== qId) return q;
@@ -112,20 +105,19 @@ export default function NewExamPage() {
       return { ...q, correctAnswers: [i] };
     }));
 
-  // ── Save ─────────────────────────────────────────────────────────────────────
   const handleSave = async (status: ExamStatus) => {
     if (!title.trim() || !cohortId) return;
     setSaving(true);
     setSaveError('');
 
     try {
-      const { data: exam, error: examErr } = await supabase
-        .from('connect_exams')
+      const { data: exam, error: examErr } = await (supabase as any)
+        .from('discipleship_exams')
         .insert({
           title,
-          description: description || null,
-          cohort_id:   cohortId,
-          session_id:  sessionId || null,
+          description:      description || null,
+          cohort_id:        cohortId,
+          session_id:       sessionId || null,
           duration_minutes: durationMin,
           total_marks:      totalMarks,
           passing_marks:    passMark,
@@ -150,10 +142,10 @@ export default function NewExamPage() {
         marks:           q.marks,
       }));
 
-      const { error: qErr } = await supabase.from('connect_exam_questions').insert(qRows);
+      const { error: qErr } = await (supabase as any).from('discipleship_exam_questions').insert(qRows);
       if (qErr) throw new Error(qErr.message);
 
-      router.push(`/connect/cohorts/${cohortId}`);
+      router.push(`/discipleship/cohorts/${cohortId}`);
     } catch (e: unknown) {
       setSaveError((e as Error).message);
       setSaving(false);
@@ -167,15 +159,15 @@ export default function NewExamPage() {
   );
 
   return (
-    <ConnectLayout title="Create Exam">
-      <Link href={cohortParam ? `/connect/cohorts/${cohortParam}` : '/connect/exams'}
+    <DiscipleshipLayout title="Create Exam">
+      <Link href={cohortParam ? `/discipleship/cohorts/${cohortParam}` : '/discipleship/exams'}
         className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 mb-5 transition-colors">
         <ArrowLeft className="w-4 h-4" /> Back
       </Link>
 
       <div className="flex items-center justify-between mb-5">
         <div>
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white" style={H}>Create Exam</h1>
+          <h1 className="text-xl font-bold text-gray-900 dark:text-white" style={H}>Create KDC Exam</h1>
           <p className="text-sm text-gray-500 mt-0.5">{totalMarks} total marks · {questions.length} question{questions.length !== 1 ? 's' : ''}</p>
         </div>
         <div className="flex gap-2">
@@ -197,13 +189,10 @@ export default function NewExamPage() {
       )}
 
       <div className="grid lg:grid-cols-3 gap-5">
-
-        {/* ── Questions ── */}
+        {/* Questions */}
         <div className="lg:col-span-2 space-y-4">
           {questions.map((q, idx) => (
             <div key={q.id} className="bg-white dark:bg-[#141414] rounded-2xl border border-gray-200/70 dark:border-white/[0.05] shadow-sm overflow-hidden">
-
-              {/* Header */}
               <div className="flex items-center gap-3 px-5 py-3 border-b border-gray-100 dark:border-white/[0.04] bg-gray-50 dark:bg-[#1A1A1A]">
                 <span className="w-6 h-6 rounded-lg bg-[#BF0A30] text-white text-xs font-bold flex items-center justify-center flex-shrink-0" style={H}>
                   {idx + 1}
@@ -225,7 +214,6 @@ export default function NewExamPage() {
 
               {q.expanded && (
                 <div className="p-5 space-y-4">
-                  {/* Type + marks */}
                   <div className="flex gap-3">
                     <div className="flex-1">
                       <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">Type</label>
@@ -241,9 +229,6 @@ export default function NewExamPage() {
                           </button>
                         ))}
                       </div>
-                      {q.questionType === 'multi' && (
-                        <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">Students must select ALL correct answers.</p>
-                      )}
                     </div>
                     <div className="w-24">
                       <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">Marks</label>
@@ -254,7 +239,6 @@ export default function NewExamPage() {
                     </div>
                   </div>
 
-                  {/* Question text */}
                   <div>
                     <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">Question *</label>
                     <textarea value={q.question} onChange={e => updateQ(q.id, { question: e.target.value })}
@@ -263,7 +247,6 @@ export default function NewExamPage() {
                     />
                   </div>
 
-                  {/* Options */}
                   <div>
                     <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">
                       Options — {q.questionType === 'multi' ? 'check all correct answers' : 'select the correct one'}
@@ -274,7 +257,6 @@ export default function NewExamPage() {
                         return (
                           <div key={i} className="flex items-center gap-2">
                             <button onClick={() => toggleCorrect(q.id, i)}
-                              title={q.questionType === 'multi' ? 'Toggle correct' : 'Mark as correct'}
                               className={`flex-shrink-0 flex items-center justify-center transition-colors ${
                                 q.questionType === 'multi'
                                   ? `w-5 h-5 rounded border-2 ${isCorrect ? 'border-green-500 bg-green-500' : 'border-gray-300 dark:border-gray-600 hover:border-green-400'}`
@@ -302,11 +284,6 @@ export default function NewExamPage() {
                         );
                       })}
                     </div>
-                    <p className="text-xs text-gray-400 mt-1.5">
-                      {q.questionType === 'multi'
-                        ? 'Check all correct answers (student must select all to score marks).'
-                        : 'Click the circle to mark the correct answer.'}
-                    </p>
                   </div>
                 </div>
               )}
@@ -319,14 +296,14 @@ export default function NewExamPage() {
           </button>
         </div>
 
-        {/* ── Settings ── */}
+        {/* Settings */}
         <div className="space-y-4">
           <div className="bg-white dark:bg-[#141414] rounded-2xl border border-gray-200/70 dark:border-white/[0.05] p-5 shadow-sm">
             <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-4" style={H}>Exam Details</h3>
             <div className="space-y-3">
               <div>
                 <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">Title *</label>
-                <input value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. Session 2 Quiz"
+                <input value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. KDC Session 2 Quiz"
                   className="w-full px-4 py-2.5 border border-gray-200 dark:border-white/[0.06] rounded-xl bg-gray-50 dark:bg-[#1A1A1A] text-sm text-gray-900 dark:text-white focus:outline-none focus:border-[#BF0A30] placeholder:text-gray-400"
                 />
               </div>
@@ -345,7 +322,7 @@ export default function NewExamPage() {
                   <select value={cohortId} onChange={e => { setCohortId(e.target.value); setSessionId(''); }}
                     className="w-full px-4 py-2.5 border border-gray-200 dark:border-white/[0.06] rounded-xl bg-gray-50 dark:bg-[#1A1A1A] text-sm text-gray-900 dark:text-white focus:outline-none focus:border-[#BF0A30]">
                     {cohorts.length === 0 && <option value="">No cohorts found</option>}
-                    {cohorts.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                    {cohorts.map(c => <option key={c.id} value={c.id}>KDC {c.level} — {c.name}</option>)}
                   </select>
                 )}
               </div>
@@ -405,10 +382,10 @@ export default function NewExamPage() {
             </div>
             <div className="space-y-1.5 text-xs text-gray-500">
               {[
-                ['Questions',   questions.length],
-                ['Total Marks', totalMarks],
-                [`Pass Mark`,   `${passMark} (${passingPct}%)`],
-                ['Duration',    `${durationMin} min`],
+                ['Questions',    questions.length],
+                ['Total Marks',  totalMarks],
+                ['Pass Mark',    `${passMark} (${passingPct}%)`],
+                ['Duration',     `${durationMin} min`],
                 ['Multi-select', questions.filter(q => q.questionType === 'multi').length],
               ].map(([k, v]) => (
                 <div key={String(k)} className="flex justify-between">
@@ -431,6 +408,6 @@ export default function NewExamPage() {
           </div>
         </div>
       </div>
-    </ConnectLayout>
+    </DiscipleshipLayout>
   );
 }

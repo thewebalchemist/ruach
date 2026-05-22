@@ -1,8 +1,7 @@
 import Link from 'next/link';
-import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { useState, useEffect, useRef } from 'react';
-import { Menu, X, ChevronDown } from 'lucide-react';
+import { Menu, X, ChevronDown, Heart, LogIn } from 'lucide-react';
 
 const H = { fontFamily: 'Montserrat, sans-serif', fontWeight: 900 };
 
@@ -29,7 +28,6 @@ const NAV = [
       { label: 'Crosspoints',     href: '/r-crosspoints',   desc: 'Home church groups' },
       { label: 'Discipleship',    href: '/discipleship',    desc: 'Grow in faith' },
       { label: 'Events',          href: '/r-events',        desc: 'Upcoming gatherings' },
-      { label: 'Give',            href: '/give',            desc: 'Support the mission' },
     ],
   },
   {
@@ -221,6 +219,66 @@ function MobileSection({
   );
 }
 
+const LOGIN_OPTIONS = [
+  { label: 'Connect Class', href: '/connect',      desc: 'Connect students & teachers' },
+  { label: 'Member Portal', href: '/member/login', desc: 'Members, Crosspoint & Discipleship' },
+];
+
+/* ─── Desktop Login dropdown ──────────────────────────────────────── */
+function LoginDropdown() {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setOpen(v => !v)}
+        aria-expanded={open}
+        className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all text-white bg-white/10 hover:bg-white/15 border border-white/20 hover:border-white/40 whitespace-nowrap"
+        style={H}
+      >
+        <LogIn className="w-3.5 h-3.5" />
+        Login
+        <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+      </button>
+
+      {open && (
+        <div
+          className="absolute top-full right-0 mt-2 w-60 rounded-2xl p-2 z-50"
+          style={{
+            background: 'rgba(10,12,16,0.97)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            border: '1px solid rgba(255,255,255,0.10)',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.7)',
+          }}
+        >
+          <p className="px-4 pt-2 pb-1 text-[9px] font-black uppercase tracking-widest text-white/30" style={H}>Sign in as</p>
+          {LOGIN_OPTIONS.map(opt => (
+            <Link
+              key={opt.href}
+              href={opt.href}
+              onClick={() => setOpen(false)}
+              className="flex flex-col px-4 py-3 rounded-xl hover:bg-white/5 transition-colors group"
+            >
+              <span className="text-[11px] font-black uppercase tracking-widest text-white/90 group-hover:text-white" style={H}>{opt.label}</span>
+              <span className="text-[10px] text-white/35 mt-0.5 leading-tight">{opt.desc}</span>
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ─── Main Navbar ────────────────────────────────────────────────── */
 export default function Navbar() {
   const router = useRouter();
@@ -277,17 +335,32 @@ export default function Navbar() {
               {NAV.map((item) => (
                 <NavItem key={item.href} item={item} scrolled={scrolled} />
               ))}
+
+              {/* Give — center nav, distinct heart accent */}
+              <Link
+                href="/give"
+                className={`relative flex items-center gap-1.5 px-4 py-2 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${
+                  router.pathname === '/give'
+                    ? 'text-[#BF0A30]'
+                    : 'text-white/80 hover:text-white'
+                }`}
+                style={H}
+              >
+                {router.pathname === '/give' && (
+                  <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-3 h-px bg-[#BF0A30] rounded-full" />
+                )}
+                <Heart className={`w-3 h-3 ${router.pathname === '/give' ? 'text-[#BF0A30]' : 'text-white/50'}`} />
+                Give
+              </Link>
             </nav>
 
             {/* ── Right CTAs ──────────────────────────────────────── */}
             <div className="flex items-center gap-2.5">
-              <Link
-                href="/give"
-                className="hidden sm:flex items-center text-[11px] font-black uppercase tracking-widest px-4 py-2.5 rounded-xl transition-all border border-white/25 text-white/80 hover:text-white hover:border-white/50"
-                style={H}
-              >
-                Give
-              </Link>
+              {/* Login dropdown — desktop only */}
+              <div className="hidden lg:block">
+                <LoginDropdown />
+              </div>
+
               <Link
                 href="/live"
                 className="hidden sm:flex items-center gap-1.5 text-[11px] font-black uppercase tracking-widest px-4 py-2.5 rounded-xl transition-all bg-[#BF0A30] hover:bg-[#9A0826] text-white shadow-lg shadow-[rgba(191,10,48,0.3)]"
@@ -382,13 +455,32 @@ export default function Navbar() {
 
             {/* Mobile CTAs */}
             <div className="px-4 pb-6 pt-2 space-y-2.5">
+              {/* Login section */}
+              <div className="rounded-2xl overflow-hidden border border-white/10">
+                <p className="px-4 py-2 text-[9px] font-black uppercase tracking-widest text-white/30 bg-white/[0.03]" style={H}>Sign in as</p>
+                {LOGIN_OPTIONS.map(opt => (
+                  <Link
+                    key={opt.href}
+                    href={opt.href}
+                    onClick={() => setOpen(false)}
+                    className="flex items-center justify-between px-4 py-3 hover:bg-white/5 border-t border-white/[0.06] transition-colors"
+                  >
+                    <div>
+                      <p className="text-[11px] font-black uppercase tracking-widest text-white/85" style={H}>{opt.label}</p>
+                      <p className="text-[10px] text-white/35 mt-0.5">{opt.desc}</p>
+                    </div>
+                    <LogIn className="w-3.5 h-3.5 text-white/30" />
+                  </Link>
+                ))}
+              </div>
+
               <Link
                 href="/give"
                 onClick={() => setOpen(false)}
                 className="flex items-center justify-center gap-2 border border-white/20 text-white font-black text-sm uppercase tracking-widest py-3.5 rounded-2xl hover:bg-white/8 transition-colors"
                 style={H}
               >
-                Give
+                <Heart className="w-4 h-4 text-[#BF0A30]" /> Give
               </Link>
               <Link
                 href="/live"

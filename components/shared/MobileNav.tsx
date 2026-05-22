@@ -11,8 +11,8 @@ import {
 const H = { fontFamily: 'Montserrat, sans-serif', fontWeight: 900 };
 
 const LOGIN_PORTALS = [
-  { label: 'Connect Class',  desc: 'Students & teachers',    href: '/connect',      icon: BookOpen, color: '#BF0A30' },
-  { label: 'Discipleship',   desc: 'Members & facilitators', href: '/discipleship', icon: Users,    color: '#7C3AED' },
+  { label: 'Connect Class',  desc: 'Connect students & teachers',              href: '/connect',      icon: BookOpen, color: '#BF0A30' },
+  { label: 'Member Portal',  desc: 'Members, Discipleship & Crosspoint',       href: '/member/login', icon: Users,    color: '#BF0A30' },
 ];
 
 const QUICK_CARDS = [

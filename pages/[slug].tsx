@@ -14,6 +14,7 @@ import {
   MessageSquare,
   FileText,
   ChevronRight,
+  Music,
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -30,7 +31,7 @@ interface SermonPageProps {
   seriesSermons: Sermon[];
 }
 
-type TabType = 'description' | 'scripture' | 'discussion' | 'transcript';
+type TabType = 'description' | 'notes' | 'scripture' | 'discussion' | 'transcript';
 
 export default function SermonPage({ sermon, relatedSermons, seriesSermons }: SermonPageProps) {
   const [activeTab, setActiveTab] = useState<TabType>('description');
@@ -119,8 +120,12 @@ export default function SermonPage({ sermon, relatedSermons, seriesSermons }: Se
     }
   };
 
+  const sermonNotes = (sermon as any)?.notes as string | undefined;
+  const spotifyUrl  = (sermon as any)?.spotify_url as string | undefined;
+
   const tabs = [
     { id: 'description' as TabType, label: 'Description' },
+    ...(sermonNotes ? [{ id: 'notes' as TabType, label: 'Sermon Notes' }] : []),
     { id: 'scripture' as TabType, label: 'Scripture & Notes' },
     { id: 'discussion' as TabType, label: 'Discussion' },
     { id: 'transcript' as TabType, label: 'Transcript' },
@@ -276,6 +281,25 @@ export default function SermonPage({ sermon, relatedSermons, seriesSermons }: Se
                   </button>
                 </div>
 
+                {/* Spotify embed (if URL is set) */}
+                {spotifyUrl && (
+                  <div className="bg-white dark:bg-[#1a1e28] rounded-3xl p-5 shadow-lg">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Music className="w-4 h-4 text-[#1DB954]" />
+                      <p className="text-sm font-bold text-gray-900 dark:text-white">Also on Spotify</p>
+                    </div>
+                    <iframe
+                      src={`https://open.spotify.com/embed/${spotifyUrl.replace('https://open.spotify.com/', '')}`}
+                      width="100%"
+                      height="152"
+                      frameBorder="0"
+                      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                      loading="lazy"
+                      style={{ borderRadius: 12 }}
+                    />
+                  </div>
+                )}
+
                 {/* Tabs */}
                 <div className="border-b border-gray-200 dark:border-gray-800">
                   <div className="flex gap-1 overflow-x-auto">
@@ -305,6 +329,18 @@ export default function SermonPage({ sermon, relatedSermons, seriesSermons }: Se
                         </ReactMarkdown>
                       ) : (
                         <p className="text-gray-500 dark:text-gray-400 italic">No description available for this sermon.</p>
+                      )}
+                    </div>
+                  )}
+
+                  {activeTab === 'notes' && (
+                    <div className="markdown-content prose prose-sm dark:prose-invert max-w-none">
+                      {sermonNotes ? (
+                        <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
+                          {sermonNotes}
+                        </ReactMarkdown>
+                      ) : (
+                        <p className="text-gray-500 italic">No notes available.</p>
                       )}
                     </div>
                   )}

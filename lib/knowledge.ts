@@ -206,7 +206,7 @@ ${church_info.website ? `- Website: ${church_info.website}` : ''}
         month: 'long',
         day: 'numeric',
       });
-      prompt += `- ${event.title}: ${date}${event.event_time ? ` at ${event.event_time}` : ''}${event.location ? ` - ${event.location}` : ''}\n`;
+      prompt += `- ${event.title}: ${date}${event.start_time ? ` at ${event.start_time}` : ''}${event.location ? ` - ${event.location}` : ''}\n`;
       if (event.description) {
         prompt += `  Description: ${event.description}\n`;
       }

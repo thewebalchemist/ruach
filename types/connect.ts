@@ -171,7 +171,7 @@ export interface ConnectWarning {
 // ============================================
 
 export type ExamStatus = 'draft' | 'published' | 'closed';
-export type QuestionType = 'multiple-choice' | 'true-false';
+export type QuestionType = 'single' | 'multi' | 'true-false' | 'multiple-choice';
 
 export interface ConnectExam {
   id: string;

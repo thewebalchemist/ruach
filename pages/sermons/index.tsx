@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import Link from 'next/link';
-import { Play, ArrowRight, Search, X } from 'lucide-react';
+import { Play, ArrowRight, Search, X, Music2 } from 'lucide-react';
 import { GetServerSideProps } from 'next';
 import Layout from '@/components/shared/Layout';
 import { supabase } from '@/lib/supabase';
 import type { Sermon } from '@/types';
+
+const CATEGORIES = ['faith', 'prayer', 'family', 'leadership', 'kingdom', 'worship', 'evangelism', 'other'] as const;
 
 const H = { fontFamily: 'Montserrat, sans-serif', fontWeight: 900 };
 const serif = { fontFamily: '"Playfair Display", Georgia, serif', fontStyle: 'italic' as const };
@@ -133,12 +135,15 @@ function DbSermonCard({ sermon }: { sermon: Sermon }) {
 }
 
 interface SermonsPageProps {
-  sermons: Sermon[];
+  sermons:        Sermon[];
+  featuredSermon: Sermon | null;
+  seriesList:     { id: number; title: string; slug: string }[];
 }
 
-export default function SermonsPage({ sermons }: SermonsPageProps) {
+export default function SermonsPage({ sermons, featuredSermon, seriesList }: SermonsPageProps) {
   const [activeId, setActiveId] = useState(FEATURED_VIDEOS[0].id);
-  const [search, setSearch] = useState('');
+  const [search,   setSearch]   = useState('');
+  const [activeCategory, setActiveCategory] = useState<string>('all');
 
   const activeVideo = FEATURED_VIDEOS.find((v) => v.id === activeId) ?? FEATURED_VIDEOS[0];
 
@@ -149,55 +154,76 @@ export default function SermonsPage({ sermons }: SermonsPageProps) {
       })
     : [];
 
+  // Group sermons by series
+  const bySeries = seriesList.map(sr => ({
+    series: sr,
+    sermons: sermons.filter(s => (s.series as any)?.id === sr.id || (s as any).series_id === sr.id),
+  })).filter(g => g.sermons.length > 0);
+
+  // Group by category
+  const categorySermons = activeCategory !== 'all'
+    ? sermons.filter(s => (s as any).category === activeCategory)
+    : sermons;
+
+  // Hero: use DB featured sermon if available, else hardcoded
+  const heroSermon = featuredSermon;
+
   return (
     <Layout title="Sermons — Ruach Tabernacle" description="Watch powerful messages from Ruach Tabernacle. Kingdom-focused sermons that will transform your life.">
       <div className="min-h-screen bg-[#0A0C10]">
 
         {/* ══════════════════════════════════════════════
-            NETFLIX HERO — Featured video player
+            NETFLIX HERO
         ══════════════════════════════════════════════ */}
         <section className="relative pt-16 pb-0 bg-[#0A0C10]">
-          {/* Ambient glow behind the player */}
-          <div
-            className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-[#BF0A30] pointer-events-none"
-            style={{ filter: 'blur(120px)', opacity: 0.08 }}
-          />
+          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-[#BF0A30] pointer-events-none"
+            style={{ filter: 'blur(120px)', opacity: 0.08 }} />
 
-          <div className="max-w-5xl mx-auto px-6 md:px-12">
-            {/* Label */}
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-1" style={H}>Now Playing</p>
-                <h1 className="text-white text-xl md:text-2xl font-black leading-tight" style={H}>{activeVideo.title}</h1>
+          {heroSermon ? (
+            /* ── DB featured sermon hero ── */
+            <div className="max-w-5xl mx-auto px-6 md:px-12">
+              <div className="flex flex-col lg:flex-row gap-8 items-start">
+                <div className="flex-1 order-2 lg:order-1 flex flex-col justify-center">
+                  <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-2" style={H}>Featured Message</p>
+                  <h1 className="text-white text-2xl md:text-4xl font-black leading-tight mb-3" style={H}>{heroSermon.title}</h1>
+                  <p className="text-white/50 text-sm mb-2">{heroSermon.preacher} · {new Date(heroSermon.service_date).toLocaleDateString('en-KE', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
+                  {heroSermon.scripture && <p className="text-[#BF0A30] text-xs font-bold mb-3">{heroSermon.scripture}</p>}
+                  {heroSermon.summary && <p className="text-white/40 text-sm leading-relaxed mb-5 line-clamp-3">{heroSermon.summary}</p>}
+                  <Link href={`/${heroSermon.slug}`}
+                    className="inline-flex items-center gap-2 bg-[#BF0A30] hover:bg-[#9A0826] text-white font-black text-xs uppercase tracking-widest px-6 py-3.5 rounded-2xl transition-all shadow-xl shadow-[rgba(191,10,48,0.35)] w-fit"
+                    style={H}>
+                    <Play className="w-4 h-4 fill-white" /> Watch Now
+                  </Link>
+                </div>
+                <div className="w-full lg:w-[55%] order-1 lg:order-2 rounded-2xl overflow-hidden shadow-2xl shadow-black/60" style={{ aspectRatio: '16/9' }}>
+                  <img src={getThumb(heroSermon)} alt={heroSermon.title} className="w-full h-full object-cover" />
+                </div>
               </div>
-              <Link
-                href="/r-media"
-                className="hidden md:flex items-center gap-1.5 border border-white/20 text-white/70 hover:text-white hover:border-white/40 font-bold text-[10px] uppercase tracking-widest px-4 py-2.5 rounded-xl transition-all"
-                style={H}
-              >
-                R-Media <ArrowRight className="w-3 h-3" />
-              </Link>
             </div>
-
-            {/* Main video embed */}
-            <div
-              className="rounded-2xl overflow-hidden shadow-2xl shadow-black/60 relative"
-              style={{ aspectRatio: '16/9' }}
-            >
-              <iframe
-                key={activeId}
-                width="100%"
-                height="100%"
-                src={`https://www.youtube.com/embed/${activeId}?autoplay=0&rel=0&modestbranding=1`}
-                title={activeVideo.title}
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                referrerPolicy="strict-origin-when-cross-origin"
-                allowFullScreen
-                style={{ display: 'block', width: '100%', height: '100%' }}
-              />
+          ) : (
+            /* ── Hardcoded video player fallback ── */
+            <div className="max-w-5xl mx-auto px-6 md:px-12">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-1" style={H}>Now Playing</p>
+                  <h1 className="text-white text-xl md:text-2xl font-black leading-tight" style={H}>{activeVideo.title}</h1>
+                </div>
+                <Link href="/r-media"
+                  className="hidden md:flex items-center gap-1.5 border border-white/20 text-white/70 hover:text-white hover:border-white/40 font-bold text-[10px] uppercase tracking-widest px-4 py-2.5 rounded-xl transition-all"
+                  style={H}>
+                  R-Media <ArrowRight className="w-3 h-3" />
+                </Link>
+              </div>
+              <div className="rounded-2xl overflow-hidden shadow-2xl shadow-black/60" style={{ aspectRatio: '16/9' }}>
+                <iframe key={activeId} width="100%" height="100%"
+                  src={`https://www.youtube.com/embed/${activeId}?autoplay=0&rel=0&modestbranding=1`}
+                  title={activeVideo.title} frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  referrerPolicy="strict-origin-when-cross-origin" allowFullScreen
+                  style={{ display: 'block', width: '100%', height: '100%' }} />
+              </div>
             </div>
-          </div>
+          )}
         </section>
 
         {/* ══════════════════════════════════════════════
@@ -240,44 +266,68 @@ export default function SermonsPage({ sermons }: SermonsPageProps) {
         )}
 
         {/* ══════════════════════════════════════════════
-            NETFLIX ROWS — only shown when not searching
+            CATEGORY FILTERS + ROWS
         ══════════════════════════════════════════════ */}
         {!search && (
           <div className="pt-8 pb-16">
 
-            {/* Row 1 — Featured series (the 9 videos) */}
-            <SermonRow title="Featured Messages">
-              {FEATURED_VIDEOS.map((v) => (
-                <VideoCard
-                  key={v.id}
-                  thumb={ytThumb(v.id)}
-                  title={v.title}
-                  sub={v.preacher}
-                  active={v.id === activeId}
-                  onClick={() => { setActiveId(v.id); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                />
-              ))}
-            </SermonRow>
-
-            {/* Row 2 — More messages (first half of FEATURED_VIDEOS reversed) */}
-            <SermonRow title="More from Ruach">
-              {[...FEATURED_VIDEOS].reverse().map((v) => (
-                <VideoCard
-                  key={`more-${v.id}`}
-                  thumb={ytThumb(v.id)}
-                  title={v.title}
-                  sub={v.preacher}
-                  active={v.id === activeId}
-                  onClick={() => { setActiveId(v.id); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                />
-              ))}
-            </SermonRow>
-
-            {/* Row 3 — From the archive (Supabase sermons) */}
+            {/* Category filter chips */}
             {sermons.length > 0 && (
-              <SermonRow title="From the Archive">
-                {sermons.slice(0, 12).map((s) => <DbSermonCard key={s.id} sermon={s} />)}
+              <div className="flex gap-2 overflow-x-auto px-6 md:px-12 pb-2 mb-6" style={{ scrollbarWidth: 'none' }}>
+                <button onClick={() => setActiveCategory('all')}
+                  className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-colors ${
+                    activeCategory === 'all' ? 'bg-[#BF0A30] text-white' : 'bg-white/[0.06] text-white/50 hover:bg-white/[0.10]'
+                  }`} style={H}>
+                  All
+                </button>
+                {CATEGORIES.map(cat => (
+                  <button key={cat} onClick={() => setActiveCategory(cat)}
+                    className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-colors ${
+                      activeCategory === cat ? 'bg-[#BF0A30] text-white' : 'bg-white/[0.06] text-white/50 hover:bg-white/[0.10]'
+                    }`} style={H}>
+                    {cat}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Dynamic rows: sermons from DB */}
+            {sermons.length > 0 && activeCategory === 'all' ? (
+              <>
+                {/* Recent row */}
+                <SermonRow title="Recent Messages">
+                  {sermons.slice(0, 12).map(s => <DbSermonCard key={s.id} sermon={s} />)}
+                </SermonRow>
+
+                {/* Rows per series */}
+                {bySeries.map(({ series: sr, sermons: sg }) => (
+                  <SermonRow key={sr.id} title={sr.title}>
+                    {sg.map(s => <DbSermonCard key={s.id} sermon={s} />)}
+                  </SermonRow>
+                ))}
+              </>
+            ) : sermons.length > 0 && activeCategory !== 'all' ? (
+              <SermonRow title={`${activeCategory.charAt(0).toUpperCase() + activeCategory.slice(1)} Messages`}>
+                {categorySermons.map(s => <DbSermonCard key={s.id} sermon={s} />)}
               </SermonRow>
+            ) : (
+              /* Fallback: hardcoded rows when DB is empty */
+              <>
+                <SermonRow title="Featured Messages">
+                  {FEATURED_VIDEOS.map(v => (
+                    <VideoCard key={v.id} thumb={ytThumb(v.id)} title={v.title} sub={v.preacher}
+                      active={v.id === activeId}
+                      onClick={() => { setActiveId(v.id); window.scrollTo({ top: 0, behavior: 'smooth' }); }} />
+                  ))}
+                </SermonRow>
+                <SermonRow title="More from Ruach">
+                  {[...FEATURED_VIDEOS].reverse().map(v => (
+                    <VideoCard key={`more-${v.id}`} thumb={ytThumb(v.id)} title={v.title} sub={v.preacher}
+                      active={v.id === activeId}
+                      onClick={() => { setActiveId(v.id); window.scrollTo({ top: 0, behavior: 'smooth' }); }} />
+                  ))}
+                </SermonRow>
+              </>
             )}
 
           </div>
@@ -322,13 +372,19 @@ export default function SermonsPage({ sermons }: SermonsPageProps) {
 
 export const getServerSideProps: GetServerSideProps = async () => {
   try {
-    const { data } = await supabase
-      .from('sermons')
-      .select('*, series(title, slug)')
-      .order('service_date', { ascending: false })
-      .limit(20);
-    return { props: { sermons: data ?? [] } };
+    const [{ data: sermons }, { data: featured }, { data: seriesList }] = await Promise.all([
+      supabase.from('sermons').select('*, series(id, title, slug)').order('service_date', { ascending: false }).limit(60),
+      (supabase as any).from('sermons').select('*, series(id, title, slug)').eq('is_featured', true).limit(1).maybeSingle(),
+      supabase.from('series').select('id, title, slug').order('title'),
+    ]);
+    return {
+      props: {
+        sermons:        sermons ?? [],
+        featuredSermon: featured ?? null,
+        seriesList:     seriesList ?? [],
+      },
+    };
   } catch {
-    return { props: { sermons: [] } };
+    return { props: { sermons: [], featuredSermon: null, seriesList: [] } };
   }
 };

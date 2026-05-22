@@ -7,7 +7,8 @@ import { supabase } from '@/lib/supabase';
 import type { GetStaticProps } from 'next';
 
 interface Sermon   { id: string; title: string; slug: string; preacher: string; service_date: string; }
-interface PageProps { latestSermon: Sermon | null; isLive: boolean; }
+interface UpcomingEvent { id: string; title: string; description: string | null; event_date: string; end_date: string | null; start_time: string | null; location: string | null; image_url: string | null; }
+interface PageProps { latestSermon: Sermon | null; isLive: boolean; upcomingEvents: UpcomingEvent[]; }
 
 // Font styles
 const H = { fontFamily: 'Montserrat, sans-serif', fontWeight: 900 };
@@ -64,7 +65,7 @@ function FaqItem({ q, a }: { q: string; a: string }) {
   );
 }
 
-export default function HomePage({ latestSermon, isLive }: PageProps) {
+export default function HomePage({ latestSermon, isLive, upcomingEvents }: PageProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [muted, setMuted] = useState(true);
 
@@ -583,60 +584,76 @@ export default function HomePage({ latestSermon, isLive }: PageProps) {
       </section>
 
       {/* ════════════════════════════════
-          UPCOMING EVENT — 7 Days of Glory
+          UPCOMING EVENTS — Dynamic from DB
       ════════════════════════════════ */}
       <section className="bg-[#000] py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
-          <div className="flex items-center gap-3 mb-10">
-            <CalendarDays className="w-4 h-4 text-[#BF0A30]" />
-            <span className="text-white/40 text-xs font-bold uppercase tracking-widest" style={H}>Upcoming Event</span>
-          </div>
-          <div className="grid lg:grid-cols-2 gap-10 items-start">
-            {/* Event image — portrait, full display */}
-            <div className="rounded-2xl overflow-hidden w-full max-w-sm mx-auto lg:max-w-none" style={{ aspectRatio: '3/4' }}>
-              <img
-                src="/events/7-days-of-glory.jpg"
-                alt="7 Days of Glory"
-                className="w-full h-full object-cover object-center"
-                onError={(e) => { (e.target as HTMLImageElement).src = '/church-photos/worship1.jpg'; }}
-              />
+          <div className="flex items-center justify-between gap-4 mb-10 flex-wrap">
+            <div className="flex items-center gap-3">
+              <CalendarDays className="w-4 h-4 text-[#BF0A30]" />
+              <span className="text-white/40 text-xs font-bold uppercase tracking-widest" style={H}>
+                {upcomingEvents.length > 0 ? 'Upcoming Events' : 'Upcoming Event'}
+              </span>
             </div>
-            {/* Event details */}
-            <div>
-              <p className="text-[#BF0A30] text-xs font-bold uppercase tracking-widest mb-4" style={H}>25th – 31st May 2026</p>
-              <h2 className="text-4xl md:text-5xl text-white leading-tight mb-6" style={H}>
-                7 Days of<br /><span style={serif}>Glory</span>
-              </h2>
-              <p className="text-white/60 text-sm leading-relaxed mb-8">
-                There are moments that shift seasons, ignite hearts, and leave lives forever changed.
-                This is one of them. Seven evenings of worship, prayer, revival, and divine encounters.
-                Come expectant for fresh fire, fresh grace, and a fresh touch from God.
-              </p>
-              {/* Meta info */}
-              <div className="space-y-3 mb-8">
-                {[
-                  { icon: '🗓', text: '25th May – 31st May 2026' },
-                  { icon: '⏰', text: '5:00PM – 8:00PM' },
-                  { icon: '📍', text: 'Rhema Grounds, Northern Bypass — next to Shell Windsor, Nairobi' },
-                ].map((item) => (
-                  <div key={item.text} className="flex items-start gap-3 text-sm text-white/70">
-                    <span className="text-base flex-shrink-0">{item.icon}</span>
-                    <span>{item.text}</span>
-                  </div>
-                ))}
+            <Link href="/r-events" className="text-white/40 hover:text-white/70 text-xs font-bold uppercase tracking-widest transition-colors" style={H}>
+              All Events →
+            </Link>
+          </div>
+
+          {upcomingEvents.length === 0 ? (
+            /* Fallback to hardcoded 7 Days of Glory */
+            <div className="grid lg:grid-cols-2 gap-10 items-start">
+              <div className="rounded-2xl overflow-hidden w-full max-w-sm mx-auto lg:max-w-none" style={{ aspectRatio: '3/4' }}>
+                <img src="/events/7-days-of-glory.jpg" alt="7 Days of Glory" className="w-full h-full object-cover object-center"
+                  onError={(e) => { (e.target as HTMLImageElement).src = '/church-photos/worship1.jpg'; }} />
               </div>
-              <p className="text-white/40 text-sm italic mb-8" style={serif}>
-                Seven nights. Countless testimonies. One God.
-              </p>
-              <Link
-                href="/new-here"
-                className="inline-flex items-center gap-2 bg-[#BF0A30] hover:bg-[#9A0826] text-white font-black text-sm uppercase tracking-widest px-7 py-4 rounded-2xl transition-all hover:-translate-y-0.5 shadow-xl shadow-[rgba(191,10,48,0.4)]"
-                style={H}
-              >
-                Register Free <ArrowRight className="w-4 h-4" />
-              </Link>
+              <div>
+                <p className="text-[#BF0A30] text-xs font-bold uppercase tracking-widest mb-4" style={H}>25th – 31st May 2026</p>
+                <h2 className="text-4xl md:text-5xl text-white leading-tight mb-6" style={H}>7 Days of<br /><span style={serif}>Glory</span></h2>
+                <p className="text-white/60 text-sm leading-relaxed mb-8">Seven evenings of worship, prayer, revival, and divine encounters. Come expectant for fresh fire, fresh grace, and a fresh touch from God.</p>
+                <div className="space-y-3 mb-8">
+                  {[{ icon: '🗓', text: '25th May – 31st May 2026' }, { icon: '⏰', text: '5:00PM – 8:00PM' }, { icon: '📍', text: 'Rhema Grounds, Northern Bypass — next to Shell Windsor, Nairobi' }].map(item => (
+                    <div key={item.text} className="flex items-start gap-3 text-sm text-white/70">
+                      <span className="text-base flex-shrink-0">{item.icon}</span><span>{item.text}</span>
+                    </div>
+                  ))}
+                </div>
+                <Link href="/r-events" className="inline-flex items-center gap-2 bg-[#BF0A30] hover:bg-[#9A0826] text-white font-black text-sm uppercase tracking-widest px-7 py-4 rounded-2xl transition-all hover:-translate-y-0.5 shadow-xl shadow-[rgba(191,10,48,0.4)]" style={H}>
+                  See All Events <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className={`grid gap-6 ${upcomingEvents.length === 1 ? 'lg:grid-cols-2' : 'sm:grid-cols-2'}`}>
+              {upcomingEvents.map((ev, i) => {
+                const dateLabel = new Date(ev.event_date).toLocaleDateString('en-KE', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' });
+                return (
+                  <div key={ev.id} className={`rounded-2xl overflow-hidden flex flex-col ${i === 0 && upcomingEvents.length === 1 ? 'lg:col-span-1' : ''}`}
+                    style={{ background: 'rgba(18,21,28,0.9)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                    {ev.image_url && (
+                      <div className="aspect-video overflow-hidden">
+                        <img src={ev.image_url} alt={ev.title} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                          onError={(e) => { (e.target as HTMLImageElement).src = '/church-photos/aug-2025-a.jpg'; }} />
+                      </div>
+                    )}
+                    <div className="p-6 flex-1 flex flex-col">
+                      <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-2" style={H}>{dateLabel}</p>
+                      <h3 className="text-white text-xl font-black mb-3 flex-1" style={H}>{ev.title}</h3>
+                      {ev.description && <p className="text-white/40 text-sm leading-relaxed mb-4 line-clamp-2">{ev.description}</p>}
+                      {ev.location && (
+                        <p className="flex items-start gap-2 text-white/30 text-xs mb-4">
+                          <CalendarDays className="w-3.5 h-3.5 flex-shrink-0 text-[#BF0A30] mt-0.5" /> {ev.location}
+                        </p>
+                      )}
+                      <Link href="/r-events" className="flex items-center gap-1.5 text-[#BF0A30] text-xs font-bold uppercase tracking-widest mt-auto" style={H}>
+                        More Details <ArrowRight className="w-3 h-3" />
+                      </Link>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </section>
 
@@ -713,12 +730,22 @@ export default function HomePage({ latestSermon, isLive }: PageProps) {
 
 export const getStaticProps: GetStaticProps = async () => {
   try {
-    const [{ data: sermon }, { data: stream }] = await Promise.all([
+    const today = new Date().toISOString().split('T')[0];
+    const [{ data: sermon }, { data: stream }, { data: events }] = await Promise.all([
       supabase.from('sermons').select('id,title,slug,preacher,service_date').order('service_date', { ascending: false }).limit(1).single(),
       supabase.from('stream_settings').select('is_live').limit(1).single(),
+      supabase.from('events').select('id,title,description,event_date,end_date,start_time,location,image_url')
+        .gte('event_date', today).neq('status', 'cancelled').order('event_date', { ascending: true }).limit(2),
     ]);
-    return { props: { latestSermon: sermon ?? null, isLive: stream?.is_live ?? false }, revalidate: 60 };
+    return {
+      props: {
+        latestSermon:   sermon ?? null,
+        isLive:         stream?.is_live ?? false,
+        upcomingEvents: events ?? [],
+      },
+      revalidate: 300,
+    };
   } catch {
-    return { props: { latestSermon: null, isLive: false }, revalidate: 60 };
+    return { props: { latestSermon: null, isLive: false, upcomingEvents: [] }, revalidate: 300 };
   }
 };
