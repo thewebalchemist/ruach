@@ -29,6 +29,14 @@ const AuthContext = createContext<AuthContextValue>({
   signOut: async () => {}, refreshProfile: async () => {},
 });
 
+function setSentinelCookie(authenticated: boolean) {
+  if (authenticated) {
+    document.cookie = 'sb-session=1; path=/; max-age=604800; SameSite=Lax';
+  } else {
+    document.cookie = 'sb-session=; path=/; max-age=0; SameSite=Lax';
+  }
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [session,  setSession]  = useState<Session | null>(null);
@@ -52,6 +60,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
+      setSentinelCookie(!!session);
       if (session?.user?.id) {
         fetchProfile(session.user.id).finally(() => setLoading(false));
       } else {
@@ -63,6 +72,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
         setSession(session);
+        setSentinelCookie(!!session);
         if (session?.user?.id) {
           await fetchProfile(session.user.id);
         } else {

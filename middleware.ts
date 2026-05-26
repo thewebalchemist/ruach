@@ -24,9 +24,14 @@ export function middleware(request: NextRequest) {
     .split('//')[1]
     ?.split('.')[0];
 
+  // Supabase v2 stores auth in localStorage (not cookies), so we maintain
+  // a lightweight sentinel cookie set by AuthContext on every auth state change.
   const hasSession =
+    !!request.cookies.get('sb-session') ||
     !!request.cookies.get('sb-access-token') ||
-    (projectRef ? !!request.cookies.get(`sb-${projectRef}-auth-token`) : false);
+    request.cookies.getAll().some(c =>
+      projectRef && c.name.startsWith(`sb-${projectRef}-auth-token`)
+    );
 
   if (hasSession) return NextResponse.next();
 

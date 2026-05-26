@@ -83,21 +83,29 @@ export default function MemberLogin() {
 
   async function handleEmailLogin(e: React.FormEvent) {
     e.preventDefault(); setError(''); setLoading(true);
-    const { data, error: ae } = await supabase.auth.signInWithPassword({ email, password });
-    if (ae || !data.session) { setError(ae?.message ?? 'Invalid credentials.'); setLoading(false); return; }
-    await redirectByRole(data.session.user.id);
+    try {
+      const { data, error: ae } = await supabase.auth.signInWithPassword({ email, password });
+      if (ae || !data.session) {
+        setError(ae?.message ?? 'Invalid credentials.');
+        setLoading(false);
+        return;
+      }
+      await redirectByRole(data.session.user.id);
+    } catch {
+      setError('Sign in failed. Please try again.');
+      setLoading(false);
+    }
   }
 
   async function redirectByRole(userId: string) {
     const { data: pd } = await supabase.from('profiles').select('role, member_id').eq('id', userId).single();
     const profile = pd as ProfileResult | null;
-    const role    = profile?.role ?? '';
-
-    if (['admin', 'pastor'].includes(role)) { router.push('/admin'); return; }
 
     if (profile?.member_id) {
       const redirectTo = (router.query.redirectTo as string) || '/member';
-      router.push(redirectTo); return;
+      await router.push(redirectTo);
+      setLoading(false);
+      return;
     }
 
     // Signed in but not yet a member (still a Connect student)
