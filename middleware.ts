@@ -4,14 +4,13 @@ import type { NextRequest } from 'next/server';
 const ADMIN_ROUTES  = ['/admin', '/control-panel'];
 const MEMBER_ROUTES = ['/member', '/connect/dashboard', '/discipleship/dashboard', '/notifications'];
 
-// These are the login pages themselves — never redirect them
-const LOGIN_PAGES = ['/member/login', '/member/onboarding'];
+// These pages ARE under /member but must never be gated
+const PUBLIC_MEMBER_PAGES = ['/member/login', '/member/onboarding'];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Never intercept login/onboarding pages even though they start with /member
-  if (LOGIN_PAGES.some(p => pathname === p || pathname.startsWith(p + '/'))) {
+  if (PUBLIC_MEMBER_PAGES.some(p => pathname === p || pathname.startsWith(p + '/'))) {
     return NextResponse.next();
   }
 
@@ -20,30 +19,14 @@ export function middleware(request: NextRequest) {
 
   if (!isAdminRoute && !isMemberRoute) return NextResponse.next();
 
-  const projectRef = (process.env.NEXT_PUBLIC_SUPABASE_URL ?? '')
-    .split('//')[1]
-    ?.split('.')[0];
-
-  // Supabase v2 stores auth in localStorage (not cookies), so we maintain
-  // a lightweight sentinel cookie set by AuthContext on every auth state change.
-  const hasSession =
-    !!request.cookies.get('sb-session') ||
-    !!request.cookies.get('sb-access-token') ||
-    request.cookies.getAll().some(c =>
-      projectRef && c.name.startsWith(`sb-${projectRef}-auth-token`)
-    );
+  // AuthContext sets this cookie on every auth-state change (login/logout/refresh).
+  // It is a lightweight sentinel — it does not carry token data.
+  const hasSession = !!request.cookies.get('sb-session');
 
   if (hasSession) return NextResponse.next();
 
-  // Admin/control-panel → admin login
-  if (isAdminRoute) {
-    const url = new URL('/auth/login', request.url);
-    url.searchParams.set('redirectTo', pathname);
-    return NextResponse.redirect(url);
-  }
-
-  // Member routes → member login
-  const url = new URL('/member/login', request.url);
+  const loginPage = isAdminRoute ? '/auth/login' : '/member/login';
+  const url = new URL(loginPage, request.url);
   url.searchParams.set('redirectTo', pathname);
   return NextResponse.redirect(url);
 }

@@ -1155,7 +1155,7 @@ BEGIN
     v_last,
     COALESCE(NEW.raw_user_meta_data->>'role', 'student')
   )
-  ON CONFLICT (id) DO NOTHING;
+  ON CONFLICT DO NOTHING;
   RETURN NEW;
 END;
 $$;

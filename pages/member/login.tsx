@@ -1,28 +1,15 @@
 // pages/member/login.tsx
-// Member portal login — for full members (graduated Connect, Discipleship, Crosspoint)
-// After auth routes admin → /admin, member → /member (or redirectTo param)
-// Students who have not graduated are rejected with a helpful message.
+// Member portal login — phone OTP (primary) or email/password (fallback).
+// Anyone who has a member_id lands on /member. Non-members are rejected.
 
 import { useState, useRef, KeyboardEvent } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { Loader2, Shield, ArrowLeft, ChevronRight, Mail, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { formatKenyanPhone, isValidKenyanPhone } from '@/lib/auth-utils';
 
 type Step = 'login' | 'otp' | 'email-form';
-interface ProfileResult { role: string; member_id: string | null; }
-
-function formatKenyanPhone(raw: string): string {
-  const d = raw.replace(/\D/g, '');
-  if (d.startsWith('0') && d.length === 10) return '+254' + d.slice(1);
-  if (d.startsWith('254') && d.length === 12) return '+' + d;
-  if (d.startsWith('7') && d.length === 9) return '+254' + d;
-  return raw;
-}
-
-function isValidPhone(phone: string): boolean {
-  return /^\+254[17]\d{8}$/.test(phone);
-}
 
 export default function MemberLogin() {
   const router = useRouter();
@@ -36,28 +23,64 @@ export default function MemberLogin() {
   const [loading,   setLoading]   = useState(false);
   const [error,     setError]     = useState('');
   const [countdown, setCountdown] = useState(0);
-  const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
-  const cdRef   = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const formatted   = formatKenyanPhone(phone);
-  const phoneValid  = isValidPhone(formatted);
-  const otpComplete = otp.every(d => d);
+  const otpRefs  = useRef<(HTMLInputElement | null)[]>([]);
+  const cdRef    = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const formatted  = formatKenyanPhone(phone);
+  const phoneValid = isValidKenyanPhone(formatted);
+  const otpDone    = otp.every(d => d);
 
   function startCountdown(secs = 60) {
     setCountdown(secs);
     if (cdRef.current) clearInterval(cdRef.current);
     cdRef.current = setInterval(() => {
-      setCountdown(prev => { if (prev <= 1) { clearInterval(cdRef.current!); return 0; } return prev - 1; });
+      setCountdown(prev => {
+        if (prev <= 1) { clearInterval(cdRef.current!); return 0; }
+        return prev - 1;
+      });
     }, 1000);
   }
 
+  // ── After a successful auth, check member_id and redirect ──────────────────
+  async function redirectIfMember(userId: string) {
+    try {
+      const { data, error: fetchErr } = await supabase
+        .from('profiles')
+        .select('member_id')
+        .eq('id', userId)
+        .single();
+
+      if (fetchErr) throw fetchErr;
+
+      if (data?.member_id) {
+        const dest = (router.query.redirectTo as string) || '/member';
+        await router.push(dest);
+      } else {
+        setError("You haven't graduated from Connect Class yet. Please use the Connect portal to continue your journey.");
+        await supabase.auth.signOut();
+      }
+    } catch {
+      setError('Something went wrong. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // ── Phone OTP ──────────────────────────────────────────────────────────────
   async function sendOtp() {
-    if (!phoneValid) { setError('Please enter a valid Kenyan phone number'); return; }
+    if (!phoneValid) { setError('Please enter a valid Kenyan phone number.'); return; }
     setError(''); setLoading(true);
-    const { error: e } = await supabase.auth.signInWithOtp({ phone: formatted });
-    setLoading(false);
-    if (e) { setError(e.message); return; }
-    startCountdown(60); setStep('otp');
+    try {
+      const { error: e } = await supabase.auth.signInWithOtp({ phone: formatted });
+      if (e) { setError(e.message); return; }
+      startCountdown(60);
+      setStep('otp');
+    } catch {
+      setError('Failed to send OTP. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   }
 
   function handleOtpChange(i: number, val: string) {
@@ -73,81 +96,73 @@ export default function MemberLogin() {
 
   async function verifyOtp(code: string) {
     setError(''); setLoading(true);
-    const { data, error: e } = await supabase.auth.verifyOtp({ phone: formatted, token: code, type: 'sms' });
-    if (e || !data.session) {
-      setError(e?.message ?? 'Invalid OTP.');
-      setOtp(['','','','','','']); otpRefs.current[0]?.focus(); setLoading(false); return;
+    try {
+      const { data, error: e } = await supabase.auth.verifyOtp({ phone: formatted, token: code, type: 'sms' });
+      if (e || !data.session) {
+        setError(e?.message ?? 'Invalid OTP. Please try again.');
+        setOtp(['', '', '', '', '', '']);
+        otpRefs.current[0]?.focus();
+        setLoading(false);
+        return;
+      }
+      await redirectIfMember(data.session.user.id);
+    } catch {
+      setError('Verification failed. Please try again.');
+      setLoading(false);
     }
-    await redirectByRole(data.session.user.id);
   }
 
+  // ── Email / password ───────────────────────────────────────────────────────
   async function handleEmailLogin(e: React.FormEvent) {
     e.preventDefault(); setError(''); setLoading(true);
     try {
       const { data, error: ae } = await supabase.auth.signInWithPassword({ email, password });
       if (ae || !data.session) {
-        setError(ae?.message ?? 'Invalid credentials.');
+        setError(ae?.message ?? 'Invalid email or password.');
         setLoading(false);
         return;
       }
-      await redirectByRole(data.session.user.id);
+      await redirectIfMember(data.session.user.id);
     } catch {
       setError('Sign in failed. Please try again.');
       setLoading(false);
     }
   }
 
-  async function redirectByRole(userId: string) {
-    const { data: pd } = await supabase.from('profiles').select('role, member_id').eq('id', userId).single();
-    const profile = pd as ProfileResult | null;
-
-    if (profile?.member_id) {
-      const redirectTo = (router.query.redirectTo as string) || '/member';
-      await router.push(redirectTo);
-      setLoading(false);
-      return;
-    }
-
-    // Signed in but not yet a member (still a Connect student)
-    setError('You haven\'t graduated from Connect Class yet. Please use the Connect portal to continue your journey.');
-    await supabase.auth.signOut();
-    setLoading(false);
+  function reset() {
+    setStep('login');
+    setOtp(['', '', '', '', '', '']);
+    setError('');
+    setPhone('');
   }
-
-  function reset() { setStep('login'); setOtp(['','','','','','']); setError(''); setPhone(''); }
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-[#0A0000]">
-
-      {/* Background */}
       <img src="/church-photos/dec-2024.jpg" alt="" aria-hidden
         className="absolute inset-0 w-full h-full object-cover opacity-60" />
       <div className="absolute inset-0 bg-gradient-to-br from-[#0A0000]/90 via-[#6A0010]/60 to-[#BF0A30]/20" />
 
       <div className="relative z-10 min-h-screen flex flex-col lg:flex-row">
 
-        {/* ── Left branding panel ──────────────────────────────────────────── */}
+        {/* ── Left branding ─────────────────────────────────────────────────── */}
         <div className="hidden lg:flex lg:w-[42%] flex-col justify-between p-12">
           <Link href="/" className="flex items-center gap-3">
             <img src="/brand/ruach-logo.png" alt="Ruach Tabernacle" className="h-10 w-auto" />
           </Link>
-
           <div>
             <p className="text-[#BF0A30] text-xs font-bold uppercase tracking-widest mb-4">Member Portal</p>
             <h1 className="text-4xl font-black text-white leading-tight mb-8 tracking-tight">
-              Welcome<br />
-              Home to<br />
-              <span className="text-[#BF0A30]">Ruach.</span>
+              Welcome<br />Home to<br /><span className="text-[#BF0A30]">Ruach.</span>
             </h1>
-
             <div className="bg-white/8 backdrop-blur-md border border-white/12 rounded-2xl p-6">
               <p className="text-white/85 text-sm italic leading-relaxed mb-4">
                 &ldquo;You are not just a church attendee — you are family. This is your home,
                 your community, and your place to grow and serve.&rdquo;
               </p>
               <div className="flex items-center gap-3">
-                <img src="/brand/rev-julian.png" alt="Rev. Julian Kyula" className="w-10 h-10 rounded-full object-cover object-top border border-[#D4AF37]/30"
-                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                <img src="/brand/rev-julian.png" alt="Rev. Julian Kyula"
+                  className="w-10 h-10 rounded-full object-cover object-top border border-[#D4AF37]/30"
+                  onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                 <div>
                   <p className="text-[#D4AF37] text-xs font-bold">Rev. Julian Kyula</p>
                   <p className="text-white/40 text-[11px]">Visionary &amp; Founder</p>
@@ -155,24 +170,21 @@ export default function MemberLogin() {
               </div>
             </div>
           </div>
-
           <p className="text-white/25 text-xs">© 2026 Ruach Assemblies</p>
         </div>
 
-        {/* ── Form panel ───────────────────────────────────────────────────── */}
+        {/* ── Form panel ────────────────────────────────────────────────────── */}
         <div className="flex-1 flex items-center justify-center p-5 lg:p-12 min-h-screen">
           <div className="w-full max-w-[420px]">
 
-            {/* Mobile logo */}
             <div className="flex flex-col items-center mb-7 lg:hidden">
               <Link href="/"><img src="/brand/ruach-logo.png" alt="Ruach Tabernacle" className="h-12 w-auto mb-3" /></Link>
               <p className="text-white/70 text-sm">Member Portal</p>
             </div>
 
-            {/* Card */}
             <div className="bg-[#0F0F0F] rounded-3xl shadow-2xl p-7 sm:p-8 border border-white/[0.07]">
 
-              {/* ── Login step ───────────────────────────────────────────── */}
+              {/* ── Phone OTP step ───────────────────────────────────────── */}
               {step === 'login' && (
                 <div className="animate-fade-in">
                   <h2 className="text-2xl font-black text-white mb-1 tracking-tight">Welcome back</h2>
@@ -187,17 +199,15 @@ export default function MemberLogin() {
 
                   <div className="form-group">
                     <label className="form-label">Phone Number</label>
-                    <div className="flex gap-0">
+                    <div className="flex">
                       <div className="flex items-center px-3 bg-[#1A1E28] border border-r-0 border-white/[0.08] rounded-l-2xl text-white/50 text-sm font-medium flex-shrink-0">
                         +254
                       </div>
-                      <input
-                        type="tel" value={phone}
+                      <input type="tel" value={phone}
                         onChange={e => { setPhone(e.target.value); setError(''); }}
                         placeholder="7XX XXX XXX" className="input flex-1"
                         style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
-                        onKeyDown={e => e.key === 'Enter' && sendOtp()}
-                      />
+                        onKeyDown={e => e.key === 'Enter' && sendOtp()} />
                     </div>
                     <p className="form-help">OTP sent via SMS — works with any Kenyan number</p>
                   </div>
@@ -205,7 +215,9 @@ export default function MemberLogin() {
                   {error && <div className="alert alert-error text-sm mb-4">{error}</div>}
 
                   <button onClick={sendOtp} disabled={loading || !phone} className="btn btn-primary btn-xl w-full mb-4">
-                    {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Sending OTP…</> : <>Get OTP <ChevronRight className="w-4 h-4" /></>}
+                    {loading
+                      ? <><Loader2 className="w-4 h-4 animate-spin" /> Sending OTP…</>
+                      : <>Get OTP <ChevronRight className="w-4 h-4" /></>}
                   </button>
 
                   <div className="divider-text">or</div>
@@ -223,7 +235,7 @@ export default function MemberLogin() {
                 </div>
               )}
 
-              {/* ── OTP step ─────────────────────────────────────────────── */}
+              {/* ── OTP verify step ──────────────────────────────────────── */}
               {step === 'otp' && (
                 <div className="animate-fade-in">
                   <button onClick={reset}
@@ -243,8 +255,7 @@ export default function MemberLogin() {
                         type="text" inputMode="numeric" maxLength={1} value={digit}
                         onChange={e => handleOtpChange(i, e.target.value)}
                         onKeyDown={e => handleOtpKey(i, e)}
-                        className={`otp-input flex-1 ${digit ? 'filled' : ''}`}
-                      />
+                        className={`otp-input flex-1 ${digit ? 'filled' : ''}`} />
                     ))}
                   </div>
                   {error && <div className="alert alert-error text-sm mb-4">{error}</div>}
@@ -253,17 +264,17 @@ export default function MemberLogin() {
                       <Loader2 className="w-4 h-4 animate-spin text-[#BF0A30]" /> Verifying…
                     </div>
                   )}
-                  <button onClick={() => verifyOtp(otp.join(''))} disabled={loading || !otpComplete}
-                    className="btn btn-primary btn-xl w-full mb-4">Verify &amp; Sign In</button>
-                  {countdown > 0 ? (
-                    <p className="text-center text-sm text-gray-400">Resend in <span className="font-semibold text-gray-300">{countdown}s</span></p>
-                  ) : (
-                    <button onClick={sendOtp} className="w-full text-center text-sm text-[#BF0A30] font-medium hover:underline">Resend OTP</button>
-                  )}
+                  <button onClick={() => verifyOtp(otp.join(''))} disabled={loading || !otpDone}
+                    className="btn btn-primary btn-xl w-full mb-4">
+                    Verify &amp; Sign In
+                  </button>
+                  {countdown > 0
+                    ? <p className="text-center text-sm text-gray-400">Resend in <span className="font-semibold text-gray-300">{countdown}s</span></p>
+                    : <button onClick={sendOtp} className="w-full text-center text-sm text-[#BF0A30] font-medium hover:underline">Resend OTP</button>}
                 </div>
               )}
 
-              {/* ── Email form ────────────────────────────────────────────── */}
+              {/* ── Email/password step ───────────────────────────────────── */}
               {step === 'email-form' && (
                 <div className="animate-fade-in">
                   <button onClick={() => { setStep('login'); setError(''); }}
@@ -282,7 +293,8 @@ export default function MemberLogin() {
                       <label className="form-label">Password</label>
                       <div className="relative">
                         <input type={showPwd ? 'text' : 'password'} value={password}
-                          onChange={e => setPassword(e.target.value)} placeholder="••••••••" required className="input pr-12" />
+                          onChange={e => setPassword(e.target.value)}
+                          placeholder="••••••••" required className="input pr-12" />
                         <button type="button" onClick={() => setShowPwd(!showPwd)}
                           className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-500 hover:text-gray-300">
                           {showPwd ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -290,7 +302,8 @@ export default function MemberLogin() {
                       </div>
                     </div>
                     {error && <div className="alert alert-error text-sm">{error}</div>}
-                    <Link href="/auth/forgot-password" className="block text-right text-sm text-[#BF0A30] hover:underline font-medium">
+                    <Link href="/auth/forgot-password"
+                      className="block text-right text-sm text-[#BF0A30] hover:underline font-medium">
                       Forgot password?
                     </Link>
                     <button type="submit" disabled={loading} className="btn btn-primary btn-xl w-full">
@@ -299,10 +312,8 @@ export default function MemberLogin() {
                   </form>
                 </div>
               )}
-
             </div>
 
-            {/* Footer */}
             <div className="flex flex-wrap justify-center gap-x-5 gap-y-2 mt-6">
               <Link href="/connect" className="text-white/50 text-xs hover:text-white transition-colors">Connect Portal</Link>
               <span className="text-white/20 text-xs">·</span>
