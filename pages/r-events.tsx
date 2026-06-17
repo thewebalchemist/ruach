@@ -19,6 +19,8 @@ interface Event {
   location:    string | null;
   image_url:   string | null;
   category:    string | null;
+  link_url:    string | null;
+  link_label:  string | null;
 }
 
 // ── Google Calendar URL ────────────────────────────────────────────────────────
@@ -72,6 +74,12 @@ function EventCard({ ev }: { ev: Event }) {
         </div>
         {ev.description && <p className="text-[#8B95A8] text-sm leading-relaxed mb-6">{ev.description}</p>}
         <div className="flex flex-wrap gap-2 mt-auto">
+          {ev.link_url && (
+            <a href={ev.link_url} target="_blank" rel="noopener noreferrer"
+              className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#BF0A30] hover:bg-[#9A0826] text-white text-xs font-bold uppercase tracking-wider transition-colors shadow-lg shadow-[rgba(191,10,48,0.3)]">
+              {ev.link_label || 'Register Now'} →
+            </a>
+          )}
           <a href={googleCalUrl(ev)} target="_blank" rel="noopener noreferrer"
             className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white/[0.06] hover:bg-white/[0.10] text-white/70 text-xs font-bold transition-colors">
             <Calendar className="w-3.5 h-3.5" /> Google Calendar
@@ -294,7 +302,7 @@ export const getServerSideProps: GetServerSideProps = async () => {
     const today = new Date().toISOString().split('T')[0];
     const { data } = await supabase
       .from('events')
-      .select('id, title, description, event_date, end_date, start_time, end_time, location, image_url, category')
+      .select('id, title, description, event_date, end_date, start_time, end_time, location, image_url, category, link_url, link_label')
       .gte('event_date', today)
       .neq('status', 'cancelled')
       .order('event_date', { ascending: true });

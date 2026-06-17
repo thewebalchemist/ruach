@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { Plus, Calendar, Edit, Trash2, Save, X, Loader2, AlertCircle, CheckCircle, Search, MapPin, Clock, LayoutList } from 'lucide-react';
+import {
+  Plus, Calendar, Edit, Trash2, Save, X, Loader2,
+  AlertCircle, CheckCircle, Search, MapPin, Clock, LayoutList, Link as LinkIcon, Image,
+} from 'lucide-react';
 import CPLayout from '@/components/control-panel/CPLayout';
 import { supabase } from '@/lib/supabase';
 
@@ -8,17 +11,33 @@ interface DBEvent {
   id: number;
   title: string;
   event_date: string;
+  end_date: string | null;
   start_time: string | null;
+  end_time: string | null;
   location: string | null;
   description: string | null;
+  image_url: string | null;
+  link_url: string | null;
+  link_label: string | null;
   is_public: boolean;
   chatbot_enabled: boolean;
   category?: string;
 }
 
 const EMPTY_FORM = {
-  title: '', event_date: '', start_time: '', location: '',
-  description: '', is_public: true, chatbot_enabled: true, category: 'church-wide'
+  title: '',
+  event_date: '',
+  end_date: '',
+  start_time: '',
+  end_time: '',
+  location: '',
+  description: '',
+  image_url: '',
+  link_url: '',
+  link_label: 'Register Now',
+  is_public: true,
+  chatbot_enabled: true,
+  category: 'church-wide',
 };
 
 function formatDate(d: string) {
@@ -100,7 +119,7 @@ export default function EventsCP() {
   const [view, setView] = useState<'list' | 'calendar'>('list');
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<DBEvent | null>(null);
-  const [form, setForm] = useState<typeof EMPTY_FORM & { is_public: boolean; chatbot_enabled: boolean }>(EMPTY_FORM);
+  const [form, setForm] = useState(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
@@ -120,7 +139,9 @@ export default function EventsCP() {
   }
 
   async function loadData() {
-    const { data } = await (supabase.from('events') as any).select('*').order('event_date', { ascending: false });
+    const { data } = await (supabase.from('events') as any)
+      .select('id, title, event_date, end_date, start_time, end_time, location, description, image_url, link_url, link_label, is_public, chatbot_enabled, category')
+      .order('event_date', { ascending: false });
     setEvents(data || []);
     setLoading(false);
   }
@@ -135,14 +156,19 @@ export default function EventsCP() {
   function openEdit(ev: DBEvent) {
     setEditing(ev);
     setForm({
-      title: ev.title,
-      event_date: ev.event_date,
-      start_time: ev.start_time || '',
-      location: ev.location || '',
-      description: ev.description || '',
-      is_public: ev.is_public,
-      chatbot_enabled: ev.chatbot_enabled,
-      category: ev.category || 'church-wide',
+      title:            ev.title,
+      event_date:       ev.event_date,
+      end_date:         ev.end_date || '',
+      start_time:       ev.start_time || '',
+      end_time:         ev.end_time || '',
+      location:         ev.location || '',
+      description:      ev.description || '',
+      image_url:        ev.image_url || '',
+      link_url:         ev.link_url || '',
+      link_label:       ev.link_label || 'Register Now',
+      is_public:        ev.is_public,
+      chatbot_enabled:  ev.chatbot_enabled,
+      category:         ev.category || 'church-wide',
     });
     setError('');
     setShowForm(true);
@@ -155,18 +181,23 @@ export default function EventsCP() {
   async function handleSave() {
     if (!form.title || !form.event_date) { setError('Title and date are required.'); return; }
     setSaving(true); setError('');
-    const payload = {
-      title: form.title,
-      event_date: form.event_date,
-      start_time: form.start_time || null,
-      location: form.location || null,
-      description: form.description || null,
-      is_public: form.is_public,
+    const payload: Record<string, unknown> = {
+      title:           form.title,
+      event_date:      form.event_date,
+      end_date:        form.end_date || null,
+      start_time:      form.start_time || null,
+      end_time:        form.end_time || null,
+      location:        form.location || null,
+      description:     form.description || null,
+      image_url:       form.image_url || null,
+      link_url:        form.link_url || null,
+      link_label:      form.link_label || null,
+      is_public:       form.is_public,
       chatbot_enabled: form.chatbot_enabled,
-      category: form.category,
+      category:        form.category,
     };
 
-    let err;
+    let err: { message: string } | null = null;
     if (editing) {
       ({ error: err } = await (supabase.from('events') as any).update(payload).eq('id', editing.id));
     } else {
@@ -174,13 +205,29 @@ export default function EventsCP() {
     }
 
     setSaving(false);
-    if (err) { setError(err.message); return; }
+    if (err) {
+      // If link_url / link_label columns don't exist yet, retry without them
+      if (err.message?.includes('link_url') || err.message?.includes('link_label')) {
+        delete payload.link_url;
+        delete payload.link_label;
+        let err2: { message: string } | null = null;
+        if (editing) {
+          ({ error: err2 } = await (supabase.from('events') as any).update(payload).eq('id', editing.id));
+        } else {
+          ({ error: err2 } = await (supabase.from('events') as any).insert(payload));
+        }
+        if (err2) { setError(err2.message); return; }
+        setError('⚠️ Event saved but CTA link was ignored — add link_url & link_label columns to your events table in Supabase.');
+      } else {
+        setError(err.message); return;
+      }
+    }
     setSaved(true);
-    setTimeout(() => { setSaved(false); setShowForm(false); loadData(); }, 1500);
+    setTimeout(() => { setSaved(false); setShowForm(false); loadData(); }, 1800);
   }
 
   async function handleDelete(id: number) {
-    if (!confirm('Delete this event?')) return;
+    if (!confirm('Delete this event? This cannot be undone.')) return;
     await (supabase.from('events') as any).delete().eq('id', id);
     loadData();
   }
@@ -245,19 +292,24 @@ export default function EventsCP() {
           ) : filtered.map(e => {
             const isPast = e.event_date < today;
             return (
-              <div key={e.id} className={`flex items-center gap-4 bg-white dark:bg-[#1A1A1A] rounded-2xl border border-gray-100 dark:border-[#2A2A2A] px-4 py-4 ${isPast ? 'opacity-60' : ''}`}>
-                <div className="w-10 h-10 bg-[#0891B2]/10 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <Calendar className="w-5 h-5 text-[#0891B2]" />
-                </div>
+              <div key={e.id} className={`flex items-start gap-4 bg-white dark:bg-[#1A1A1A] rounded-2xl border border-gray-100 dark:border-[#2A2A2A] px-4 py-4 ${isPast ? 'opacity-60' : ''}`}>
+                {e.image_url ? (
+                  <img src={e.image_url} alt="" className="w-14 h-14 object-cover rounded-xl flex-shrink-0 bg-gray-100" onError={(el) => { (el.target as HTMLImageElement).style.display = 'none'; }} />
+                ) : (
+                  <div className="w-14 h-14 bg-[#0891B2]/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <Calendar className="w-6 h-6 text-[#0891B2]" />
+                  </div>
+                )}
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-gray-900 dark:text-white text-sm truncate">{e.title}</p>
-                  <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-0.5">
-                    <span className="text-xs text-gray-500 flex items-center gap-1"><Clock className="w-3 h-3" />{formatDate(e.event_date)}{e.start_time ? ` · ${e.start_time}` : ''}</span>
+                  <p className="font-semibold text-gray-900 dark:text-white text-sm">{e.title}</p>
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-1">
+                    <span className="text-xs text-gray-500 flex items-center gap-1"><Clock className="w-3 h-3" />{formatDate(e.event_date)}{e.start_time ? ` · ${e.start_time}` : ''}{e.end_time ? `–${e.end_time}` : ''}</span>
                     {e.location && <span className="text-xs text-gray-500 flex items-center gap-1"><MapPin className="w-3 h-3" />{e.location}</span>}
+                    {e.link_url && <span className="text-xs text-blue-500 flex items-center gap-1"><LinkIcon className="w-3 h-3" />{e.link_label || 'CTA link'}</span>}
                   </div>
                 </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  {e.chatbot_enabled && <span className="hidden sm:inline text-[10px] bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-2 py-0.5 rounded-full font-medium">AI-enabled</span>}
+                <div className="flex items-center gap-1 flex-shrink-0">
+                  {e.chatbot_enabled && <span className="hidden sm:inline text-[10px] bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-2 py-0.5 rounded-full font-medium">AI</span>}
                   <button onClick={() => openEdit(e)} className="p-1.5 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-gray-100 dark:hover:bg-[#222] transition-colors"><Edit className="w-4 h-4" /></button>
                   <button onClick={() => handleDelete(e.id)} className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-gray-100 dark:hover:bg-[#222] transition-colors"><Trash2 className="w-4 h-4" /></button>
                 </div>
@@ -269,32 +321,52 @@ export default function EventsCP() {
 
       {/* Form modal */}
       {showForm && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-10">
+        <div className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-6 overflow-y-auto">
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowForm(false)} />
-          <div className="relative bg-white dark:bg-[#1A1A1A] rounded-2xl w-full max-w-xl shadow-2xl max-h-[90vh] overflow-y-auto">
+          <div className="relative bg-white dark:bg-[#1A1A1A] rounded-2xl w-full max-w-xl shadow-2xl">
             <div className="sticky top-0 flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-[#2A2A2A] bg-white dark:bg-[#1A1A1A] rounded-t-2xl">
               <h2 className="font-bold text-gray-900 dark:text-white">{editing ? 'Edit Event' : 'Add New Event'}</h2>
               <button onClick={() => setShowForm(false)} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-[#222] text-gray-400"><X className="w-5 h-5" /></button>
             </div>
-            <div className="p-6 space-y-4">
+            <div className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+
+              {/* Title */}
               <div>
                 <label className={lbl}>Event Title *</label>
-                <input value={form.title} onChange={e => set('title', e.target.value)} placeholder="e.g. Sunday Special Service" className={inp} />
+                <input value={form.title} onChange={e => set('title', e.target.value)} placeholder="e.g. The Charge 2026 — Men's Conference" className={inp} />
               </div>
+
+              {/* Dates */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className={lbl}>Date *</label>
+                  <label className={lbl}>Start Date *</label>
                   <input type="date" value={form.event_date} onChange={e => set('event_date', e.target.value)} className={inp} />
                 </div>
                 <div>
-                  <label className={lbl}>Time</label>
-                  <input type="time" value={form.start_time} onChange={e => set('start_time', e.target.value)} className={inp} />
+                  <label className={lbl}>End Date <span className="text-gray-300 normal-case font-normal">(optional)</span></label>
+                  <input type="date" value={form.end_date} onChange={e => set('end_date', e.target.value)} className={inp} />
                 </div>
               </div>
+
+              {/* Times */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className={lbl}>Start Time</label>
+                  <input type="time" value={form.start_time} onChange={e => set('start_time', e.target.value)} className={inp} />
+                </div>
+                <div>
+                  <label className={lbl}>End Time</label>
+                  <input type="time" value={form.end_time} onChange={e => set('end_time', e.target.value)} className={inp} />
+                </div>
+              </div>
+
+              {/* Location */}
               <div>
                 <label className={lbl}>Location</label>
-                <input value={form.location} onChange={e => set('location', e.target.value)} placeholder="e.g. Rhema Grounds" className={inp} />
+                <input value={form.location} onChange={e => set('location', e.target.value)} placeholder="e.g. Ruach Tabernacle / Online (Zoom)" className={inp} />
               </div>
+
+              {/* Category */}
               <div>
                 <label className={lbl}>Category</label>
                 <select value={form.category} onChange={e => set('category', e.target.value)} className={inp}>
@@ -302,20 +374,49 @@ export default function EventsCP() {
                   <option value="department">Department</option>
                   <option value="crosspoint">Crosspoint</option>
                   <option value="special">Special Event</option>
+                  <option value="prayer">Prayer</option>
+                  <option value="conference">Conference</option>
                 </select>
               </div>
+
+              {/* Description */}
               <div>
                 <label className={lbl}>Description</label>
-                <textarea value={form.description} onChange={e => set('description', e.target.value)} rows={3} placeholder="Brief description of the event…" className={`${inp} resize-none`} />
+                <textarea value={form.description} onChange={e => set('description', e.target.value)} rows={4} placeholder="Describe the event…" className={`${inp} resize-none`} />
               </div>
+
+              {/* Image URL */}
+              <div>
+                <label className={lbl}><Image className="inline w-3.5 h-3.5 mr-1" />Event Image URL</label>
+                <input value={form.image_url} onChange={e => set('image_url', e.target.value)} placeholder="/events/the-charge-2026.jpg or https://..." className={inp} />
+                {form.image_url && (
+                  <img src={form.image_url} alt="preview" className="mt-2 h-24 w-full object-cover rounded-xl" onError={(el) => { (el.target as HTMLImageElement).style.display = 'none'; }} />
+                )}
+                <p className="text-[11px] text-gray-400 mt-1">Save your image to <code className="bg-gray-100 dark:bg-[#222] px-1 rounded">/public/events/</code> then use <code className="bg-gray-100 dark:bg-[#222] px-1 rounded">/events/filename.jpg</code></p>
+              </div>
+
+              {/* CTA Link */}
+              <div className="rounded-xl border border-blue-100 dark:border-blue-900/30 bg-blue-50 dark:bg-blue-950/20 p-4 space-y-3">
+                <p className="text-xs font-semibold text-blue-700 dark:text-blue-400 uppercase tracking-wide flex items-center gap-1.5"><LinkIcon className="w-3.5 h-3.5" /> Call-to-Action Button</p>
+                <div>
+                  <label className={lbl}>Button Label</label>
+                  <input value={form.link_label} onChange={e => set('link_label', e.target.value)} placeholder="Register Now / Join Zoom / Learn More" className={inp} />
+                </div>
+                <div>
+                  <label className={lbl}>Button URL</label>
+                  <input type="url" value={form.link_url} onChange={e => set('link_url', e.target.value)} placeholder="https://forms.gle/... or https://zoom.us/..." className={inp} />
+                </div>
+              </div>
+
+              {/* Toggles */}
               <div className="flex flex-col gap-3">
                 <label className="flex items-center gap-3 cursor-pointer">
                   <button
                     type="button"
                     onClick={() => set('chatbot_enabled', !form.chatbot_enabled)}
-                    className={`w-10 h-6 rounded-full transition-colors relative ${form.chatbot_enabled ? 'bg-amber-500' : 'bg-gray-300 dark:bg-[#333]'}`}
+                    className={`w-10 h-6 rounded-full transition-colors relative flex-shrink-0 ${form.chatbot_enabled ? 'bg-amber-500' : 'bg-gray-300 dark:bg-[#333]'}`}
                   >
-                    <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${form.chatbot_enabled ? 'translate-x-4.5' : 'translate-x-0.5'}`} />
+                    <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${form.chatbot_enabled ? 'translate-x-4' : 'translate-x-0.5'}`} />
                   </button>
                   <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                     Show in Ask Ruach AI <span className="text-xs text-gray-400">(recommended)</span>
@@ -325,17 +426,17 @@ export default function EventsCP() {
                   <button
                     type="button"
                     onClick={() => set('is_public', !form.is_public)}
-                    className={`w-10 h-6 rounded-full transition-colors relative ${form.is_public ? 'bg-green-500' : 'bg-gray-300 dark:bg-[#333]'}`}
+                    className={`w-10 h-6 rounded-full transition-colors relative flex-shrink-0 ${form.is_public ? 'bg-green-500' : 'bg-gray-300 dark:bg-[#333]'}`}
                   >
-                    <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${form.is_public ? 'translate-x-4.5' : 'translate-x-0.5'}`} />
+                    <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${form.is_public ? 'translate-x-4' : 'translate-x-0.5'}`} />
                   </button>
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Public event</span>
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Public event (visible on the website)</span>
                 </label>
               </div>
 
               {error && (
-                <div className="flex items-center gap-2 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900 rounded-xl px-4 py-3">
-                  <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 flex-shrink-0" />
+                <div className="flex items-start gap-2 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900 rounded-xl px-4 py-3">
+                  <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
                   <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
                 </div>
               )}
