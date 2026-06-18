@@ -43,7 +43,7 @@ export default function ControlPanelDashboard() {
     const { data } = await supabase.auth.getSession();
     if (!data.session) { router.push('/auth/login?redirectTo=/control-panel'); return; }
     const { data: profile } = await supabase.from('profiles').select('role').eq('id', data.session.user.id).single() as any;
-    if (!profile || !['admin', 'pastor'].includes(profile.role)) {
+    if (!profile || !['admin', 'pastor', 'media'].includes(profile.role) || profile.status === 'suspended') {
       router.push('/'); return;
     }
     loadData();

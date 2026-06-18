@@ -14,7 +14,7 @@ export interface Database {
           first_name: string;
           last_name: string;
           full_name: string;
-          role: 'student' | 'member' | 'leader' | 'teacher' | 'admin' | 'pastor';
+          role: 'student' | 'member' | 'leader' | 'teacher' | 'admin' | 'pastor' | 'media';
           status: 'pending' | 'active' | 'suspended' | 'inactive';
           avatar_url: string | null;
           gender: 'male' | 'female' | null;

@@ -4,23 +4,24 @@ import { useRouter } from 'next/router';
 import { Session } from '@supabase/supabase-js';
 import { supabase, type Profile } from '@/lib/supabase';
 
-export type UserRole = 'student' | 'member' | 'leader' | 'teacher' | 'admin' | 'pastor';
+export type UserRole = 'student' | 'member' | 'leader' | 'teacher' | 'admin' | 'pastor' | 'media';
 
 interface AuthContextValue {
-  session:        Session | null;
-  profile:        Profile | null;
-  loading:        boolean;
-  role:           UserRole | null;
-  isMember:       boolean;
-  isTeacher:      boolean;
-  isAdmin:        boolean;
-  signOut:        () => Promise<void>;
-  refreshProfile: () => Promise<void>;
+  session:          Session | null;
+  profile:          Profile | null;
+  loading:          boolean;
+  role:             UserRole | null;
+  isMember:         boolean;
+  isTeacher:        boolean;
+  isAdmin:          boolean;
+  canManageContent: boolean;
+  signOut:          () => Promise<void>;
+  refreshProfile:   () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue>({
   session: null, profile: null, loading: true, role: null,
-  isMember: false, isTeacher: false, isAdmin: false,
+  isMember: false, isTeacher: false, isAdmin: false, canManageContent: false,
   signOut: async () => {}, refreshProfile: async () => {},
 });
 
@@ -94,15 +95,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     router.push(inAdminArea ? '/auth/login' : '/member/login');
   }, [router]);
 
-  const role      = profile?.role as UserRole | null;
-  const isMember  = !!role && ['member', 'leader', 'teacher', 'admin', 'pastor'].includes(role);
-  const isTeacher = !!role && ['teacher', 'admin', 'pastor', 'leader'].includes(role);
-  const isAdmin   = !!role && ['admin', 'pastor'].includes(role);
+  const role             = profile?.role as UserRole | null;
+  const isMember         = !!role && ['member', 'leader', 'teacher', 'admin', 'pastor'].includes(role);
+  const isTeacher        = !!role && ['teacher', 'admin', 'pastor', 'leader'].includes(role);
+  const isAdmin          = !!role && ['admin', 'pastor'].includes(role);
+  const canManageContent = !!role && ['media', 'admin', 'pastor'].includes(role);
 
   return (
     <AuthContext.Provider value={{
       session, profile, loading, role,
-      isMember, isTeacher, isAdmin,
+      isMember, isTeacher, isAdmin, canManageContent,
       signOut, refreshProfile,
     }}>
       {children}

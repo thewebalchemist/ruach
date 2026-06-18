@@ -53,7 +53,7 @@ export default function AskRuachConfig() {
     const { data } = await supabase.auth.getSession();
     if (!data.session) { router.push('/auth/login?redirectTo=/control-panel/ask-ruach'); return; }
     const { data: profile } = await supabase.from('profiles').select('role').eq('id', data.session.user.id).single() as any;
-    if (!profile || !['admin', 'pastor'].includes(profile.role)) { router.push('/'); return; }
+    if (!profile || !['admin', 'pastor'].includes(profile.role) || profile.status === 'suspended') { router.push('/'); return; }
     loadFAQs();
   }
 

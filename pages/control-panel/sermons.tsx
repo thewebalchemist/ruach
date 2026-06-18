@@ -43,7 +43,7 @@ export default function SermonsCP() {
     const { data } = await supabase.auth.getSession();
     if (!data.session) { router.push('/auth/login?redirectTo=/control-panel/sermons'); return; }
     const { data: profile } = await supabase.from('profiles').select('role').eq('id', data.session.user.id).single() as any;
-    if (!profile || !['admin', 'pastor'].includes(profile.role)) { router.push('/'); return; }
+    if (!profile || !['admin', 'pastor', 'media'].includes(profile.role) || profile.status === 'suspended') { router.push('/'); return; }
     loadData();
   }
 
@@ -106,9 +106,7 @@ export default function SermonsCP() {
     setForm(f => {
       const next = { ...f, [k]: v };
       if (k === 'title' && !editing) next.slug = generateSlug(v);
-      if (k === 'youtube_url') {
-        const thumb = getYouTubeThumbnail(v);
-      }
+      // thumbnail is rendered inline from form.youtube_url directly, no need to store separately
       return next;
     });
   }

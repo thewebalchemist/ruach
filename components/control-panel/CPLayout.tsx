@@ -1,13 +1,13 @@
-import { useState, ReactNode, useEffect } from 'react';
+import { useState, ReactNode } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import {
-  LayoutDashboard, Video, Calendar, HelpCircle, Radio,
+  LayoutDashboard, Video, Calendar, Radio,
   Settings, ChevronRight, LogOut, Menu, X, Church,
-  Sparkles, FileText, Layers, Bell, ExternalLink, Users
+  Sparkles, Layers, ExternalLink, Users, UserPlus
 } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/context/AuthContext';
 
 interface CPLayoutProps {
   children: ReactNode;
@@ -24,27 +24,18 @@ const NAV = [
   { label: 'Events',      href: '/control-panel/events',     icon: Calendar },
   { label: 'Ask Ruach',   href: '/control-panel/ask-ruach',  icon: Sparkles },
   { label: 'Church Info', href: '/control-panel/church-info',icon: Church },
-  { label: 'FAQs',        href: '/control-panel/faqs',       icon: HelpCircle },
   { label: 'Settings',    href: '/control-panel/settings',   icon: Settings },
 ];
 
 const ADMIN_LINK = { label: 'Church Admin', href: '/admin', icon: Users };
+const TEAM_LINK  = { label: 'Team Members', href: '/control-panel/team', icon: UserPlus };
 
 export default function CPLayout({ children, title, subtitle, actions }: CPLayoutProps) {
   const router = useRouter();
+  const { profile, signOut, isAdmin } = useAuth();
   const [open, setOpen] = useState(false);
-  const [userEmail, setUserEmail] = useState('');
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session?.user?.email) setUserEmail(data.session.user.email);
-    });
-  }, []);
-
-  async function handleLogout() {
-    await supabase.auth.signOut();
-    router.push('/auth/login');
-  }
+  const userEmail = profile?.email ?? '';
+  const isMedia   = profile?.role === 'media';
 
   const isActive = (href: string) =>
     href === '/control-panel'
@@ -84,15 +75,31 @@ export default function CPLayout({ children, title, subtitle, actions }: CPLayou
           </Link>
         ))}
 
-        <div className="pt-3 mt-3 border-t border-gray-100 dark:border-[#1E1E1E]">
-          <Link
-            href={ADMIN_LINK.href}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-[#1A1A1A] hover:text-gray-900 dark:hover:text-white transition-colors"
-          >
-            <ADMIN_LINK.icon className="w-4 h-4 flex-shrink-0" />
-            {ADMIN_LINK.label}
-            <ExternalLink className="w-3 h-3 ml-auto opacity-50" />
-          </Link>
+        <div className="pt-3 mt-3 border-t border-gray-100 dark:border-[#1E1E1E] space-y-0.5">
+          {isAdmin && (
+            <Link
+              href={TEAM_LINK.href}
+              onClick={() => setOpen(false)}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+                isActive(TEAM_LINK.href)
+                  ? 'bg-[#BF0A30] text-white'
+                  : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-[#1A1A1A] hover:text-gray-900 dark:hover:text-white'
+              }`}
+            >
+              <TEAM_LINK.icon className="w-4 h-4 flex-shrink-0" />
+              {TEAM_LINK.label}
+            </Link>
+          )}
+          {!isMedia && (
+            <Link
+              href={ADMIN_LINK.href}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-[#1A1A1A] hover:text-gray-900 dark:hover:text-white transition-colors"
+            >
+              <ADMIN_LINK.icon className="w-4 h-4 flex-shrink-0" />
+              {ADMIN_LINK.label}
+              <ExternalLink className="w-3 h-3 ml-auto opacity-50" />
+            </Link>
+          )}
         </div>
       </div>
 
@@ -108,7 +115,7 @@ export default function CPLayout({ children, title, subtitle, actions }: CPLayou
           </div>
         </div>
         <button
-          onClick={handleLogout}
+          onClick={signOut}
           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-500 hover:bg-gray-100 dark:hover:bg-[#1A1A1A] hover:text-red-600 transition-colors"
         >
           <LogOut className="w-4 h-4" />

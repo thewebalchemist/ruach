@@ -60,6 +60,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       first_name: 'Admin',
       last_name:  'Ruach',
       role:       'admin',
+      status:     'active',
       member_id:  null,
     }, { onConflict: 'id' });
 

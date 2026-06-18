@@ -66,11 +66,15 @@ export default function AdminLogin() {
       const role       = data?.role ?? '';
       const redirectTo = router.query.redirectTo as string | undefined;
 
-      if (['admin', 'pastor', 'teacher', 'leader'].includes(role)) {
-        // Honour the original destination if it was an admin route
+      if (['admin', 'pastor', 'media'].includes(role)) {
+        // admin, pastor, and media all land in the control panel
         const dest = (redirectTo?.startsWith('/admin') || redirectTo?.startsWith('/control-panel'))
           ? redirectTo
-          : '/admin';
+          : '/control-panel';
+        await router.push(dest);
+      } else if (['teacher', 'leader'].includes(role)) {
+        // teacher/leader can use the church-admin area but not the control panel
+        const dest = redirectTo?.startsWith('/admin') ? redirectTo : '/admin';
         await router.push(dest);
       } else if (data?.member_id) {
         await router.push('/member');
