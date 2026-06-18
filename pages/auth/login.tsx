@@ -7,7 +7,7 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { Eye, EyeOff, Loader2, Mail, ChevronRight, ArrowLeft, Shield } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
-import { formatKenyanPhone, isValidKenyanPhone } from '@/lib/auth-utils';
+import { formatKenyanPhone, isValidKenyanPhone, friendlyAuthError } from '@/lib/auth-utils';
 
 type Step = 'method' | 'otp' | 'email-form';
 
@@ -94,7 +94,7 @@ export default function AdminLogin() {
     setError(''); setLoading(true);
     try {
       const { error: e } = await supabase.auth.signInWithOtp({ phone: formatted });
-      if (e) { setError(e.message); return; }
+      if (e) { setError(friendlyAuthError(e.message, 'otp')); return; }
       startCountdown(60);
       setStep('otp');
     } catch {
@@ -120,7 +120,7 @@ export default function AdminLogin() {
     try {
       const { data, error: e } = await supabase.auth.verifyOtp({ phone: formatted, token: code, type: 'sms' });
       if (e || !data.session) {
-        setError(e?.message ?? 'Invalid OTP. Please try again.');
+        setError(friendlyAuthError(e?.message, 'otp'));
         setOtp(['', '', '', '', '', '']);
         otpRefs.current[0]?.focus();
         setLoading(false);
@@ -139,7 +139,7 @@ export default function AdminLogin() {
     try {
       const { data, error: ae } = await supabase.auth.signInWithPassword({ email, password });
       if (ae || !data.session) {
-        setError(ae?.message ?? 'Invalid email or password.');
+        setError(friendlyAuthError(ae?.message));
         setLoading(false);
         return;
       }
