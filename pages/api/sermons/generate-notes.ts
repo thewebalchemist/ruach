@@ -26,71 +26,86 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const hasTranscript = typeof transcript === 'string' && transcript.trim().length > 100;
 
-  const prompt = hasTranscript
-    ? `You are a sermon notes assistant for Ruach Tabernacle Church.
+  const prompt = `You are a skilled pastoral assistant and content writer for Ruach Tabernacle Church.
 
-Below is the actual transcript from a sermon titled "${title}" by ${preacher}.${scripture ? `\nMain scripture reference: ${scripture}` : ''}
+**Sermon Information:**
+- Title: ${title}
+- Preacher: ${preacher}
+${scripture ? `- Scripture: ${scripture}` : ''}
+${summary ? `- Key Theme: ${summary}` : ''}
+${hasTranscript ? `\n**Full Sermon Transcript:**\n--- TRANSCRIPT START ---\n${transcript!.trim().substring(0, 12000)}\n--- TRANSCRIPT END ---\n\nIMPORTANT: Use the transcript above as your PRIMARY source. All points, quotes, and scripture references must come directly from what was preached. Do NOT invent or add content not found in the transcript.` : ''}
 
---- TRANSCRIPT START ---
-${transcript.trim().substring(0, 8000)}
---- TRANSCRIPT END ---
+**Instructions:**
+Create a comprehensive, engaging, and SEO-optimized sermon summary with the following sections:
 
-Based ONLY on what is in this transcript, produce structured sermon notes in Markdown with these exact sections:
+## Opening Hook
+Start with 1-2 compelling sentences that capture the essence of the sermon. Make it engaging and relatable to draw readers in.
 
-## Sermon Outline
-List 3–5 main points using only ideas explicitly stated in this sermon. Quote or closely paraphrase the preacher.
+## Main Theme
+Clearly state the central message or theme of the sermon in one paragraph. Explain why this message is relevant and important for today's believers.
 
-## Key Takeaways
-5 practical bullet points drawn directly from this message.
+## Key Points
+Break down 3-5 main teachings and insights from the sermon as bullet points. Each point should be clear, actionable, and memorable. Include relevant scripture references where applicable.
 
-## Scripture References
-List every Bible verse or passage actually mentioned or quoted in the transcript. Format each as: **Book Chapter:Verse** — brief quote or paraphrase as used in the sermon. Do NOT add any verses not mentioned in the transcript.
+## Biblical Foundation
+Explain the key scripture passages used in the sermon in one paragraph. Provide context and show how they support the main message. Connect Old and New Testament references if applicable.
 
-## Application Questions
-3 reflection or discussion questions based on what THIS sermon specifically teaches.
+## Practical Application
+Provide 2-3 practical ways believers can apply this teaching in their daily lives. Make it specific and actionable. Address common challenges or questions.
 
-## Closing Prayer
-A 2–3 sentence prayer that reflects the specific themes and scriptures of this sermon.
+## Powerful Quote
+Include the most memorable or impactful statement from the sermon (1-2 sentences). Something that can stand alone and be shared on social media.
 
-CRITICAL RULES:
-- Do NOT invent points, ideas, or scriptures that are not in the transcript
-- Do NOT add generic Christian content — stay 100% within this sermon's content
-- If the transcript is incomplete, work with what is there and note it briefly`
-    : `You are a sermon notes assistant for Ruach Tabernacle Church.
+## Call to Action
+End with an encouraging call to action. Invite readers to reflect, pray, or take specific steps. Create a sense of urgency or importance.
 
-Generate structured sermon notes in Markdown for:
-- **Title**: ${title}
-- **Preacher**: ${preacher}
-${scripture ? `- **Scripture**: ${scripture}` : ''}
-${summary ? `- **Description**: ${summary}` : ''}
+## Discussion Questions
+Provide 3-5 thought-provoking questions for small groups or personal reflection. Questions should encourage deeper thinking and application.
 
-## Sermon Outline
-3–5 main points relevant to the title and theme.
+**Writing Style Requirements:**
+- Write in a warm, pastoral, and accessible tone
+- Use clear, concise language that anyone can understand
+- Avoid overly theological jargon unless necessary
+- Make it engaging and inspiring, not just informative
+- Keep paragraphs short (3-5 sentences) for easy reading
+- Total length: 500-800 words
+- Optimize for SEO by naturally including relevant keywords like: faith, Christian living, Bible study, spiritual growth
 
-## Key Takeaways
-5 practical bullet points for the congregation.
+**Special Considerations:**
+- Write for both new believers and mature Christians
+- Be culturally sensitive and inclusive in language
+- Maintain biblical accuracy and theological soundness
+- Make it shareable — people should want to forward this to friends
+- End on a note of hope and encouragement
+${hasTranscript ? '- CRITICAL: Stay strictly within the content of the transcript. Do NOT add scriptures, stories, or points not in the transcript.' : ''}
 
-## Scripture References
-The main scripture${scripture ? ` (${scripture})` : ''} plus 2–3 supporting verses that relate to this theme.
-
-## Application Questions
-3 reflection questions for personal or group study.
-
-## Closing Prayer
-A 2–3 sentence prayer reflecting the sermon theme.
-
-Use concise, faith-based language for a modern church congregation.`;
+Format the output in clean Markdown with clear section headings. The summary should make someone who missed the sermon feel like they got the core message, while also making them want to watch the full video.`;
 
   try {
     const completion = await groq.chat.completions.create({
       model: 'llama-3.3-70b-versatile',
-      max_tokens: hasTranscript ? 2000 : 1200,
-      temperature: hasTranscript ? 0.2 : 0.6,
+      max_tokens: hasTranscript ? 2500 : 1800,
+      temperature: hasTranscript ? 0.25 : 0.5,
       messages: [{ role: 'user', content: prompt }],
     });
 
     const notes = completion.choices[0]?.message?.content ?? '';
-    return res.status(200).json({ notes });
+
+    let description = '';
+    if (notes) {
+      const descGroq = await groq.chat.completions.create({
+        model: 'llama-3.3-70b-versatile',
+        max_tokens: 150,
+        temperature: 0.3,
+        messages: [{
+          role: 'user',
+          content: `Based on these sermon notes, write a short 2-3 sentence SEO-friendly description for a sermon titled "${title}" by ${preacher} at Ruach Tabernacle Church.${hasTranscript ? ' Ground it in the actual sermon content.' : ''}\n\nNotes:\n${notes.substring(0, 2000)}\n\nReturn ONLY the description. No quotes, no prefix, no "Here is...". Just the 2-3 sentences.`,
+        }],
+      });
+      description = descGroq.choices[0]?.message?.content?.trim() ?? '';
+    }
+
+    return res.status(200).json({ notes, description });
   } catch (e: unknown) {
     console.error('[generate-notes]', e);
     return res.status(500).json({ error: 'Failed to generate notes' });

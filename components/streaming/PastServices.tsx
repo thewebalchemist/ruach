@@ -91,9 +91,9 @@ function PastServiceCard({ sermon }: { sermon: Sermon }) {
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
           <Play className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
-        {sermon.duration && (
+        {sermon.duration_seconds && (
           <div className="absolute bottom-1 right-1 px-1.5 py-0.5 bg-black/80 text-white text-[10px] font-medium rounded">
-            {sermon.duration}
+            {Math.floor(sermon.duration_seconds / 60)}:{String(sermon.duration_seconds % 60).padStart(2, '0')}
           </div>
         )}
       </div>

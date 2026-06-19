@@ -113,7 +113,7 @@ async function fetchActiveFAQs(): Promise<FAQ[]> {
 async function fetchSermonSummaries(): Promise<SermonSummary[]> {
   const { data, error } = await supabase
     .from('sermons')
-    .select('id, slug, title, preacher, service_date, summary, scripture, tags, notes, youtube_url')
+    .select('id, slug, title, preacher, service_date, description, scripture_ref, tags, notes, youtube_url')
     .order('service_date', { ascending: false })
     .limit(30);
   
@@ -227,12 +227,12 @@ ${church_info.website ? `- Website: ${church_info.website}` : ''}
     prompt += `### SERMONS LIBRARY\nWhen someone asks about a sermon topic, teaching, or wants to learn about something spiritually, find relevant sermons below and summarize the key points FROM THOSE SERMONS. Always provide the watch link.\nIMPORTANT: Sermon links use the format /${'{'}slug{'}'} (not /sermons/slug).\n\n`;
     sermons.slice(0, 25).forEach((sermon) => {
       const date = new Date(sermon.service_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-      prompt += `SERMON: "${sermon.title}"\nPreacher: ${sermon.preacher} | Date: ${date}${sermon.scripture ? ` | Scripture: ${sermon.scripture}` : ''}\nWatch: /${sermon.slug}\n`;
-      if (sermon.summary) {
-        prompt += `Description: ${sermon.summary.substring(0, 150).replace(/\n/g, ' ').replace(/[*#_]/g, '')}\n`;
+      prompt += `SERMON: "${sermon.title}"\nPreacher: ${sermon.preacher} | Date: ${date}${sermon.scripture_ref ? ` | Scripture: ${sermon.scripture_ref}` : ''}\nWatch: /${sermon.slug}\n`;
+      if (sermon.description) {
+        prompt += `Description: ${sermon.description.substring(0, 150).replace(/\n/g, ' ').replace(/[*#_]/g, '')}\n`;
       }
-      if ((sermon as any).notes) {
-        const notesText = ((sermon as any).notes as string).substring(0, 400).replace(/[#*_`]/g, '').replace(/\n+/g, ' ');
+      if (sermon.notes) {
+        const notesText = sermon.notes.substring(0, 400).replace(/[#*_`]/g, '').replace(/\n+/g, ' ');
         prompt += `Sermon content: ${notesText}\n`;
       }
       prompt += '\n';

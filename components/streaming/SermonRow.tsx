@@ -145,9 +145,9 @@ function SermonCard({ sermon, index, isInWatchlist, onToggleWatchlist }: SermonC
           </div>
 
           {/* Duration Badge */}
-          {sermon.duration && (
+          {sermon.duration_seconds && (
             <div className="absolute bottom-3 right-3 px-2.5 py-1 bg-black/80 text-white text-xs font-medium rounded-lg">
-              {sermon.duration}
+              {Math.floor(sermon.duration_seconds / 60)}:{String(sermon.duration_seconds % 60).padStart(2, '0')}
             </div>
           )}
 
@@ -203,9 +203,9 @@ function SermonCard({ sermon, index, isInWatchlist, onToggleWatchlist }: SermonC
             </div>
 
             {/* Description Preview */}
-            {sermon.summary && (
+            {sermon.description && (
               <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2">
-                {truncateText(stripMarkdown(sermon.summary), 100)}
+                {truncateText(stripMarkdown(sermon.description), 100)}
               </p>
             )}
 

@@ -111,18 +111,18 @@ function HeroSlider({ sermons, fallback }: { sermons: Sermon[]; fallback: typeof
         <div className="absolute bottom-10 left-6 md:left-12 max-w-lg" style={{ zIndex: 20 }}>
           {cur.kind === 'db' && (
             <>
-              {(cur.sermon as any).series && (
+              {cur.sermon.series && (
                 <p className="text-[#BF0A30] text-[10px] font-black uppercase tracking-widest mb-2" style={H}>
-                  {(cur.sermon as any).series.title}
+                  {cur.sermon.series.title}
                 </p>
               )}
               <h2 className="text-white text-2xl md:text-3xl lg:text-4xl font-black leading-tight mb-2 drop-shadow-lg" style={H}>
                 {cur.sermon.title}
               </h2>
               <p className="text-white/70 text-sm mb-1">{cur.sermon.preacher}</p>
-              {(cur.sermon as any).summary && (
+              {cur.sermon.description && (
                 <p className="text-white/55 text-sm leading-relaxed mb-4 line-clamp-2 hidden md:block">
-                  {((cur.sermon as any).summary as string).replace(/[#*_`]/g, '').substring(0, 160)}
+                  {cur.sermon.description.replace(/[#*_`]/g, '').substring(0, 160)}
                 </p>
               )}
             </>
@@ -261,8 +261,8 @@ function SermonRow({ title, children }: { title: string; children: React.ReactNo
 /* ─── Supabase sermon card ───────────────────────────────────────── */
 function DbSermonCard({ sermon }: { sermon: Sermon }) {
   const thumb = getThumb(sermon);
-  const series = (sermon as any).series as { title: string; slug: string } | null;
-  const summary = (sermon as any).summary as string | undefined;
+  const series = sermon.series as { title: string; slug: string } | null;
+  const summary = sermon.description;
   return (
     <Link href={`/${sermon.slug}`} className="group flex-shrink-0 w-[180px] sm:w-[220px]">
       <div className="relative aspect-video rounded-xl overflow-hidden group-hover:scale-[1.04] transition-transform duration-300">
@@ -294,9 +294,10 @@ interface SermonsPageProps {
   sermons:        Sermon[];
   featuredSermon: Sermon | null;
   seriesList:     { id: number; title: string; slug: string }[];
+  preachers:      string[];
 }
 
-export default function SermonsPage({ sermons, featuredSermon, seriesList }: SermonsPageProps) {
+export default function SermonsPage({ sermons, featuredSermon, seriesList, preachers }: SermonsPageProps) {
   const [search,   setSearch]   = useState('');
   const [activeCategory, setActiveCategory] = useState<string>('all');
 
@@ -310,13 +311,17 @@ export default function SermonsPage({ sermons, featuredSermon, seriesList }: Ser
   // Group sermons by series
   const bySeries = seriesList.map(sr => ({
     series: sr,
-    sermons: sermons.filter(s => (s.series as any)?.id === sr.id || (s as any).series_id === sr.id),
+    sermons: sermons.filter(s => (s.series as any)?.id === sr.id || s.series_id === sr.id),
   })).filter(g => g.sermons.length > 0);
 
-  // Group by category
-  const categorySermons = activeCategory !== 'all'
-    ? sermons.filter(s => (s as any).category === activeCategory)
-    : sermons;
+  const [filterPreacher, setFilterPreacher] = useState<string>('all');
+
+  // Group by category and preacher
+  const categorySermons = sermons.filter(s => {
+    if (activeCategory !== 'all' && s.category !== activeCategory) return false;
+    if (filterPreacher !== 'all' && s.preacher !== filterPreacher) return false;
+    return true;
+  });
 
   return (
     <Layout title="Sermons — Ruach Tabernacle" description="Watch powerful messages from Ruach Tabernacle. Kingdom-focused sermons that will transform your life.">
@@ -387,6 +392,25 @@ export default function SermonsPage({ sermons, featuredSermon, seriesList }: Ser
                       activeCategory === cat ? 'bg-[#BF0A30] text-white' : 'bg-white/[0.06] text-white/50 hover:bg-white/[0.10]'
                     }`} style={H}>
                     {cat}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {preachers.length > 1 && (
+              <div className="flex gap-2 overflow-x-auto px-6 md:px-12 pb-2 mb-6" style={{ scrollbarWidth: 'none' }}>
+                <button onClick={() => setFilterPreacher('all')}
+                  className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-colors ${
+                    filterPreacher === 'all' ? 'bg-white/20 text-white' : 'bg-white/[0.06] text-white/50 hover:bg-white/[0.10]'
+                  }`} style={H}>
+                  All Preachers
+                </button>
+                {preachers.map(p => (
+                  <button key={p} onClick={() => setFilterPreacher(p)}
+                    className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-colors ${
+                      filterPreacher === p ? 'bg-white/20 text-white' : 'bg-white/[0.06] text-white/50 hover:bg-white/[0.10]'
+                    }`} style={H}>
+                    {p}
                   </button>
                 ))}
               </div>
@@ -488,14 +512,16 @@ export const getServerSideProps: GetServerSideProps = async () => {
       (supabase as any).from('sermons').select('*, series(id, title, slug)').eq('is_featured', true).limit(1).maybeSingle(),
       supabase.from('series').select('id, title, slug').order('title'),
     ]);
+    const uniquePreachers = [...new Set((sermons ?? []).map((s: any) => s.preacher).filter(Boolean))] as string[];
     return {
       props: {
         sermons:        sermons ?? [],
         featuredSermon: featured ?? null,
         seriesList:     seriesList ?? [],
+        preachers:      uniquePreachers.sort(),
       },
     };
   } catch {
-    return { props: { sermons: [], featuredSermon: null, seriesList: [] } };
+    return { props: { sermons: [], featuredSermon: null, seriesList: [], preachers: [] } };
   }
 };

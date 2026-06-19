@@ -27,14 +27,14 @@ export default function HeroBanner({
     title: featuredSeries?.title || '',
     preacher: '',
     service_date: featuredSeries?.created_at || '',
-    summary: featuredSeries?.description || '',
+    description: featuredSeries?.description || '',
     youtube_url: '',
     slug: featuredSeries?.slug || '',
     thumbnail_url: featuredSeries?.image_url || null,
   };
 
   const backgroundImage = item.thumbnail_url || getYouTubeThumbnail(item.youtube_url || '', 'maxres');
-  const description = truncateText(stripMarkdown(item.summary || ''), 180);
+  const description = truncateText(stripMarkdown(item.description || ''), 180);
 
   return (
     <section className="relative w-full min-h-[75vh] md:min-h-[85vh] overflow-hidden">
@@ -87,16 +87,16 @@ export default function HeroBanner({
                 <span className="text-sm md:text-base">{formatDateShort(item.service_date)}</span>
               </>
             )}
-            {featuredSermon?.duration && (
+            {featuredSermon?.duration_seconds && (
               <>
                 <span className="w-1.5 h-1.5 bg-gray-500 rounded-full" />
-                <span className="text-sm md:text-base">{featuredSermon.duration}</span>
+                <span className="text-sm md:text-base">{Math.floor(featuredSermon.duration_seconds / 60)}:{String(featuredSermon.duration_seconds % 60).padStart(2, '0')}</span>
               </>
             )}
-            {featuredSermon?.scripture && (
+            {featuredSermon?.scripture_ref && (
               <>
                 <span className="w-1.5 h-1.5 bg-gray-500 rounded-full" />
-                <span className="text-[#BF0A30] font-medium text-sm md:text-base">{featuredSermon.scripture}</span>
+                <span className="text-[#BF0A30] font-medium text-sm md:text-base">{featuredSermon.scripture_ref}</span>
               </>
             )}
           </div>

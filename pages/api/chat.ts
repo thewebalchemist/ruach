@@ -130,7 +130,7 @@ function findRelevantSermons(
     return mentioned.slice(0, 3).map(s => ({
       id: s.id, title: s.title, preacher: s.preacher,
       slug: s.slug, youtube_url: (s as any).youtube_url,
-      service_date: s.service_date, scripture: s.scripture,
+      service_date: s.service_date, scripture_ref: s.scripture_ref,
     }));
   }
 
@@ -140,7 +140,7 @@ function findRelevantSermons(
 
   const scored = sermons.map(s => {
     let score = 0;
-    const text = `${s.title} ${s.summary || ''} ${(s as any).notes || ''}`.toLowerCase();
+    const text = `${s.title} ${s.description || ''} ${(s as any).notes || ''}`.toLowerCase();
     words.forEach(w => { if (text.includes(w)) score++; });
     if (s.title.toLowerCase().includes(query)) score += 5;
     return { s, score };
@@ -149,7 +149,7 @@ function findRelevantSermons(
   return scored.slice(0, 3).map(({ s }) => ({
     id: s.id, title: s.title, preacher: s.preacher,
     slug: s.slug, youtube_url: (s as any).youtube_url,
-    service_date: s.service_date, scripture: s.scripture,
+    service_date: s.service_date, scripture_ref: s.scripture_ref,
   }));
 }
 

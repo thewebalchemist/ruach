@@ -167,7 +167,7 @@ function DashboardTab({ stats, sermons, events }: { stats: any; sermons: Sermon[
                   <img src={getYouTubeThumbnail(sermon.youtube_url, 'mq') ?? ''} alt="" className="w-full h-full object-cover" />
                 </div>
                 <div className="flex-1 min-w-0"><p className="font-medium text-gray-900 dark:text-white text-sm truncate">{sermon.title}</p><p className="text-xs text-gray-500">{sermon.preacher}</p></div>
-                <div className="flex items-center gap-1 text-gray-400 text-xs"><Eye className="w-3 h-3" />{sermon.views || 0}</div>
+                <div className="flex items-center gap-1 text-gray-400 text-xs"><Eye className="w-3 h-3" />{sermon.view_count || 0}</div>
               </div>
             ))}
           </div>
@@ -196,10 +196,10 @@ function SermonsTab({ sermons, allSeries, onRefresh }: { sermons: Sermon[]; allS
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({ title: '', preacher: '', youtube_url: '', service_date: new Date().toISOString().split('T')[0], summary: '', series_id: '', series_part: '', scripture: '', duration: '', audio_url: '' });
+  const [form, setForm] = useState({ title: '', preacher: '', youtube_url: '', service_date: new Date().toISOString().split('T')[0], description: '', series_id: '', series_part: '', scripture_ref: '', duration_seconds: '', audio_url: '' });
 
-  const resetForm = () => { setForm({ title: '', preacher: '', youtube_url: '', service_date: new Date().toISOString().split('T')[0], summary: '', series_id: '', series_part: '', scripture: '', duration: '', audio_url: '' }); setEditingId(null); setShowForm(false); };
-  const handleEdit = (sermon: Sermon) => { setForm({ title: sermon.title, preacher: sermon.preacher, youtube_url: sermon.youtube_url || '', service_date: sermon.service_date, summary: sermon.summary || '', series_id: sermon.series_id?.toString() || '', series_part: sermon.series_part?.toString() || '', scripture: sermon.scripture || '', duration: sermon.duration || '', audio_url: sermon.audio_url || '' }); setEditingId(sermon.id); setShowForm(true); };
+  const resetForm = () => { setForm({ title: '', preacher: '', youtube_url: '', service_date: new Date().toISOString().split('T')[0], description: '', series_id: '', series_part: '', scripture_ref: '', duration_seconds: '', audio_url: '' }); setEditingId(null); setShowForm(false); };
+  const handleEdit = (sermon: Sermon) => { setForm({ title: sermon.title, preacher: sermon.preacher, youtube_url: sermon.youtube_url || '', service_date: sermon.service_date, description: sermon.description || '', series_id: sermon.series_id?.toString() || '', series_part: sermon.series_part?.toString() || '', scripture_ref: sermon.scripture_ref || '', duration_seconds: sermon.duration_seconds?.toString() || '', audio_url: sermon.audio_url || '' }); setEditingId(sermon.id); setShowForm(true); };
   const handleSave = async () => {
     if (!form.title || !form.preacher) { alert('Please fill in title and preacher'); return; }
     setSaving(true);
@@ -238,11 +238,11 @@ function SermonsTab({ sermons, allSeries, onRefresh }: { sermons: Sermon[]; allS
                 <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Part #</label><input type="number" value={form.series_part} onChange={(e) => setForm({ ...form, series_part: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white" /></div>
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Scripture</label><input type="text" value={form.scripture} onChange={(e) => setForm({ ...form, scripture: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white" placeholder="John 3:16" /></div>
-                <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Duration</label><input type="text" value={form.duration} onChange={(e) => setForm({ ...form, duration: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white" placeholder="45:00" /></div>
+                <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Scripture Reference</label><input type="text" value={form.scripture_ref} onChange={(e) => setForm({ ...form, scripture_ref: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white" placeholder="John 3:16" /></div>
+                <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Duration (seconds)</label><input type="text" value={form.duration_seconds} onChange={(e) => setForm({ ...form, duration_seconds: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white" placeholder="2700" /></div>
               </div>
               <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Audio URL</label><input type="url" value={form.audio_url} onChange={(e) => setForm({ ...form, audio_url: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white" /></div>
-              <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Summary</label><textarea value={form.summary} onChange={(e) => setForm({ ...form, summary: e.target.value })} rows={5} className="w-full px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white font-mono text-sm" /></div>
+              <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label><textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={5} className="w-full px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white font-mono text-sm" /></div>
             </div>
             <div className="p-6 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
               <button onClick={resetForm} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-xl">Cancel</button>

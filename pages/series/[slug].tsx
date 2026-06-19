@@ -155,9 +155,9 @@ function SermonListItem({ sermon, episodeNumber }: { sermon: Sermon; episodeNumb
           </div>
         </div>
         {/* Duration Badge */}
-        {sermon.duration && (
+        {sermon.duration_seconds && (
           <div className="absolute bottom-2 right-2 px-2 py-1 bg-black/80 text-white text-xs font-medium rounded">
-            {sermon.duration}
+            {Math.floor(sermon.duration_seconds / 60)}:{String(sermon.duration_seconds % 60).padStart(2, '0')}
           </div>
         )}
       </div>
@@ -186,9 +186,9 @@ function SermonListItem({ sermon, episodeNumber }: { sermon: Sermon; episodeNumb
         </div>
 
         {/* Summary Preview */}
-        {sermon.summary && (
+        {sermon.description && (
           <p className="mt-3 text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
-            {sermon.summary.replace(/[#*_]/g, '').substring(0, 200)}
+            {sermon.description.replace(/[#*_]/g, '').substring(0, 200)}
           </p>
         )}
 

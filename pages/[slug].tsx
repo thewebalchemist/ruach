@@ -120,8 +120,8 @@ export default function SermonPage({ sermon, relatedSermons, seriesSermons }: Se
     }
   };
 
-  const sermonNotes = (sermon as any)?.notes as string | undefined;
-  const spotifyUrl  = (sermon as any)?.spotify_url as string | undefined;
+  const sermonNotes = sermon.notes;
+  const spotifyUrl  = sermon.spotify_url;
 
   const tabs = [
     { id: 'description' as TabType, label: 'Description' },
@@ -135,12 +135,12 @@ export default function SermonPage({ sermon, relatedSermons, seriesSermons }: Se
     <>
       <Head>
         <title>{sermon.title} | {sermon.preacher} | Ruach Tabernacle</title>
-        <meta name="description" content={sermon.summary?.substring(0, 155).replace(/[#*_]/g, '') || `Watch "${sermon.title}" by ${sermon.preacher} on Ruach Tabernacle.`} />
+        <meta name="description" content={sermon.description?.substring(0, 155).replace(/[#*_]/g, '') || `Watch "${sermon.title}" by ${sermon.preacher} on Ruach Tabernacle.`} />
         <link rel="canonical" href={`https://ruachtabernacle.org/${sermon.slug}`} />
         {/* Open Graph — enables rich preview when sharing the sermon link */}
         <meta property="og:type" content="video.other" />
         <meta property="og:title" content={`${sermon.title} — ${sermon.preacher}`} />
-        <meta property="og:description" content={sermon.summary?.substring(0, 200).replace(/[#*_]/g, '') || `Watch this sermon by ${sermon.preacher} at Ruach Tabernacle Assembly.`} />
+        <meta property="og:description" content={sermon.description?.substring(0, 200).replace(/[#*_]/g, '') || `Watch this sermon by ${sermon.preacher} at Ruach Tabernacle Assembly.`} />
         <meta property="og:image" content={sermon.thumbnail_url || 'https://ruachtabernacle.org/church-photos/rhema-feast.jpg'} />
         <meta property="og:image:width" content="1280" />
         <meta property="og:image:height" content="720" />
@@ -151,11 +151,11 @@ export default function SermonPage({ sermon, relatedSermons, seriesSermons }: Se
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:site" content="@ruachtabernacle" />
         <meta name="twitter:title" content={`${sermon.title} — ${sermon.preacher}`} />
-        <meta name="twitter:description" content={sermon.summary?.substring(0, 200).replace(/[#*_]/g, '') || `Watch this sermon at Ruach Tabernacle Assembly.`} />
+        <meta name="twitter:description" content={sermon.description?.substring(0, 200).replace(/[#*_]/g, '') || `Watch this sermon at Ruach Tabernacle Assembly.`} />
         <meta name="twitter:image" content={sermon.thumbnail_url || 'https://ruachtabernacle.org/church-photos/rhema-feast.jpg'} />
         <meta name="twitter:label1" content="Preacher" />
         <meta name="twitter:data1" content={sermon.preacher} />
-        {sermon.scripture && <><meta name="twitter:label2" content="Scripture" /><meta name="twitter:data2" content={sermon.scripture} /></>}
+        {sermon.scripture_ref && <><meta name="twitter:label2" content="Scripture" /><meta name="twitter:data2" content={sermon.scripture_ref} /></>}
       </Head>
 
       <Layout>
@@ -212,8 +212,8 @@ export default function SermonPage({ sermon, relatedSermons, seriesSermons }: Se
                         <Calendar className="w-4 h-4" />
                         {formatDate(sermon.service_date)}
                       </span>
-                      {sermon.duration && (
-                        <span className="text-gray-500 dark:text-gray-400 text-sm">{sermon.duration}</span>
+                      {sermon.duration_seconds && (
+                        <span className="text-gray-500 dark:text-gray-400 text-sm">{Math.floor(sermon.duration_seconds / 60)}:{String(sermon.duration_seconds % 60).padStart(2, '0')}</span>
                       )}
                     </div>
 
@@ -226,10 +226,10 @@ export default function SermonPage({ sermon, relatedSermons, seriesSermons }: Se
                     <div className="flex items-center gap-3 text-gray-600 dark:text-gray-300 mb-6">
                       <User className="w-5 h-5 text-[#BF0A30]" />
                       <span className="font-medium">{sermon.preacher}</span>
-                      {sermon.scripture && (
+                      {sermon.scripture_ref && (
                         <>
                           <span className="w-1 h-1 bg-gray-400 rounded-full" />
-                          <span className="text-[#BF0A30]">{sermon.scripture}</span>
+                          <span className="text-[#BF0A30]">{sermon.scripture_ref}</span>
                         </>
                       )}
                     </div>
@@ -241,7 +241,7 @@ export default function SermonPage({ sermon, relatedSermons, seriesSermons }: Se
                       thumbnailUrl={thumbnailUrl}
                       title={sermon.title}
                       preacher={sermon.preacher}
-                      duration={sermon.duration ?? undefined}
+                      duration={sermon.duration_seconds ? `${Math.floor(sermon.duration_seconds / 60)}:${String(sermon.duration_seconds % 60).padStart(2, '0')}` : undefined}
                       onModeChange={setPlayerMode}
                     />
                   </div>
@@ -323,9 +323,9 @@ export default function SermonPage({ sermon, relatedSermons, seriesSermons }: Se
                 <div className="bg-white dark:bg-[#1a1e28] rounded-3xl p-6 md:p-8 shadow-lg">
                   {activeTab === 'description' && (
                     <div className="markdown-content">
-                      {sermon.summary ? (
+                      {sermon.description ? (
                         <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
-                          {sermon.summary}
+                          {sermon.description}
                         </ReactMarkdown>
                       ) : (
                         <p className="text-gray-500 dark:text-gray-400 italic">No description available for this sermon.</p>
@@ -347,15 +347,15 @@ export default function SermonPage({ sermon, relatedSermons, seriesSermons }: Se
 
                   {activeTab === 'scripture' && (
                     <div className="space-y-6">
-                      {sermon.scripture && (
+                      {sermon.scripture_ref && (
                         <div>
                           <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
                             <BookOpen className="w-5 h-5 text-[#BF0A30]" />
                             Scripture Reference
                           </h3>
-                          <p className="text-gray-600 dark:text-gray-300 mb-4">{sermon.scripture}</p>
+                          <p className="text-gray-600 dark:text-gray-300 mb-4">{sermon.scripture_ref}</p>
                           <a
-                            href={`https://www.biblegateway.com/passage/?search=${encodeURIComponent(sermon.scripture)}&version=NIV`}
+                            href={`https://www.biblegateway.com/passage/?search=${encodeURIComponent(sermon.scripture_ref)}&version=NIV`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex items-center gap-2 px-4 py-2 bg-[#BF0A30] text-white rounded-xl font-medium hover:bg-[#9a0826] transition-colors"
@@ -505,7 +505,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
   // Increment view count
   await supabase
     .from('sermons')
-    .update({ views: (sermon.views || 0) + 1 })
+    .update({ view_count: (sermon.view_count || 0) + 1 })
     .eq('id', sermon.id);
 
   // Fetch series sermons if in a series

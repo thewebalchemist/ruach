@@ -25,20 +25,22 @@ export interface Sermon {
   title: string;
   preacher: string;
   youtube_url: string;
-  summary: string;
+  description: string | null;
   service_date: string;
   thumbnail_url: string | null;
   created_at: string;
   updated_at: string;
-  // Extended fields
   series_id?: number | null;
   series_part?: number | null;
   audio_url?: string | null;
-  duration?: string | null;
-  scripture?: string | null;
-  views?: number;
+  duration_seconds?: number | null;
+  scripture_ref?: string | null;
+  view_count?: number;
   tags?: string[];
-  // Joined relationships
+  notes?: string | null;
+  transcript?: string | null;
+  spotify_url?: string | null;
+  category?: string | null;
   series?: Series | null;
 }
 
@@ -307,9 +309,11 @@ export interface SermonSummary {
   title: string;
   preacher: string;
   service_date: string;
-  summary?: string | null;
-  scripture?: string | null;
+  description?: string | null;
+  scripture_ref?: string | null;
   tags?: string[] | null;
+  notes?: string | null;
+  youtube_url?: string | null;
 }
 
 // =============================================
