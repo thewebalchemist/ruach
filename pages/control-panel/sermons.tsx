@@ -16,7 +16,7 @@ function formatDate(d: string) {
 const EMPTY_FORM = {
   title: '', preacher: '', youtube_url: '', series_id: '', service_date: '',
   scripture: '', summary: '', tags: '', slug: '',
-  spotify_url: '', category: '', notes: '',
+  spotify_url: '', category: '', notes: '', transcript: '',
 };
 
 export default function SermonsCP() {
@@ -33,6 +33,9 @@ export default function SermonsCP() {
   const [deleting, setDeleting] = useState<number | null>(null);
   const [error, setError] = useState('');
   const [generatingNotes, setGeneratingNotes] = useState(false);
+  const [showNewSeries, setShowNewSeries] = useState(false);
+  const [newSeriesTitle, setNewSeriesTitle] = useState('');
+  const [creatingSeries, setCreatingSeries] = useState(false);
 
   useEffect(() => {
     checkAuth();
@@ -79,6 +82,7 @@ export default function SermonsCP() {
       spotify_url: (sermon as any).spotify_url || '',
       category:    (sermon as any).category || '',
       notes:       (sermon as any).notes || '',
+      transcript:  (sermon as any).transcript || '',
     });
     setError('');
     setShowForm(true);
@@ -91,7 +95,7 @@ export default function SermonsCP() {
       const res = await fetch('/api/sermons/generate-notes', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ title: form.title, preacher: form.preacher, scripture: form.scripture, summary: form.summary }),
+        body:    JSON.stringify({ title: form.title, preacher: form.preacher, scripture: form.scripture, summary: form.summary, transcript: form.transcript }),
       });
       const data = await res.json();
       if (data.notes) setForm(f => ({ ...f, notes: data.notes }));
@@ -100,6 +104,22 @@ export default function SermonsCP() {
     } finally {
       setGeneratingNotes(false);
     }
+  }
+
+  async function handleCreateSeries() {
+    if (!newSeriesTitle.trim()) return;
+    setCreatingSeries(true);
+    const slug = newSeriesTitle.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const { data, error: seriesErr } = await supabase.from('series').insert({ title: newSeriesTitle.trim(), slug }).select('id, title').single() as any;
+    if (!seriesErr && data) {
+      setSeries(prev => [...prev, data].sort((a, b) => a.title.localeCompare(b.title)));
+      set('series_id', String(data.id));
+      setShowNewSeries(false);
+      setNewSeriesTitle('');
+    } else {
+      setError(seriesErr?.message || 'Failed to create series');
+    }
+    setCreatingSeries(false);
   }
 
   function set(k: keyof typeof EMPTY_FORM, v: string) {
@@ -131,6 +151,7 @@ export default function SermonsCP() {
       spotify_url:   form.spotify_url || null,
       category:      form.category || null,
       notes:         form.notes || null,
+      transcript:    form.transcript || null,
     };
 
     let err;
@@ -280,10 +301,34 @@ export default function SermonsCP() {
                 </div>
                 <div>
                   <label className={lbl}>Series</label>
-                  <select value={form.series_id} onChange={e => set('series_id', e.target.value)} className={inp}>
-                    <option value="">No series</option>
-                    {series.map(sr => <option key={sr.id} value={sr.id}>{sr.title}</option>)}
-                  </select>
+                  {!showNewSeries ? (
+                    <div className="flex gap-2">
+                      <select value={form.series_id} onChange={e => set('series_id', e.target.value)} className={`${inp} flex-1`}>
+                        <option value="">No series</option>
+                        {series.map(sr => <option key={sr.id} value={sr.id}>{sr.title}</option>)}
+                      </select>
+                      <button type="button" onClick={() => setShowNewSeries(true)}
+                        className="px-3 py-2 bg-gray-100 dark:bg-[#222] border border-gray-200 dark:border-[#333] rounded-xl text-xs font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-[#2a2a2a] transition-colors whitespace-nowrap flex items-center gap-1">
+                        <Plus className="w-3.5 h-3.5" /> New
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex gap-2">
+                      <input value={newSeriesTitle} onChange={e => setNewSeriesTitle(e.target.value)}
+                        placeholder="Series name e.g. Walking in Glory"
+                        className={`${inp} flex-1`}
+                        onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleCreateSeries(); } }}
+                        autoFocus />
+                      <button type="button" onClick={handleCreateSeries} disabled={creatingSeries || !newSeriesTitle.trim()}
+                        className="px-3 py-2 bg-[#BF0A30] hover:bg-[#A00828] disabled:opacity-50 text-white text-xs font-semibold rounded-xl transition-colors flex items-center gap-1">
+                        {creatingSeries ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Create'}
+                      </button>
+                      <button type="button" onClick={() => { setShowNewSeries(false); setNewSeriesTitle(''); }}
+                        className="px-3 py-2 border border-gray-200 dark:border-[#333] rounded-xl text-xs text-gray-500 hover:bg-gray-50 dark:hover:bg-[#222] transition-colors">
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  )}
                 </div>
                 <div>
                   <label className={lbl}>Scripture Reference</label>
@@ -314,6 +359,13 @@ export default function SermonsCP() {
                       <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>
                     ))}
                   </select>
+                </div>
+                <div className="sm:col-span-2">
+                  <label className={lbl}>Sermon Transcript (paste to generate context-aware notes)</label>
+                  <textarea value={form.transcript} onChange={e => set('transcript', e.target.value)}
+                    rows={5} placeholder="Paste the sermon transcript here. The AI will generate notes grounded in the actual sermon content rather than generic points…"
+                    className={`${inp} resize-y font-mono text-xs`} />
+                  <p className="text-xs text-gray-400 mt-1">Optional — greatly improves AI note quality and verse accuracy.</p>
                 </div>
                 <div className="sm:col-span-2">
                   <div className="flex items-center justify-between mb-1.5">

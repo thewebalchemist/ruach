@@ -31,6 +31,7 @@ export default function ChatPage() {
   const [rateLimit, setRateLimit] = useState<{ remaining: number; reset_at: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showSignInPrompt, setShowSignInPrompt] = useState(false);
+  const [sermonCards, setSermonCards] = useState<Record<string, any[]>>({});
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [isDark, setIsDark] = useState(true);
   const [mounted, setMounted] = useState(false);
@@ -88,44 +89,80 @@ export default function ChatPage() {
     setIsLoading(true);
     setError(null);
 
+    const assistantId = `msg_${Date.now()}_assistant`;
+    // Add empty assistant message that will be streamed into
+    setMessages(prev => [...prev, {
+      id: assistantId,
+      role: 'assistant',
+      content: '',
+      created_at: new Date().toISOString(),
+    }]);
+
     try {
       const response = await fetch('/api/chat', {
-        method: 'POST',
+        method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message: userMessage.content,
-          session_id: sessionId,
+          message:              userMessage.content,
+          session_id:           sessionId,
           conversation_history: messages,
-          user_id: user?.id,
+          user_id:              user?.id,
         }),
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
+        const data = await response.json();
         if (response.status === 429) {
           setError(data.message || 'Rate limit reached. Sign in for unlimited access!');
           if (data.suggest_signin) setShowSignInPrompt(true);
         } else {
           setError(data.message || 'Something went wrong. Please try again.');
         }
+        // Remove the empty assistant message
+        setMessages(prev => prev.filter(m => m.id !== assistantId));
         return;
       }
 
-      if (data.session_id && !sessionId) setSessionId(data.session_id);
-      if (data.rate_limit) setRateLimit(data.rate_limit);
+      const reader  = response.body!.getReader();
+      const decoder = new TextDecoder();
+      let buffer    = '';
 
-      const assistantMessage: ChatMessage = {
-        id: `msg_${Date.now()}_assistant`,
-        role: 'assistant',
-        content: data.message,
-        created_at: new Date().toISOString(),
-      };
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
 
-      setMessages(prev => [...prev, assistantMessage]);
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() ?? '';
+
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+          const raw = line.slice(6).trim();
+          if (!raw) continue;
+          try {
+            const event = JSON.parse(raw);
+            if (event.type === 'delta') {
+              setMessages(prev => prev.map(m =>
+                m.id === assistantId ? { ...m, content: m.content + event.content } : m
+              ));
+            } else if (event.type === 'done') {
+              if (event.session_id && !sessionId) setSessionId(event.session_id);
+              if (event.rate_limit)    setRateLimit(event.rate_limit);
+              if (event.relevant_sermons?.length > 0) {
+                setSermonCards(prev => ({ ...prev, [assistantId]: event.relevant_sermons }));
+              }
+            } else if (event.type === 'error') {
+              setError(event.message);
+            }
+          } catch {
+            // ignore malformed SSE lines
+          }
+        }
+      }
     } catch (err) {
       console.error('Chat error:', err);
       setError('Failed to send message. Please check your connection.');
+      setMessages(prev => prev.filter(m => m.id !== assistantId));
     } finally {
       setIsLoading(false);
     }
@@ -335,24 +372,60 @@ export default function ChatPage() {
                         )}
                       </div>
 
-                      {/* Message Bubble */}
-                      <div
-                        className={`px-4 py-3 rounded-2xl ${
-                          msg.role === 'user'
-                            ? 'bg-[#BF0A30] text-white rounded-br-md'
-                            : isDark
-                              ? 'bg-[#1a1f2e] text-white rounded-bl-md'
-                              : 'bg-white border border-gray-200 text-gray-900 rounded-bl-md shadow-sm'
-                        }`}
-                      >
-                        <p className="text-sm whitespace-pre-wrap leading-relaxed">{msg.content}</p>
+                      <div className="flex flex-col gap-3">
+                        <div
+                          className={`px-4 py-3 rounded-2xl ${
+                            msg.role === 'user'
+                              ? 'bg-[#BF0A30] text-white rounded-br-md'
+                              : isDark
+                                ? 'bg-[#1a1f2e] text-white rounded-bl-md'
+                                : 'bg-white border border-gray-200 text-gray-900 rounded-bl-md shadow-sm'
+                          }`}
+                        >
+                          <p className="text-sm whitespace-pre-wrap leading-relaxed">{msg.content}</p>
+                        </div>
+                        {/* Sermon cards attached to this message */}
+                        {sermonCards[msg.id] && sermonCards[msg.id].length > 0 && (
+                          <div className="flex flex-col gap-2 pl-1">
+                            <p className={`text-xs font-semibold uppercase tracking-wider ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Related Sermons</p>
+                            <div className="flex gap-3 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+                              {sermonCards[msg.id].map((s: any) => {
+                                const ytId = s.youtube_url?.match(/(?:v=|youtu\.be\/)([^&?/]+)/)?.[1];
+                                const thumb = ytId ? `https://img.youtube.com/vi/${ytId}/mqdefault.jpg` : null;
+                                return (
+                                  <Link key={s.id} href={`/${s.slug}`}
+                                    className={`flex-shrink-0 w-44 rounded-xl overflow-hidden group border transition-colors ${isDark ? 'border-white/10 bg-[#1a1f2e] hover:border-[#BF0A30]/50' : 'border-gray-200 bg-white hover:border-[#BF0A30]/50 shadow-sm'}`}>
+                                    {thumb ? (
+                                      <div className="relative aspect-video bg-gray-800">
+                                        <img src={thumb} alt={s.title} className="w-full h-full object-cover group-hover:opacity-90 transition-opacity" />
+                                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                          <div className="w-8 h-8 rounded-full bg-[#BF0A30]/90 flex items-center justify-center">
+                                            <svg className="w-4 h-4 text-white fill-white ml-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      <div className="aspect-video bg-[#BF0A30]/10 flex items-center justify-center">
+                                        <svg className="w-8 h-8 text-[#BF0A30]/50" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+                                      </div>
+                                    )}
+                                    <div className="p-2.5">
+                                      <p className={`text-xs font-semibold line-clamp-2 leading-tight group-hover:text-[#BF0A30] transition-colors ${isDark ? 'text-white' : 'text-gray-900'}`}>{s.title}</p>
+                                      <p className={`text-[10px] mt-1 ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>{s.preacher}</p>
+                                    </div>
+                                  </Link>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
                 ))}
 
-                {/* Loading */}
-                {isLoading && (
+                {/* Loading — only show when no streaming content has arrived yet */}
+                {isLoading && messages[messages.length - 1]?.role === 'user' && (
                   <div className="flex justify-start">
                     <div className="flex items-start gap-3">
                       <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#BF0A30] to-[#9a0826] flex items-center justify-center">

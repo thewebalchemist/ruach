@@ -107,14 +107,37 @@ function HeroSlider({ sermons, fallback }: { sermons: Sermon[]; fallback: typeof
           );
         })}
 
-        {/* Watch Now button — bottom left, no text overlay */}
-        <div className="absolute bottom-12 left-6 md:left-12" style={{ zIndex: 20 }}>
+        {/* Text overlay — bottom left */}
+        <div className="absolute bottom-10 left-6 md:left-12 max-w-lg" style={{ zIndex: 20 }}>
+          {cur.kind === 'db' && (
+            <>
+              {(cur.sermon as any).series && (
+                <p className="text-[#BF0A30] text-[10px] font-black uppercase tracking-widest mb-2" style={H}>
+                  {(cur.sermon as any).series.title}
+                </p>
+              )}
+              <h2 className="text-white text-2xl md:text-3xl lg:text-4xl font-black leading-tight mb-2 drop-shadow-lg" style={H}>
+                {cur.sermon.title}
+              </h2>
+              <p className="text-white/70 text-sm mb-1">{cur.sermon.preacher}</p>
+              {(cur.sermon as any).summary && (
+                <p className="text-white/55 text-sm leading-relaxed mb-4 line-clamp-2 hidden md:block">
+                  {((cur.sermon as any).summary as string).replace(/[#*_`]/g, '').substring(0, 160)}
+                </p>
+              )}
+            </>
+          )}
+          {cur.kind === 'yt' && (
+            <h2 className="text-white text-2xl md:text-3xl font-black leading-tight mb-4 drop-shadow-lg" style={H}>
+              {cur.video.title}
+            </h2>
+          )}
           {external ? (
             <a
               href={href}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 bg-white text-black font-black text-xs uppercase tracking-widest px-6 py-3.5 rounded-xl transition-all hover:bg-white/90 shadow-xl"
+              className="inline-flex items-center gap-2 bg-white text-black font-black text-xs uppercase tracking-widest px-6 py-3.5 rounded-xl transition-all hover:bg-white/90 shadow-xl"
               style={H}
             >
               <Play className="w-4 h-4 fill-black" /> Watch Now
@@ -122,7 +145,7 @@ function HeroSlider({ sermons, fallback }: { sermons: Sermon[]; fallback: typeof
           ) : (
             <Link
               href={href}
-              className="flex items-center gap-2 bg-white text-black font-black text-xs uppercase tracking-widest px-6 py-3.5 rounded-xl transition-all hover:bg-white/90 shadow-xl"
+              className="inline-flex items-center gap-2 bg-white text-black font-black text-xs uppercase tracking-widest px-6 py-3.5 rounded-xl transition-all hover:bg-white/90 shadow-xl"
               style={H}
             >
               <Play className="w-4 h-4 fill-black" /> Watch Now
@@ -238,15 +261,30 @@ function SermonRow({ title, children }: { title: string; children: React.ReactNo
 /* ─── Supabase sermon card ───────────────────────────────────────── */
 function DbSermonCard({ sermon }: { sermon: Sermon }) {
   const thumb = getThumb(sermon);
+  const series = (sermon as any).series as { title: string; slug: string } | null;
+  const summary = (sermon as any).summary as string | undefined;
   return (
-    <Link href={`/${sermon.slug}`} className="group flex-shrink-0 w-[200px] sm:w-[240px]">
-      <div className="relative aspect-video rounded-xl overflow-hidden group-hover:scale-[1.03] transition-transform duration-300">
+    <Link href={`/${sermon.slug}`} className="group flex-shrink-0 w-[180px] sm:w-[220px]">
+      <div className="relative aspect-video rounded-xl overflow-hidden group-hover:scale-[1.04] transition-transform duration-300">
         <img src={thumb} alt={sermon.title} className="w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
-          <div className="w-11 h-11 rounded-full bg-[#BF0A30]/90 flex items-center justify-center shadow-xl">
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/5 to-transparent" />
+        {series && (
+          <span className="absolute top-2 left-2 px-2 py-0.5 bg-[#BF0A30] text-white text-[9px] font-black uppercase tracking-wider rounded-full">
+            {series.title}
+          </span>
+        )}
+        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <div className="w-11 h-11 rounded-full bg-[#BF0A30]/90 backdrop-blur-sm flex items-center justify-center shadow-xl">
             <Play className="w-5 h-5 text-white fill-white ml-0.5" />
           </div>
         </div>
+      </div>
+      <div className="mt-2.5 px-0.5">
+        <p className="text-white font-bold text-sm leading-snug line-clamp-2 group-hover:text-[#BF0A30] transition-colors" style={H}>{sermon.title}</p>
+        <p className="text-white/50 text-xs mt-0.5">{sermon.preacher}</p>
+        {summary && (
+          <p className="text-white/35 text-[11px] mt-1 line-clamp-2 leading-relaxed">{summary.replace(/[#*_`]/g, '').substring(0, 120)}</p>
+        )}
       </div>
     </Link>
   );

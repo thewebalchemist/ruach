@@ -51,7 +51,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
   steps.push(`create-user: ok — uid ${data.user.id}`);
 
-  // 4. Upsert profile with all required fields
+  // 4. Explicitly set password via updateUserById — some Supabase versions don't
+  //    register the email provider through createUser alone (providers stays []).
+  const { error: pwErr } = await supabaseAdmin.auth.admin.updateUserById(data.user.id, {
+    password:      ADMIN_PASSWORD,
+    email_confirm: true,
+  });
+  steps.push(`set-password: ${pwErr ? `ERR ${pwErr.message}` : 'ok'}`);
+
+  // 5. Upsert profile with all required fields
   const { error: profileErr } = await supabaseAdmin
     .from('profiles')
     .upsert({
