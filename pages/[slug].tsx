@@ -494,7 +494,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
   // Fetch sermon with series
   const { data: sermon } = await supabase
     .from('sermons')
-    .select(`*, series:series_id (id, title, slug, image_url)`)
+    .select(`*, series:series_id (id, title, slug)`)
     .eq('slug', slug)
     .single();
 
