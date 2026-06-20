@@ -36,7 +36,7 @@ export default function SeriesCP() {
   }
 
   async function loadData() {
-    const { data } = await supabase.from('series').select('*').order('year', { ascending: false });
+    const { data } = await supabase.from('series').select('*').order('created_at', { ascending: false });
     setSeries((data || []) as Series[]);
     setLoading(false);
   }

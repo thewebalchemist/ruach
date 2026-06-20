@@ -118,15 +118,21 @@ export default function SermonsCP() {
   async function handleCreateSeries() {
     if (!newSeriesTitle.trim()) return;
     setCreatingSeries(true);
-    const slug = newSeriesTitle.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-    const { data, error: seriesErr } = await supabase.from('series').insert({ title: newSeriesTitle.trim(), slug }).select('id, title').single() as any;
-    if (!seriesErr && data) {
-      setSeries(prev => [...prev, data].sort((a, b) => a.title.localeCompare(b.title)));
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch('/api/control-panel/create-series', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
+        body: JSON.stringify({ title: newSeriesTitle.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setError(data.error || 'Failed to create series'); setCreatingSeries(false); return; }
+      setSeries(prev => [...prev, data].sort((a: any, b: any) => a.title.localeCompare(b.title)));
       set('series_id', String(data.id));
       setShowNewSeries(false);
       setNewSeriesTitle('');
-    } else {
-      setError(seriesErr?.message || 'Failed to create series');
+    } catch {
+      setError('Failed to create series');
     }
     setCreatingSeries(false);
   }
@@ -145,35 +151,40 @@ export default function SermonsCP() {
       setError('Title, preacher, YouTube URL, and date are required.'); return;
     }
     setSaving(true); setError('');
-    const thumb = getYouTubeThumbnail(form.youtube_url);
-    const payload = {
-      title:          form.title,
-      preacher:       form.preacher,
-      youtube_url:    form.youtube_url,
-      series_id:      form.series_id || null,
-      service_date:   form.service_date,
-      scripture_ref:  form.scripture_ref || null,
-      description:    form.description || null,
-      thumbnail_url:  thumb || null,
-      tags:           form.tags ? form.tags.split(',').map(t => t.trim()).filter(Boolean) : [],
-      slug:           form.slug || generateSlug(form.title),
-      spotify_url:    form.spotify_url || null,
-      category:       form.category || null,
-      notes:          form.notes || null,
-      transcript:     form.transcript || null,
-    };
+    try {
+      const thumb = getYouTubeThumbnail(form.youtube_url);
+      const payload = {
+        title:          form.title,
+        preacher:       form.preacher,
+        youtube_url:    form.youtube_url,
+        series_id:      form.series_id || null,
+        service_date:   form.service_date,
+        scripture_ref:  form.scripture_ref || null,
+        description:    form.description || null,
+        thumbnail_url:  thumb || null,
+        tags:           form.tags ? form.tags.split(',').map(t => t.trim()).filter(Boolean) : [],
+        slug:           form.slug || generateSlug(form.title),
+        spotify_url:    form.spotify_url || null,
+        category:       form.category || null,
+        notes:          form.notes || null,
+        transcript:     form.transcript || null,
+      };
 
-    let err;
-    if (editing) {
-      ({ error: err } = await (supabase.from('sermons') as any).update(payload).eq('id', editing.id));
-    } else {
-      ({ error: err } = await (supabase.from('sermons') as any).insert(payload));
+      let err;
+      if (editing) {
+        ({ error: err } = await (supabase.from('sermons') as any).update(payload).eq('id', editing.id));
+      } else {
+        ({ error: err } = await (supabase.from('sermons') as any).insert(payload));
+      }
+
+      if (err) { setError(err.message); setSaving(false); return; }
+      setSaving(false);
+      setSaved(true);
+      setTimeout(() => { setSaved(false); setShowForm(false); loadData(); }, 1500);
+    } catch (e: any) {
+      setError(e?.message || 'Failed to save sermon');
+      setSaving(false);
     }
-
-    setSaving(false);
-    if (err) { setError(err.message); return; }
-    setSaved(true);
-    setTimeout(() => { setSaved(false); setShowForm(false); loadData(); }, 1500);
   }
 
   async function handleDelete(id: string) {

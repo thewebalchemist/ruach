@@ -96,8 +96,8 @@ async function fetchActiveFAQs(): Promise<FAQ[]> {
   const { data, error } = await supabase
     .from('faqs')
     .select('*')
-    .eq('is_active', true)
-    .order('order_index', { ascending: true });
+    .eq('published', true)
+    .order('sort_order', { ascending: true });
   
   if (error) {
     console.error('Error fetching FAQs:', error);
