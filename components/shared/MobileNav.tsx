@@ -1,19 +1,14 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import {
-  Home, Sparkles, Tv2, LogIn, BookOpen, Users, Heart, CalendarDays,
-  Video, Info, X, MoreHorizontal, UserPlus, Phone, PlayCircle,
+  Home, Sparkles, Tv2, BookOpen, Users, Heart, CalendarDays,
+  X, MoreHorizontal, UserPlus, Phone, PlayCircle,
   ChevronRight, Mic, Map, Baby, Sword, Crown, Music2, Megaphone,
-  Handshake, Globe, Film,
+  Handshake, Globe, Film, Info, LogIn,
 } from 'lucide-react';
 
-const H = { fontFamily: 'Montserrat, sans-serif', fontWeight: 900 };
-
-const LOGIN_PORTALS = [
-  { label: 'Connect Class',  desc: 'Connect students & teachers',              href: '/connect',      icon: BookOpen, color: '#BF0A30' },
-  { label: 'Member Portal',  desc: 'Members, Discipleship & Crosspoint',       href: '/member/login', icon: Users,    color: '#BF0A30' },
-];
+const H = { fontFamily: 'Montserrat, sans-serif', fontWeight: 900 } as const;
 
 const QUICK_CARDS = [
   { label: "New Here?", href: '/new-here',  icon: UserPlus,    bg: 'rgba(255,255,255,0.06)' },
@@ -63,35 +58,33 @@ const SECTIONS = [
       { label: 'R-Worship',         desc: 'Worship team',           href: '/r-worship',     icon: Music2 },
     ],
   },
+  {
+    title: 'Sign In',
+    items: [
+      { label: 'Connect Class',     desc: 'Connect students & teachers',      href: '/connect',      icon: BookOpen },
+      { label: 'Member Portal',     desc: 'Members, Discipleship & Crosspoint', href: '/member/login', icon: Users },
+      { label: 'Admin / Staff',     desc: 'Control panel access',             href: '/auth/login',   icon: LogIn },
+    ],
+  },
 ];
 
 export default function MobileNav() {
   const router = useRouter();
-  const [moreOpen,  setMoreOpen]  = useState(false);
-  const [loginOpen, setLoginOpen] = useState(false);
-  const loginRef = useRef<HTMLDivElement>(null);
+  const [moreOpen, setMoreOpen] = useState(false);
+  const [animating, setAnimating] = useState(false);
 
-  useEffect(() => { setMoreOpen(false); setLoginOpen(false); }, [router.pathname]);
+  useEffect(() => { setMoreOpen(false); }, [router.pathname]);
 
   useEffect(() => {
     if (moreOpen) {
       document.body.style.overflow = 'hidden';
+      requestAnimationFrame(() => setAnimating(true));
     } else {
+      setAnimating(false);
       document.body.style.overflow = '';
     }
     return () => { document.body.style.overflow = ''; };
   }, [moreOpen]);
-
-  useEffect(() => {
-    if (!loginOpen) return;
-    const handler = (e: MouseEvent) => {
-      if (loginRef.current && !loginRef.current.contains(e.target as Node)) {
-        setLoginOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, [loginOpen]);
 
   const active = (href: string) =>
     href === '/' ? router.pathname === '/' : router.pathname.startsWith(href);
@@ -103,23 +96,22 @@ export default function MobileNav() {
       {/* ── Full-screen More bottom sheet ──────────────────── */}
       {moreOpen && (
         <>
-          {/* Backdrop */}
           <div
-            className="fixed inset-0 z-[60] lg:hidden bg-black/60 backdrop-blur-sm"
+            className="fixed inset-0 z-[60] lg:hidden transition-opacity duration-300"
+            style={{ background: 'rgba(0,0,0,0.6)', opacity: animating ? 1 : 0 }}
             onClick={() => setMoreOpen(false)}
           />
 
-          {/* Sheet */}
           <div
-            className="fixed left-0 right-0 bottom-0 z-[61] lg:hidden rounded-t-[28px] overflow-hidden"
+            className="fixed left-0 right-0 bottom-0 z-[61] lg:hidden rounded-t-[28px] overflow-hidden transition-transform duration-300 ease-out"
             style={{
               background: '#111316',
-              maxHeight: '88vh',
+              maxHeight: '85vh',
               display: 'flex',
               flexDirection: 'column',
+              transform: animating ? 'translateY(0)' : 'translateY(100%)',
             }}
           >
-            {/* Handle + header */}
             <div className="flex-shrink-0 pt-3 pb-4 px-5">
               <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mb-4" />
               <div className="flex items-center justify-between">
@@ -133,10 +125,7 @@ export default function MobileNav() {
               </div>
             </div>
 
-            {/* Scrollable content */}
-            <div className="overflow-y-auto flex-1 px-4 pb-8">
-
-              {/* Quick cards row */}
+            <div className="overflow-y-auto flex-1 px-4 pb-8 overscroll-contain">
               <div className="grid grid-cols-3 gap-2.5 mb-6">
                 {QUICK_CARDS.map((card) => {
                   const Icon = card.icon;
@@ -160,7 +149,6 @@ export default function MobileNav() {
                 })}
               </div>
 
-              {/* Categorized sections */}
               {SECTIONS.map((section) => (
                 <div key={section.title} className="mb-5">
                   <p className="text-[#BF0A30] text-[10px] font-black uppercase tracking-[0.15em] mb-2 px-1" style={H}>
@@ -195,14 +183,7 @@ export default function MobileNav() {
         </>
       )}
 
-      {/* Scrim behind login dropdown */}
-      {loginOpen && (
-        <div className="fixed inset-0 z-[58] lg:hidden" onClick={() => setLoginOpen(false)}>
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
-        </div>
-      )}
-
-      {/* Floating island */}
+      {/* Floating island — 4 items only */}
       <div
         className="fixed left-0 right-0 z-[59] lg:hidden flex justify-center pointer-events-none"
         style={{ bottom: 'max(16px, env(safe-area-inset-bottom, 16px))' }}
@@ -216,8 +197,8 @@ export default function MobileNav() {
             borderRadius: '28px',
             border: '1px solid rgba(255,255,255,0.10)',
             boxShadow: '0 8px 40px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.05)',
-            padding: '6px 8px',
-            gap: '2px',
+            padding: '6px 12px',
+            gap: '4px',
           }}
         >
           {/* Home */}
@@ -235,9 +216,9 @@ export default function MobileNav() {
             <span className="text-[9px] font-bold uppercase tracking-wide leading-none text-white/40" style={H}>Ask</span>
           </button>
 
-          {/* More — center accent button */}
+          {/* More — center accent */}
           <button
-            onClick={() => { setMoreOpen(v => !v); setLoginOpen(false); }}
+            onClick={() => setMoreOpen(v => !v)}
             className="flex flex-col items-center justify-center w-[60px] h-[56px] rounded-2xl mx-1 transition-all active:scale-95"
             style={{
               background: 'linear-gradient(135deg, #BF0A30 0%, #9A0826 100%)',
@@ -265,51 +246,11 @@ export default function MobileNav() {
             <span className={`text-[9px] font-bold uppercase tracking-wide leading-none ${active('/live') ? 'text-[#BF0A30]' : 'text-white/40'}`} style={H}>Live</span>
           </Link>
 
-          {/* Login with portal dropdown */}
-          <div className="relative" ref={loginRef}>
-            <button
-              onClick={() => { setLoginOpen(v => !v); setMoreOpen(false); }}
-              className={`${btnCls} ${loginOpen ? 'bg-white/8' : ''}`}
-            >
-              <LogIn style={{ width: 20, height: 20 }} className={loginOpen ? 'text-white' : 'text-white/50'} />
-              <span className={`text-[9px] font-bold uppercase tracking-wide leading-none ${loginOpen ? 'text-white' : 'text-white/40'}`} style={H}>Login</span>
-            </button>
-
-            {loginOpen && (
-              <div
-                className="absolute bottom-[calc(100%+14px)] right-0 w-[200px] rounded-2xl overflow-hidden"
-                style={{
-                  background: 'rgba(10,12,18,0.99)',
-                  border: '1px solid rgba(255,255,255,0.12)',
-                  boxShadow: '0 16px 48px rgba(0,0,0,0.85)',
-                }}
-              >
-                <p className="px-4 pt-4 pb-2 text-white/35 text-[9px] font-bold uppercase tracking-widest" style={H}>Sign in to</p>
-                {LOGIN_PORTALS.map((p) => {
-                  const Icon = p.icon;
-                  return (
-                    <Link
-                      key={p.href}
-                      href={p.href}
-                      className="flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors"
-                    >
-                      <div
-                        className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
-                        style={{ background: `${p.color}22` }}
-                      >
-                        <Icon style={{ width: 14, height: 14, color: p.color }} />
-                      </div>
-                      <div>
-                        <p className="text-white text-[11px] font-bold leading-tight" style={H}>{p.label}</p>
-                        <p className="text-white/35 text-[10px] mt-0.5">{p.desc}</p>
-                      </div>
-                    </Link>
-                  );
-                })}
-                <div className="h-2" />
-              </div>
-            )}
-          </div>
+          {/* Sermons */}
+          <Link href="/sermons" className={btnCls}>
+            <Mic style={{ width: 20, height: 20 }} className={active('/sermons') ? 'text-[#BF0A30]' : 'text-white/50'} />
+            <span className={`text-[9px] font-bold uppercase tracking-wide leading-none ${active('/sermons') ? 'text-[#BF0A30]' : 'text-white/40'}`} style={H}>Sermons</span>
+          </Link>
         </nav>
       </div>
     </>
