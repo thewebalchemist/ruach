@@ -293,7 +293,7 @@ function DbSermonCard({ sermon }: { sermon: Sermon }) {
 interface SermonsPageProps {
   sermons:        Sermon[];
   featuredSermon: Sermon | null;
-  seriesList:     { id: number; title: string; slug: string }[];
+  seriesList:     { id: string; title: string; slug: string }[];
   preachers:      string[];
 }
 

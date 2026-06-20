@@ -7,7 +7,7 @@
 // =============================================
 
 export interface Series {
-  id: number;
+  id: string;
   slug: string;
   title: string;
   description: string | null;
@@ -20,7 +20,7 @@ export interface Series {
 }
 
 export interface Sermon {
-  id: number;
+  id: string;
   slug: string;
   title: string;
   preacher: string;
@@ -30,7 +30,7 @@ export interface Sermon {
   thumbnail_url: string | null;
   created_at: string;
   updated_at: string;
-  series_id?: number | null;
+  series_id?: string | null;
   series_part?: number | null;
   audio_url?: string | null;
   duration_seconds?: number | null;
@@ -304,7 +304,7 @@ export interface KnowledgeBase {
 }
 
 export interface SermonSummary {
-  id: number;
+  id: string;
   slug: string;
   title: string;
   preacher: string;

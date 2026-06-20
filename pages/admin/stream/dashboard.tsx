@@ -194,7 +194,7 @@ function DashboardTab({ stats, sermons, events }: { stats: any; sermons: Sermon[
 
 function SermonsTab({ sermons, allSeries, onRefresh }: { sermons: Sermon[]; allSeries: Series[]; onRefresh: () => void }) {
   const [showForm, setShowForm] = useState(false);
-  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ title: '', preacher: '', youtube_url: '', service_date: new Date().toISOString().split('T')[0], description: '', series_id: '', series_part: '', scripture_ref: '', duration_seconds: '', audio_url: '' });
 
@@ -204,14 +204,14 @@ function SermonsTab({ sermons, allSeries, onRefresh }: { sermons: Sermon[]; allS
     if (!form.title || !form.preacher) { alert('Please fill in title and preacher'); return; }
     setSaving(true);
     try {
-      const data = { ...form, slug: generateSlug(form.title), thumbnail_url: form.youtube_url ? getYouTubeThumbnail(form.youtube_url) : null, series_id: form.series_id ? parseInt(form.series_id) : null, series_part: form.series_part ? parseInt(form.series_part) : null };
+      const data = { ...form, slug: generateSlug(form.title), thumbnail_url: form.youtube_url ? getYouTubeThumbnail(form.youtube_url) : null, series_id: form.series_id || null, series_part: form.series_part ? parseInt(form.series_part) : null };
       if (editingId) await supabase.from('sermons').update(data).eq('id', editingId);
       else await supabase.from('sermons').insert([data]);
       resetForm(); onRefresh();
     } catch (error) { console.error(error); alert('Error saving'); }
     finally { setSaving(false); }
   };
-  const handleDelete = async (id: number) => { if (!confirm('Delete?')) return; await supabase.from('sermons').delete().eq('id', id); onRefresh(); };
+  const handleDelete = async (id: string) => { if (!confirm('Delete?')) return; await supabase.from('sermons').delete().eq('id', id); onRefresh(); };
 
   return (
     <div className="space-y-6">
@@ -272,7 +272,7 @@ function SermonsTab({ sermons, allSeries, onRefresh }: { sermons: Sermon[]; allS
 
 function SeriesTab({ series, onRefresh }: { series: Series[]; onRefresh: () => void }) {
   const [showForm, setShowForm] = useState(false);
-  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState({ title: '', description: '', image_url: '', year: new Date().getFullYear().toString() });
   const resetForm = () => { setForm({ title: '', description: '', image_url: '', year: new Date().getFullYear().toString() }); setEditingId(null); setShowForm(false); };
   const handleEdit = (s: Series) => { setForm({ title: s.title, description: s.description || '', image_url: s.image_url || '', year: s.year || '' }); setEditingId(s.id); setShowForm(true); };
@@ -284,7 +284,7 @@ function SeriesTab({ series, onRefresh }: { series: Series[]; onRefresh: () => v
       resetForm(); onRefresh();
     } catch (error) { console.error(error); }
   };
-  const handleDelete = async (id: number) => { if (!confirm('Delete?')) return; await supabase.from('series').delete().eq('id', id); onRefresh(); };
+  const handleDelete = async (id: string) => { if (!confirm('Delete?')) return; await supabase.from('series').delete().eq('id', id); onRefresh(); };
 
   return (
     <div className="space-y-6">
@@ -321,7 +321,7 @@ function EventsTab({ events, onRefresh }: { events: Event[]; onRefresh: () => vo
     if (!form.title || !form.event_date) { alert('Fill title and date'); return; }
     try { await supabase.from('events').insert([{ ...form, chatbot_enabled: true }]); setForm({ title: '', description: '', event_date: '', start_time: '', location: '', category: 'general', repeat_weekly: false, chatbot_announcement: false }); onRefresh(); } catch (error) { console.error(error); }
   };
-  const handleDelete = async (id: number) => { if (!confirm('Delete?')) return; await supabase.from('events').delete().eq('id', id); onRefresh(); };
+  const handleDelete = async (id: string | number) => { if (!confirm('Delete?')) return; await supabase.from('events').delete().eq('id', id); onRefresh(); };
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div className="lg:col-span-2 bg-white dark:bg-[#1a1f2e] rounded-2xl p-6 shadow-sm">
@@ -358,7 +358,7 @@ function FAQsTab({ faqs, onRefresh }: { faqs: FAQ[]; onRefresh: () => void }) {
     if (!form.question || !form.answer) { alert('Fill question and answer'); return; }
     try { await supabase.from('faqs').insert([{ ...form, is_active: true, order_index: faqs.length }]); setForm({ question: '', answer: '', category: 'general' }); onRefresh(); } catch (error) { console.error(error); }
   };
-  const handleDelete = async (id: number) => { if (!confirm('Delete?')) return; await supabase.from('faqs').delete().eq('id', id); onRefresh(); };
+  const handleDelete = async (id: string | number) => { if (!confirm('Delete?')) return; await supabase.from('faqs').delete().eq('id', id); onRefresh(); };
   return (
     <div className="space-y-6">
       <div className="bg-white dark:bg-[#1a1f2e] rounded-2xl p-6 shadow-sm">

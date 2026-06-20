@@ -86,7 +86,7 @@ export default function SeriesCP() {
     setTimeout(() => { setSaved(false); setShowForm(false); loadData(); }, 1500);
   }
 
-  async function handleDelete(id: number) {
+  async function handleDelete(id: string) {
     if (!confirm('Delete this series? Sermons in it will be unlinked.')) return;
     await (supabase.from('series') as any).delete().eq('id', id);
     loadData();

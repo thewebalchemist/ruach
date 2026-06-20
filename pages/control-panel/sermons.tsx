@@ -30,7 +30,7 @@ export default function SermonsCP() {
   const [form, setForm] = useState(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [deleting, setDeleting] = useState<number | null>(null);
+  const [deleting, setDeleting] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [generatingNotes, setGeneratingNotes] = useState(false);
   const [showNewSeries, setShowNewSeries] = useState(false);
@@ -150,7 +150,7 @@ export default function SermonsCP() {
       title:          form.title,
       preacher:       form.preacher,
       youtube_url:    form.youtube_url,
-      series_id:      form.series_id ? parseInt(form.series_id) : null,
+      series_id:      form.series_id || null,
       service_date:   form.service_date,
       scripture_ref:  form.scripture_ref || null,
       description:    form.description || null,
@@ -176,7 +176,7 @@ export default function SermonsCP() {
     setTimeout(() => { setSaved(false); setShowForm(false); loadData(); }, 1500);
   }
 
-  async function handleDelete(id: number) {
+  async function handleDelete(id: string) {
     if (!confirm('Delete this sermon? This cannot be undone.')) return;
     setDeleting(id);
     await (supabase.from('sermons') as any).delete().eq('id', id);

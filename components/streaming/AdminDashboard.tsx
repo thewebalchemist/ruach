@@ -26,7 +26,7 @@ export default function AdminDashboard({ onClose }: AdminDashboardProps) {
     service_date: new Date().toISOString().split('T')[0],
     summary: '',
   });
-  const [editingSermonId, setEditingSermonId] = useState<number | null>(null);
+  const [editingSermonId, setEditingSermonId] = useState<string | null>(null);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -237,7 +237,7 @@ export default function AdminDashboard({ onClose }: AdminDashboardProps) {
     document.getElementById('sermon-form')?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const deleteSermon = async (id: number) => {
+  const deleteSermon = async (id: string) => {
     if (!confirm('Are you sure you want to delete this sermon?')) return;
 
     setLoading(true);

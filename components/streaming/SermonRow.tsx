@@ -8,8 +8,8 @@ interface SermonRowProps {
   title: string;
   sermons: Sermon[];
   viewAllHref?: string;
-  watchlistIds?: number[];
-  onToggleWatchlist?: (sermonId: number) => void;
+  watchlistIds?: string[];
+  onToggleWatchlist?: (sermonId: string) => void;
 }
 
 export default function SermonRow({
@@ -110,7 +110,7 @@ interface SermonCardProps {
   sermon: Sermon;
   index: number;
   isInWatchlist: boolean;
-  onToggleWatchlist?: (sermonId: number) => void;
+  onToggleWatchlist?: (sermonId: string) => void;
 }
 
 function SermonCard({ sermon, index, isInWatchlist, onToggleWatchlist }: SermonCardProps) {
