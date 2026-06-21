@@ -57,9 +57,58 @@ function HeroSlider({ sermons, fallback }: { sermons: Sermon[]; fallback: typeof
   return (
     <>
       <style>{`@keyframes hero-progress{from{transform:scaleX(0)}to{transform:scaleX(1)}}.hero-progress{animation:hero-progress 7s linear forwards}`}</style>
+      {/* ── MOBILE hero: card + text (visible thumbnail) ──────── */}
+      <section className="sm:hidden bg-[#0A0C10] px-4 pt-2 pb-6">
+        {/* Thumbnail card */}
+        <div className="relative rounded-2xl overflow-hidden aspect-video mb-4">
+          {items.map((it, i) => {
+            const t = it.kind === 'db' ? getThumb(it.sermon) : ytThumb(it.video.id);
+            return (
+              <div key={i} className="absolute inset-0 transition-opacity duration-700" style={{ opacity: i === idx ? 1 : 0 }}>
+                <img src={t} alt="" className="w-full h-full object-cover"
+                  onError={e => { (e.target as HTMLImageElement).src = '/church-photos/IMG_1716.jpg'; }} />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+              </div>
+            );
+          })}
+          {/* Play overlay */}
+          <div className="absolute inset-0 flex items-center justify-center" style={{ zIndex: 10 }}>
+            <div className="w-14 h-14 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30">
+              <Play className="w-7 h-7 text-white fill-white ml-0.5" />
+            </div>
+          </div>
+          {/* Dots */}
+          {items.length > 1 && (
+            <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5" style={{ zIndex: 10 }}>
+              {items.map((_, i) => <button key={i} onClick={() => goTo(i)} className="w-1.5 h-1.5 rounded-full transition-all" style={{ background: i === idx ? '#fff' : 'rgba(255,255,255,0.4)', transform: i === idx ? 'scale(1.3)' : 'scale(1)' }} />)}
+            </div>
+          )}
+        </div>
+        {/* Text info */}
+        <div>
+          {cur.kind === 'db' && cur.sermon.series && (
+            <p className="text-[#BF0A30] text-[10px] font-black uppercase tracking-widest mb-1.5" style={H}>{cur.sermon.series.title}</p>
+          )}
+          <h2 className="text-white text-xl font-black leading-tight mb-1.5" style={H}>
+            {cur.kind === 'db' ? cur.sermon.title : cur.video.title}
+          </h2>
+          {cur.kind === 'db' && <p className="text-white/60 text-xs mb-3">{cur.sermon.preacher}</p>}
+          {external ? (
+            <a href={href} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 bg-white text-black font-black text-[10px] uppercase tracking-widest px-5 py-3 rounded-xl shadow-lg" style={H}>
+              <Play className="w-4 h-4 fill-black" /> Watch Now
+            </a>
+          ) : (
+            <Link href={href} className="inline-flex items-center gap-2 bg-white text-black font-black text-[10px] uppercase tracking-widest px-5 py-3 rounded-xl shadow-lg" style={H}>
+              <Play className="w-4 h-4 fill-black" /> Watch Now
+            </Link>
+          )}
+        </div>
+      </section>
+
+      {/* ── DESKTOP hero: cinematic full-bleed backdrop ────────── */}
       <section
-        className="relative overflow-hidden bg-[#0A0C10]"
-        style={{ height: 'min(80vh, 720px)', minHeight: '360px' }}
+        className="relative overflow-hidden bg-[#0A0C10] hidden sm:block"
+        style={{ height: 'min(80vh, 720px)', minHeight: '420px' }}
         onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}
       >
         {items.map((it, i) => {
@@ -74,14 +123,14 @@ function HeroSlider({ sermons, fallback }: { sermons: Sermon[]; fallback: typeof
           );
         })}
 
-        <div className="absolute bottom-16 sm:bottom-12 left-4 right-4 sm:left-6 md:left-12 sm:right-auto sm:max-w-lg" style={{ zIndex: 20 }}>
+        <div className="absolute bottom-12 left-6 md:left-12 max-w-lg" style={{ zIndex: 20 }}>
           {cur.kind === 'db' && (
             <>
               {cur.sermon.series && (
                 <p className="text-[#BF0A30] text-[10px] font-black uppercase tracking-widest mb-2" style={H}>{cur.sermon.series.title}</p>
               )}
-              <h2 className="text-white text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black leading-tight mb-2 drop-shadow-lg" style={H}>{cur.sermon.title}</h2>
-              <p className="text-white/70 text-xs sm:text-sm mb-1">{cur.sermon.preacher}</p>
+              <h2 className="text-white text-2xl md:text-3xl lg:text-4xl font-black leading-tight mb-2 drop-shadow-lg" style={H}>{cur.sermon.title}</h2>
+              <p className="text-white/70 text-sm mb-1">{cur.sermon.preacher}</p>
               {cur.sermon.description && (
                 <p className="text-white/55 text-sm leading-relaxed mb-4 line-clamp-2 hidden md:block">{cur.sermon.description.replace(/[#*_`]/g, '').substring(0, 160)}</p>
               )}
@@ -89,11 +138,11 @@ function HeroSlider({ sermons, fallback }: { sermons: Sermon[]; fallback: typeof
           )}
           {cur.kind === 'yt' && <h2 className="text-white text-2xl md:text-3xl font-black leading-tight mb-4 drop-shadow-lg" style={H}>{cur.video.title}</h2>}
           {external ? (
-            <a href={href} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 bg-white text-black font-black text-[10px] sm:text-xs uppercase tracking-widest px-4 sm:px-6 py-3 sm:py-3.5 rounded-xl transition-all hover:bg-white/90 shadow-xl" style={H}>
+            <a href={href} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 bg-white text-black font-black text-xs uppercase tracking-widest px-6 py-3.5 rounded-xl transition-all hover:bg-white/90 shadow-xl" style={H}>
               <Play className="w-4 h-4 fill-black" /> Watch Now
             </a>
           ) : (
-            <Link href={href} className="inline-flex items-center gap-2 bg-white text-black font-black text-[10px] sm:text-xs uppercase tracking-widest px-4 sm:px-6 py-3 sm:py-3.5 rounded-xl transition-all hover:bg-white/90 shadow-xl" style={H}>
+            <Link href={href} className="inline-flex items-center gap-2 bg-white text-black font-black text-xs uppercase tracking-widest px-6 py-3.5 rounded-xl transition-all hover:bg-white/90 shadow-xl" style={H}>
               <Play className="w-4 h-4 fill-black" /> Watch Now
             </Link>
           )}
@@ -101,8 +150,8 @@ function HeroSlider({ sermons, fallback }: { sermons: Sermon[]; fallback: typeof
 
         {items.length > 1 && (
           <>
-            <button onClick={() => goTo(idx - 1)} className="absolute left-3 md:left-6 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-full bg-black/40 hover:bg-black/70 text-white transition-all backdrop-blur-sm" style={{ zIndex: 30 }} aria-label="Previous"><ChevronLeft className="w-5 h-5" /></button>
-            <button onClick={() => goTo(idx + 1)} className="absolute right-3 md:right-6 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-full bg-black/40 hover:bg-black/70 text-white transition-all backdrop-blur-sm" style={{ zIndex: 30 }} aria-label="Next"><ChevronRight className="w-5 h-5" /></button>
+            <button onClick={() => goTo(idx - 1)} className="absolute left-3 md:left-6 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-full bg-black/40 hover:bg-black/70 text-white transition-all backdrop-blur-sm" style={{ zIndex: 30 }}><ChevronLeft className="w-5 h-5" /></button>
+            <button onClick={() => goTo(idx + 1)} className="absolute right-3 md:right-6 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-full bg-black/40 hover:bg-black/70 text-white transition-all backdrop-blur-sm" style={{ zIndex: 30 }}><ChevronRight className="w-5 h-5" /></button>
           </>
         )}
 
