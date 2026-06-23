@@ -1,42 +1,117 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import { ArrowLeft, Save, Calendar } from 'lucide-react';
+import { ArrowLeft, Save, Upload, X } from 'lucide-react';
 import { AdminLayout, PageHeader } from '@/components/connect/AdminLayout';
-import { mockDepartments, mockCrosspoints } from '@/data';
+import { supabase } from '@/lib/supabase';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 
 export default function NewEventPage() {
   const router = useRouter();
+  const { loading: authLoading, authHeaders } = useAdminAuth();
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [departments, setDepartments] = useState<{ id: string; name: string }[]>([]);
+  const [crosspoints, setCrosspoints] = useState<{ id: string; name: string }[]>([]);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    type: 'church-wide',
-    departmentId: '',
-    crosspointId: '',
-    startDate: '',
-    endDate: '',
-    time: '',
-    venue: '',
-    capacity: '',
-    requiresRegistration: false,
+    category: 'church-wide',
+    event_date: '',
+    end_date: '',
+    start_time: '',
+    end_time: '',
+    location: '',
+    image_url: '',
+    is_public: true,
+    chatbot_enabled: true,
   });
+
+  useEffect(() => {
+    if (authLoading) return;
+    // Fetch departments and crosspoints for dropdowns
+    supabase.from('departments').select('id, name').then(({ data }) => {
+      if (data) setDepartments(data);
+    });
+    supabase.from('crosspoints').select('id, name').then(({ data }) => {
+      if (data) setCrosspoints(data);
+    });
+  }, [authLoading]);
+
+  async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    try {
+      // Convert file to base64
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const base64 = (reader.result as string).split(',')[1];
+        const headers = authHeaders();
+        const res = await fetch('/api/admin/upload-image', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            file_base64: base64,
+            file_name: file.name,
+            content_type: file.type,
+          }),
+        });
+        const result = await res.json();
+        if (res.ok && result.url) {
+          setFormData(prev => ({ ...prev, image_url: result.url }));
+          setImagePreview(result.url);
+        } else {
+          alert(result.error || 'Upload failed');
+        }
+        setUploading(false);
+      };
+      reader.readAsDataURL(file);
+    } catch {
+      alert('Upload failed');
+      setUploading(false);
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    const headers = authHeaders();
+    const res = await fetch('/api/control-panel/events', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(formData),
+    });
+
+    if (res.ok) {
+      router.push('/admin/events');
+    } else {
+      const err = await res.json();
+      alert(err.error || 'Failed to create event');
+    }
     setLoading(false);
-    router.push('/admin/events');
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
+      [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value,
     }));
   };
+
+  if (authLoading) {
+    return (
+      <AdminLayout title="Create Event">
+        <div className="flex items-center justify-center py-20">
+          <div className="w-8 h-8 border-2 border-[#BF0A30] border-t-transparent rounded-full animate-spin" />
+        </div>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout title="Create Event">
@@ -44,7 +119,7 @@ export default function NewEventPage() {
         <Link href="/admin/events" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 mb-4">
           <ArrowLeft className="w-4 h-4" />Back to Events
         </Link>
-        
+
         <PageHeader title="Create Event" subtitle="Add a new church event" />
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -54,83 +129,79 @@ export default function NewEventPage() {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Event Title *</label>
-                <input type="text" name="title" value={formData.title} onChange={handleChange} required className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg" />
+                <input type="text" name="title" value={formData.title} onChange={handleChange} required className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg bg-white dark:bg-[#1A1A1A] text-gray-900 dark:text-white" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
-                <textarea name="description" value={formData.description} onChange={handleChange} rows={3} className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg" />
+                <textarea name="description" value={formData.description} onChange={handleChange} rows={3} className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg bg-white dark:bg-[#1A1A1A] text-gray-900 dark:text-white" />
               </div>
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Event Type *</label>
-                  <select name="type" value={formData.type} onChange={handleChange} className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category *</label>
+                  <select name="category" value={formData.category} onChange={handleChange} className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg bg-white dark:bg-[#1A1A1A] text-gray-900 dark:text-white">
                     <option value="church-wide">Church-wide</option>
                     <option value="department">Department</option>
                     <option value="crosspoint">Crosspoint</option>
                   </select>
                 </div>
-                {formData.type === 'department' && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Department</label>
-                    <select name="departmentId" value={formData.departmentId} onChange={handleChange} className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg">
-                      <option value="">Select department...</option>
-                      {mockDepartments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
-                    </select>
-                  </div>
-                )}
-                {formData.type === 'crosspoint' && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Crosspoint</label>
-                    <select name="crosspointId" value={formData.crosspointId} onChange={handleChange} className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg">
-                      <option value="">Select crosspoint...</option>
-                      {mockCrosspoints.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                    </select>
-                  </div>
-                )}
               </div>
+            </div>
+          </div>
+
+          {/* Image Upload */}
+          <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-6">
+            <h2 className="font-semibold text-gray-900 dark:text-white mb-4">Event Image</h2>
+            <div className="space-y-4">
+              {imagePreview ? (
+                <div className="relative">
+                  <img src={imagePreview} alt="Event preview" className="w-full max-h-64 object-cover rounded-lg" />
+                  <button
+                    type="button"
+                    onClick={() => { setImagePreview(null); setFormData(prev => ({ ...prev, image_url: '' })); }}
+                    className="absolute top-2 right-2 p-1.5 bg-red-600 text-white rounded-full hover:bg-red-700"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : (
+                <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-gray-300 dark:border-[#2D2D2D] rounded-lg cursor-pointer hover:border-[#BF0A30]/50 transition-colors">
+                  <Upload className="w-8 h-8 text-gray-400 mb-2" />
+                  <span className="text-sm text-gray-500">{uploading ? 'Uploading...' : 'Click to upload event image'}</span>
+                  <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" disabled={uploading} />
+                </label>
+              )}
             </div>
           </div>
 
           {/* Date & Time */}
           <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-6">
             <h2 className="font-semibold text-gray-900 dark:text-white mb-4">Date & Time</h2>
-            <div className="grid sm:grid-cols-3 gap-4">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Start Date *</label>
-                <input type="date" name="startDate" value={formData.startDate} onChange={handleChange} required className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg" />
+                <input type="date" name="event_date" value={formData.event_date} onChange={handleChange} required className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg bg-white dark:bg-[#1A1A1A] text-gray-900 dark:text-white" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">End Date</label>
-                <input type="date" name="endDate" value={formData.endDate} onChange={handleChange} className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg" />
+                <input type="date" name="end_date" value={formData.end_date} onChange={handleChange} className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg bg-white dark:bg-[#1A1A1A] text-gray-900 dark:text-white" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Time *</label>
-                <input type="text" name="time" value={formData.time} onChange={handleChange} placeholder="e.g., 9:00 AM - 12:00 PM" required className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg" />
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Start Time</label>
+                <input type="time" name="start_time" value={formData.start_time} onChange={handleChange} className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg bg-white dark:bg-[#1A1A1A] text-gray-900 dark:text-white" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">End Time</label>
+                <input type="time" name="end_time" value={formData.end_time} onChange={handleChange} className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg bg-white dark:bg-[#1A1A1A] text-gray-900 dark:text-white" />
               </div>
             </div>
           </div>
 
-          {/* Location & Registration */}
+          {/* Location */}
           <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-6">
-            <h2 className="font-semibold text-gray-900 dark:text-white mb-4">Location & Registration</h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Venue *</label>
-                <input type="text" name="venue" value={formData.venue} onChange={handleChange} required className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg" />
-              </div>
-              <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-[#252525] rounded-lg">
-                <input type="checkbox" name="requiresRegistration" checked={formData.requiresRegistration} onChange={handleChange} className="w-4 h-4 text-[#BF0A30] rounded" />
-                <div>
-                  <label className="font-medium text-gray-900 dark:text-white">Requires Registration</label>
-                  <p className="text-sm text-gray-500">Attendees must register to attend</p>
-                </div>
-              </div>
-              {formData.requiresRegistration && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Capacity</label>
-                  <input type="number" name="capacity" value={formData.capacity} onChange={handleChange} placeholder="Maximum attendees" className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg" />
-                </div>
-              )}
+            <h2 className="font-semibold text-gray-900 dark:text-white mb-4">Location</h2>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Venue</label>
+              <input type="text" name="location" value={formData.location} onChange={handleChange} className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg bg-white dark:bg-[#1A1A1A] text-gray-900 dark:text-white" />
             </div>
           </div>
 

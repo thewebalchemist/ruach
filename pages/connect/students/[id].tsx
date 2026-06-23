@@ -1,38 +1,91 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import {
   ArrowLeft, CheckCircle, XCircle, AlertTriangle, Award,
   Calendar, BookOpen, Phone, Mail, X, Send,
-  GraduationCap, TrendingUp, User, MessageSquare
+  GraduationCap, TrendingUp, User, MessageSquare, Loader2
 } from 'lucide-react';
 import { ConnectLayout } from '@/components/connect/ConnectLayout';
-import {
-  mockConnectStudents, mockConnectCohorts, mockConnectSessions,
-  mockConnectExams, getUserById,
-} from '@/data/connect';
-import { ConnectStudent } from '@/types';
+import { useAuth } from '@/context/AuthContext';
+import { supabase } from '@/lib/supabase';
+
+const db = supabase as any;
 
 type Tab = 'attendance' | 'exams' | 'warnings';
 
 export default function StudentDetailPage() {
   const router = useRouter();
   const { id } = router.query as { id: string };
+  const { profile: authUser } = useAuth();
 
-  const [activeTab,    setActiveTab]    = useState<Tab>('attendance');
-  const [showWarnModal, setShowWarnModal] = useState(false);
-  const [warnMessage,   setWarnMessage]  = useState('');
-  const [student,       setStudent]      = useState<ConnectStudent | undefined>(
-    mockConnectStudents.find(s => s.id === id)
-  );
+  const [loading,        setLoading]        = useState(true);
+  const [student,        setStudent]        = useState<any>(null);
+  const [cohort,         setCohort]         = useState<any>(null);
+  const [sessions,       setSessions]       = useState<any[]>([]);
+  const [attendance,     setAttendance]     = useState<any[]>([]);
+  const [exams,          setExams]          = useState<any[]>([]);
+  const [examResults,    setExamResults]    = useState<any[]>([]);
+  const [warnings,       setWarnings]       = useState<any[]>([]);
+  const [activeTab,      setActiveTab]      = useState<Tab>('attendance');
+  const [showWarnModal,  setShowWarnModal]  = useState(false);
+  const [warnMessage,    setWarnMessage]    = useState('');
 
-  const user    = student ? getUserById(student.userId) : undefined;
-  const cohort  = student ? mockConnectCohorts.find(c => c.id === student.cohortId) : undefined;
-  const sessions = cohort ? mockConnectSessions.filter(s => s.cohortId === cohort.id) : [];
-  const exams    = cohort ? mockConnectExams.filter(e => e.cohortId === cohort.id) : [];
+  useEffect(() => {
+    if (!router.isReady) return;
+    if (!authUser) return;
+
+    async function load() {
+      setLoading(true);
+
+      // Load student with profile
+      const { data: studentData } = await db
+        .from('connect_students')
+        .select('*, profiles(first_name, last_name, full_name, email, phone)')
+        .eq('id', id)
+        .single();
+
+      if (!studentData) {
+        setLoading(false);
+        return;
+      }
+      setStudent(studentData);
+
+      // Load cohort, sessions, attendance, exams, results, warnings in parallel
+      const [cohortRes, sessionsRes, attendanceRes, examsRes, resultsRes, warningsRes] = await Promise.all([
+        db.from('connect_cohorts').select('*').eq('id', studentData.cohort_id).single(),
+        db.from('connect_sessions').select('*').eq('cohort_id', studentData.cohort_id).order('session_number'),
+        db.from('connect_attendance').select('*').eq('student_id', id),
+        db.from('connect_exams').select('*').eq('cohort_id', studentData.cohort_id),
+        db.from('connect_exam_results').select('*').eq('student_id', id),
+        db.from('connect_warnings').select('*').eq('student_id', id).order('sent_at', { ascending: false }),
+      ]);
+
+      if (cohortRes.data) setCohort(cohortRes.data);
+      if (sessionsRes.data) setSessions(sessionsRes.data);
+      if (attendanceRes.data) setAttendance(attendanceRes.data);
+      if (examsRes.data) setExams(examsRes.data);
+      if (resultsRes.data) setExamResults(resultsRes.data);
+      if (warningsRes.data) setWarnings(warningsRes.data);
+
+      setLoading(false);
+    }
+    load();
+  }, [router.isReady, authUser, id]);
+
+  // Loading state
+  if (loading) {
+    return (
+      <ConnectLayout title="Student">
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="w-8 h-8 text-[#BF0A30] animate-spin" />
+        </div>
+      </ConnectLayout>
+    );
+  }
 
   // ── Not found ────────────────────────────────────────────────────────────────
-  if (!student || !user || !cohort) {
+  if (!student || !cohort) {
     return (
       <ConnectLayout title="Student Not Found">
         <div className="text-center py-20">
@@ -45,27 +98,27 @@ export default function StudentDetailPage() {
     );
   }
 
-  const passReq = cohort.passRequirement;
-  const attendanceOk = student.totalAttendancePercent >= passReq.minAttendancePercent;
-  const examOk = student.averageExamScore >= passReq.minExamScore || student.examResults.length === 0;
-  const isAtRisk = !attendanceOk || (!examOk && student.examResults.length > 0);
+  const attendanceOk = student.total_attendance_percent >= (cohort.min_attendance_percent ?? 0);
+  const examOk = student.average_exam_score >= (cohort.min_exam_score ?? 0) || examResults.length === 0;
+  const isAtRisk = !attendanceOk || (!examOk && examResults.length > 0);
 
-  const sendWarning = () => {
+  const sendWarning = async () => {
     if (!warnMessage.trim()) return;
-    const newWarning = {
-      id: `w-${Date.now()}`,
-      type: 'general' as const,
+    await db.from('connect_warnings').insert({
+      student_id: id,
+      type: 'general',
       message: warnMessage.trim(),
-      sentAt: new Date().toISOString(),
-      sentBy: 'teacher-001',
-    };
-    setStudent(prev => prev ? { ...prev, warnings: [...prev.warnings, newWarning] } : prev);
+      sent_by: authUser?.id ?? 'unknown',
+    });
+    // Refetch warnings
+    const { data } = await db.from('connect_warnings').select('*').eq('student_id', id).order('sent_at', { ascending: false });
+    if (data) setWarnings(data);
     setWarnMessage('');
     setShowWarnModal(false);
   };
 
   return (
-    <ConnectLayout title={user.fullName}>
+    <ConnectLayout title={student.profiles?.full_name ?? 'Student'}>
 
       {/* ── Warn modal ── */}
       {showWarnModal && (
@@ -77,7 +130,7 @@ export default function StudentDetailPage() {
                 <X className="w-4 h-4" />
               </button>
             </div>
-            <p className="text-sm text-gray-500 mb-3">This will be visible to {user.firstName} on their dashboard.</p>
+            <p className="text-sm text-gray-500 mb-3">This will be visible to {student.profiles?.first_name ?? 'the student'} on their dashboard.</p>
             <textarea
               value={warnMessage}
               onChange={e => setWarnMessage(e.target.value)}
@@ -114,14 +167,14 @@ export default function StudentDetailPage() {
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#BF0A30] to-[#8B0000] flex items-center justify-center text-white text-xl font-bold shadow-lg shadow-[#BF0A30]/25">
-              {user.firstName[0]}{user.lastName[0]}
+              {student.profiles?.first_name?.[0] ?? ''}{student.profiles?.last_name?.[0] ?? ''}
             </div>
             <div>
               <div className="flex items-center gap-2 mb-0.5">
-                <h1 className="text-xl font-bold text-gray-900 dark:text-white">{user.fullName}</h1>
+                <h1 className="text-xl font-bold text-gray-900 dark:text-white">{student.profiles?.full_name ?? '—'}</h1>
                 {isAtRisk && <AlertTriangle className="w-4 h-4 text-amber-500" />}
               </div>
-              <p className="text-sm text-gray-500">{student.admissionNumber} · {cohort.name}</p>
+              <p className="text-sm text-gray-500">{student.admission_number} · {cohort.name}</p>
               <div className="flex flex-wrap gap-2 mt-2">
                 <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${
                   student.status === 'in-progress' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' :
@@ -130,9 +183,9 @@ export default function StudentDetailPage() {
                 }`}>
                   {student.status === 'in-progress' ? 'In Progress' : student.status === 'completed' ? 'Completed' : 'Failed'}
                 </span>
-                {student.canGraduate && (
+                {student.can_graduate && (
                   <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
-                    ✓ Ready to Graduate
+                    Ready to Graduate
                   </span>
                 )}
                 {isAtRisk && (
@@ -146,10 +199,10 @@ export default function StudentDetailPage() {
 
           {/* Actions */}
           <div className="flex flex-wrap gap-2">
-            <a href={`mailto:${user.email}`} className="flex items-center gap-1.5 px-3 py-2 border border-gray-200 dark:border-white/[0.06] rounded-xl text-sm text-gray-600 dark:text-gray-400 hover:border-blue-400 hover:text-blue-600 transition-colors">
+            <a href={`mailto:${student.profiles?.email ?? ''}`} className="flex items-center gap-1.5 px-3 py-2 border border-gray-200 dark:border-white/[0.06] rounded-xl text-sm text-gray-600 dark:text-gray-400 hover:border-blue-400 hover:text-blue-600 transition-colors">
               <Mail className="w-4 h-4" /> Email
             </a>
-            <a href={`tel:${user.phone}`} className="flex items-center gap-1.5 px-3 py-2 border border-gray-200 dark:border-white/[0.06] rounded-xl text-sm text-gray-600 dark:text-gray-400 hover:border-green-400 hover:text-green-600 transition-colors">
+            <a href={`tel:${student.profiles?.phone ?? ''}`} className="flex items-center gap-1.5 px-3 py-2 border border-gray-200 dark:border-white/[0.06] rounded-xl text-sm text-gray-600 dark:text-gray-400 hover:border-green-400 hover:text-green-600 transition-colors">
               <Phone className="w-4 h-4" /> Call
             </a>
             <button
@@ -166,27 +219,27 @@ export default function StudentDetailPage() {
           {[
             {
               icon: Calendar, label: 'Attendance',
-              value: `${student.totalAttendancePercent}%`,
+              value: `${student.total_attendance_percent}%`,
               color: attendanceOk ? 'text-green-600' : 'text-red-500',
               bg:    attendanceOk ? 'bg-green-100 dark:bg-green-900/30' : 'bg-red-100 dark:bg-red-900/30',
             },
             {
               icon: TrendingUp, label: 'Exam Average',
-              value: student.examResults.length > 0 ? `${student.averageExamScore}%` : '—',
+              value: examResults.length > 0 ? `${student.average_exam_score}%` : '—',
               color: examOk ? 'text-blue-600' : 'text-red-500',
               bg:    'bg-blue-100 dark:bg-blue-900/30',
             },
             {
               icon: BookOpen, label: 'Sessions Attended',
-              value: `${student.attendance.filter(a => a.present).length}/${sessions.length}`,
+              value: `${attendance.filter((a: any) => a.present).length}/${sessions.length}`,
               color: 'text-purple-600',
               bg:    'bg-purple-100 dark:bg-purple-900/30',
             },
             {
               icon: AlertTriangle, label: 'Warnings',
-              value: student.warnings.length,
-              color: student.warnings.length > 0 ? 'text-amber-600' : 'text-gray-500',
-              bg:    student.warnings.length > 0 ? 'bg-amber-100 dark:bg-amber-900/30' : 'bg-gray-100 dark:bg-[#1A1A1A]',
+              value: warnings.length,
+              color: warnings.length > 0 ? 'text-amber-600' : 'text-gray-500',
+              bg:    warnings.length > 0 ? 'bg-amber-100 dark:bg-amber-900/30' : 'bg-gray-100 dark:bg-[#1A1A1A]',
             },
           ].map(({ icon: Icon, label, value, color, bg }) => (
             <div key={label} className="bg-gray-50 dark:bg-[#1A1A1A] rounded-xl p-3 text-center">
@@ -202,27 +255,27 @@ export default function StudentDetailPage() {
 
       {/* ── Graduation eligibility ── */}
       <div className={`rounded-2xl border p-4 mb-5 ${
-        student.canGraduate
+        student.can_graduate
           ? 'bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800/40'
           : 'bg-white dark:bg-[#141414] border-gray-200/70 dark:border-white/[0.05]'
       } shadow-sm`}>
         <div className="flex items-center gap-3 mb-2">
-          <GraduationCap className={`w-5 h-5 ${student.canGraduate ? 'text-green-600' : 'text-gray-400'}`} />
-          <p className={`font-semibold ${student.canGraduate ? 'text-green-800 dark:text-green-200' : 'text-gray-700 dark:text-gray-300'}`}>
-            {student.canGraduate ? 'Eligible to Graduate' : 'Graduation Requirements'}
+          <GraduationCap className={`w-5 h-5 ${student.can_graduate ? 'text-green-600' : 'text-gray-400'}`} />
+          <p className={`font-semibold ${student.can_graduate ? 'text-green-800 dark:text-green-200' : 'text-gray-700 dark:text-gray-300'}`}>
+            {student.can_graduate ? 'Eligible to Graduate' : 'Graduation Requirements'}
           </p>
         </div>
         <div className="flex flex-wrap gap-4 text-sm">
           <div className="flex items-center gap-1.5">
             {attendanceOk ? <CheckCircle className="w-4 h-4 text-green-500" /> : <XCircle className="w-4 h-4 text-red-500" />}
             <span className="text-gray-600 dark:text-gray-400">
-              Attendance {student.totalAttendancePercent}% / {passReq.minAttendancePercent}% required
+              Attendance {student.total_attendance_percent}% / {cohort.min_attendance_percent ?? 0}% required
             </span>
           </div>
           <div className="flex items-center gap-1.5">
             {examOk ? <CheckCircle className="w-4 h-4 text-green-500" /> : <XCircle className="w-4 h-4 text-gray-400" />}
             <span className="text-gray-600 dark:text-gray-400">
-              Exam score {student.averageExamScore}% / {passReq.minExamScore}% required
+              Exam score {student.average_exam_score}% / {cohort.min_exam_score ?? 0}% required
             </span>
           </div>
         </div>
@@ -233,7 +286,7 @@ export default function StudentDetailPage() {
         {([
           { id: 'attendance', label: 'Attendance' },
           { id: 'exams',      label: 'Exams' },
-          { id: 'warnings',   label: `Warnings${student.warnings.length > 0 ? ` (${student.warnings.length})` : ''}` },
+          { id: 'warnings',   label: `Warnings${warnings.length > 0 ? ` (${warnings.length})` : ''}` },
         ] as { id: Tab; label: string }[]).map(tab => (
           <button
             key={tab.id}
@@ -256,10 +309,10 @@ export default function StudentDetailPage() {
             <p className="font-semibold text-gray-900 dark:text-white">Session Attendance</p>
           </div>
           <div className="divide-y divide-gray-50 dark:divide-white/[0.02]">
-            {sessions.map(session => {
-              const record = student.attendance.find(a => a.sessionId === session.id);
+            {sessions.map((session: any) => {
+              const record = attendance.find((a: any) => a.session_id === session.id);
               const present = record?.present;
-              const isUpcoming = !session.isCompleted;
+              const isUpcoming = !session.is_completed;
               return (
                 <div key={session.id} className="flex items-center gap-4 px-5 py-4">
                   <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${
@@ -304,14 +357,14 @@ export default function StudentDetailPage() {
             </div>
           ) : (
             <div className="divide-y divide-gray-50 dark:divide-white/[0.02]">
-              {exams.map(exam => {
-                const result = student.examResults.find(r => r.examId === exam.id);
+              {exams.map((exam: any) => {
+                const result = examResults.find((r: any) => r.exam_id === exam.id);
                 return (
                   <div key={exam.id} className="px-5 py-4">
                     <div className="flex items-start justify-between gap-4">
                       <div>
                         <p className="font-medium text-gray-900 dark:text-white">{exam.title}</p>
-                        <p className="text-xs text-gray-500 mt-0.5">{exam.questions.length} questions · Pass: {exam.passingMarks}/{exam.totalMarks}</p>
+                        <p className="text-xs text-gray-500 mt-0.5">{exam.questions?.length ?? 0} questions · Pass: {exam.passing_marks}/{exam.total_marks}</p>
                       </div>
                       {result ? (
                         <div className="text-right flex-shrink-0">
@@ -319,7 +372,7 @@ export default function StudentDetailPage() {
                             {result.percentage}%
                           </p>
                           <p className={`text-xs font-medium ${result.passed ? 'text-green-600' : 'text-red-500'}`}>
-                            {result.passed ? '✓ Passed' : '✗ Failed'}
+                            {result.passed ? 'Passed' : 'Failed'}
                           </p>
                         </div>
                       ) : (
@@ -334,7 +387,7 @@ export default function StudentDetailPage() {
                             style={{ width: `${result.percentage}%` }}
                           />
                         </div>
-                        <p className="text-xs text-gray-400 mt-1">{result.score}/{result.totalMarks} marks · submitted {new Date(result.submittedAt).toLocaleDateString()}</p>
+                        <p className="text-xs text-gray-400 mt-1">{result.score}/{result.total_marks} marks · submitted {new Date(result.submitted_at).toLocaleDateString()}</p>
                       </div>
                     )}
                   </div>
@@ -356,15 +409,15 @@ export default function StudentDetailPage() {
               <AlertTriangle className="w-4 h-4" /> Send Warning
             </button>
           </div>
-          {student.warnings.length === 0 ? (
+          {warnings.length === 0 ? (
             <div className="bg-white dark:bg-[#141414] rounded-2xl border border-gray-200/70 dark:border-white/[0.05] p-12 text-center shadow-sm">
               <MessageSquare className="w-12 h-12 text-gray-300 mx-auto mb-3" />
               <p className="text-gray-500">No warnings sent yet</p>
             </div>
-          ) : student.warnings.map(w => (
+          ) : warnings.map((w: any) => (
             <div key={w.id} className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/40 rounded-2xl p-4">
               <p className="text-sm text-amber-800 dark:text-amber-200">{w.message}</p>
-              <p className="text-xs text-amber-500 mt-2">{new Date(w.sentAt).toLocaleString()}</p>
+              <p className="text-xs text-amber-500 mt-2">{new Date(w.sent_at).toLocaleString()}</p>
             </div>
           ))}
         </div>

@@ -1,23 +1,94 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import { MessageSquare, AlertCircle, ThumbsUp, Clock, CheckCircle, Eye } from 'lucide-react';
 import { AdminLayout, PageHeader } from '@/components/connect/AdminLayout';
-import { mockSuggestions } from '@/data';
+import { supabase } from '@/lib/supabase';
+
+interface Suggestion {
+  id: string;
+  user_id: string | null;
+  is_anonymous: boolean;
+  type: string;
+  category: string;
+  subject: string;
+  message: string;
+  status: string;
+  admin_response: string | null;
+  created_at: string;
+}
 
 export default function SuggestionsPage() {
+  const router = useRouter();
+  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [updating, setUpdating] = useState<string | null>(null);
+  const [respondingTo, setRespondingTo] = useState<string | null>(null);
+  const [responseText, setResponseText] = useState('');
 
-  const filtered = mockSuggestions.filter(s => {
+  useEffect(() => { checkAuth(); }, []);
+
+  async function checkAuth() {
+    const { data } = await supabase.auth.getSession();
+    if (!data.session) { router.push('/auth/login?redirectTo=' + router.asPath); return; }
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', data.session.user.id).single();
+    if (!profile || !['admin', 'pastor', 'teacher', 'leader'].includes(profile.role)) { router.push('/'); return; }
+    loadData();
+  }
+
+  async function loadData() {
+    const { data, error } = await supabase
+      .from('suggestions')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (!error && data) {
+      setSuggestions(data);
+    }
+    setLoading(false);
+  }
+
+  async function updateStatus(id: string, status: string) {
+    setUpdating(id);
+    const res = await fetch('/api/admin/suggestions', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, status }),
+    });
+    if (res.ok) {
+      setSuggestions(prev => prev.map(s => s.id === id ? { ...s, status } : s));
+    }
+    setUpdating(null);
+  }
+
+  async function submitResponse(id: string) {
+    if (!responseText.trim()) return;
+    setUpdating(id);
+    const res = await fetch('/api/admin/suggestions', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, admin_response: responseText }),
+    });
+    if (res.ok) {
+      setSuggestions(prev => prev.map(s => s.id === id ? { ...s, admin_response: responseText } : s));
+      setRespondingTo(null);
+      setResponseText('');
+    }
+    setUpdating(null);
+  }
+
+  const filtered = suggestions.filter(s => {
     const matchesStatus = filter === 'all' || s.status === filter;
     const matchesType = typeFilter === 'all' || s.type === typeFilter;
     return matchesStatus && matchesType;
   });
 
   const stats = {
-    total: mockSuggestions.length,
-    pending: mockSuggestions.filter(s => s.status === 'pending').length,
-    reviewing: mockSuggestions.filter(s => s.status === 'reviewing').length,
-    resolved: mockSuggestions.filter(s => s.status === 'resolved').length,
+    total: suggestions.length,
+    pending: suggestions.filter(s => s.status === 'pending').length,
+    reviewing: suggestions.filter(s => s.status === 'reviewing').length,
+    resolved: suggestions.filter(s => s.status === 'resolved').length,
   };
 
   const getTypeIcon = (type: string) => {
@@ -37,6 +108,16 @@ export default function SuggestionsPage() {
       default: return 'bg-gray-100 text-gray-800';
     }
   };
+
+  if (loading) {
+    return (
+      <AdminLayout title="Suggestions">
+        <div className="flex items-center justify-center py-20">
+          <div className="w-8 h-8 border-4 border-[#BF0A30] border-t-transparent rounded-full animate-spin" />
+        </div>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout title="Suggestions">
@@ -89,10 +170,10 @@ export default function SuggestionsPage() {
                 <div>
                   <h3 className="font-semibold text-gray-900 dark:text-white">{item.subject}</h3>
                   <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
-                    <span>{item.isAnonymous ? 'Anonymous' : 'Member'}</span>
-                    <span>•</span>
-                    <span>{new Date(item.createdAt).toLocaleDateString()}</span>
-                    <span>•</span>
+                    <span>{item.is_anonymous ? 'Anonymous' : 'Member'}</span>
+                    <span>-</span>
+                    <span>{new Date(item.created_at).toLocaleDateString()}</span>
+                    <span>-</span>
                     <span className="capitalize">{item.category}</span>
                   </div>
                 </div>
@@ -109,6 +190,31 @@ export default function SuggestionsPage() {
 
             <p className="text-gray-700 dark:text-gray-300 mb-4">{item.message}</p>
 
+            {item.admin_response && (
+              <div className="bg-gray-50 dark:bg-[#252525] rounded-lg p-3 mb-4">
+                <p className="text-xs font-medium text-gray-500 mb-1">Admin Response</p>
+                <p className="text-sm text-gray-700 dark:text-gray-300">{item.admin_response}</p>
+              </div>
+            )}
+
+            {respondingTo === item.id && (
+              <div className="mb-4">
+                <textarea
+                  value={responseText}
+                  onChange={(e) => setResponseText(e.target.value)}
+                  placeholder="Write your response..."
+                  rows={3}
+                  className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg resize-none mb-2"
+                />
+                <div className="flex gap-2 justify-end">
+                  <button onClick={() => { setRespondingTo(null); setResponseText(''); }} className="px-3 py-1.5 text-sm text-gray-600 border border-gray-300 rounded-lg">Cancel</button>
+                  <button onClick={() => submitResponse(item.id)} disabled={updating === item.id} className="px-3 py-1.5 text-sm bg-[#BF0A30] text-white rounded-lg disabled:opacity-50">
+                    {updating === item.id ? 'Saving...' : 'Submit Response'}
+                  </button>
+                </div>
+              </div>
+            )}
+
             <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-[#2D2D2D]">
               <div className="flex items-center gap-2 text-sm text-gray-500">
                 {item.status === 'pending' && <Clock className="w-4 h-4" />}
@@ -118,12 +224,29 @@ export default function SuggestionsPage() {
               </div>
               <div className="flex gap-2">
                 {item.status === 'pending' && (
-                  <button className="px-4 py-2 text-sm font-medium bg-[#BF0A30] text-white rounded-lg hover:bg-[#B00325]">Start Review</button>
+                  <button
+                    onClick={() => updateStatus(item.id, 'reviewing')}
+                    disabled={updating === item.id}
+                    className="px-4 py-2 text-sm font-medium bg-[#BF0A30] text-white rounded-lg hover:bg-[#B00325] disabled:opacity-50"
+                  >
+                    {updating === item.id ? 'Updating...' : 'Start Review'}
+                  </button>
                 )}
                 {item.status === 'reviewing' && (
-                  <button className="px-4 py-2 text-sm font-medium bg-green-600 text-white rounded-lg hover:bg-green-700">Mark Resolved</button>
+                  <button
+                    onClick={() => updateStatus(item.id, 'resolved')}
+                    disabled={updating === item.id}
+                    className="px-4 py-2 text-sm font-medium bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+                  >
+                    {updating === item.id ? 'Updating...' : 'Mark Resolved'}
+                  </button>
                 )}
-                <button className="px-4 py-2 text-sm font-medium border border-gray-300 dark:border-[#2D2D2D] rounded-lg hover:bg-gray-50">Add Note</button>
+                <button
+                  onClick={() => { setRespondingTo(item.id); setResponseText(item.admin_response || ''); }}
+                  className="px-4 py-2 text-sm font-medium border border-gray-300 dark:border-[#2D2D2D] rounded-lg hover:bg-gray-50"
+                >
+                  Add Note
+                </button>
               </div>
             </div>
           </div>

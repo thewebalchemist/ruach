@@ -2,141 +2,100 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import {
-  LayoutDashboard,
-  Users,
-  Home,
-  GraduationCap,
-  Building2,
-  Calendar,
-  MessageSquare,
-  Bell,
-  Settings,
-  ChevronDown,
-  LogOut,
-  Menu,
-  X,
-  Search,
-  Radio,
+  LayoutDashboard, Users, Home, GraduationCap, Building2, Calendar,
+  MessageSquare, Bell, Settings, ChevronDown, LogOut, X, Search, Radio,
+  BookOpen, Heart, Utensils,
 } from 'lucide-react';
-import { getCurrentUser } from '@/data';
+import { useAuth } from '@/context/AuthContext';
+
+const H = { fontFamily: 'Montserrat, sans-serif', fontWeight: 900 } as const;
 
 const navigation = [
   { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
   { name: 'Search', href: '/admin/search', icon: Search },
-  { 
-    name: 'People', 
-    icon: Users,
+  {
+    name: 'People', icon: Users,
     children: [
       { name: 'All Members', href: '/admin/members' },
       { name: 'Guests', href: '/admin/members/guests' },
-      { name: 'Attendees', href: '/admin/members/attendees' },
+      { name: 'Create Staff', href: '/admin/users/new' },
     ],
   },
-  { 
-    name: 'Crosspoints', 
-    icon: Home,
+  {
+    name: 'Crosspoints', icon: Home,
     children: [
       { name: 'All Crosspoints', href: '/admin/crosspoints' },
       { name: 'Transfers', href: '/admin/crosspoints/transfers' },
       { name: 'Modules', href: '/admin/crosspoints/modules' },
     ],
   },
-  { 
-    name: 'Discipleship', 
-    icon: GraduationCap,
+  {
+    name: 'Programs', icon: GraduationCap,
     children: [
-      { name: 'Overview', href: '/admin/discipleship' },
-      { name: 'Connect Classes', href: '/admin/discipleship/connect' },
+      { name: 'Connect Class', href: '/admin/connect' },
+      { name: 'Discipleship', href: '/admin/discipleship' },
     ],
   },
   { name: 'Departments', href: '/admin/departments', icon: Building2 },
   { name: 'Events', href: '/admin/events', icon: Calendar },
-  { name: 'Food Bank', href: '/admin/food-bank', icon: MessageSquare },
-  { name: 'Prayer Requests', href: '/admin/prayer', icon: MessageSquare },
+  { name: 'Food Bank', href: '/admin/food-bank', icon: Utensils },
+  { name: 'Prayer', href: '/admin/prayer', icon: Heart },
   { name: 'Suggestions', href: '/admin/suggestions', icon: MessageSquare },
   { name: 'Notices', href: '/admin/notices', icon: Bell },
   { name: 'Reports', href: '/admin/reports', icon: LayoutDashboard },
+  { name: 'Broadcast', href: '/admin/broadcast', icon: Radio },
   { name: 'Settings', href: '/admin/settings', icon: Settings },
-  { name: 'Streaming', href: '/admin/stream/dashboard', icon: Radio },
 ];
 
-interface SidebarProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
+interface SidebarProps { isOpen: boolean; onClose: () => void; }
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const router = useRouter();
-  const currentUser = getCurrentUser();
-  const [expandedItems, setExpandedItems] = useState<string[]>(['People', 'Crosspoints', 'Discipleship']);
+  const { profile, signOut } = useAuth();
+  const [expanded, setExpanded] = useState<string[]>(['People', 'Crosspoints', 'Programs']);
 
-  const toggleExpand = (name: string) => {
-    setExpandedItems(prev => 
-      prev.includes(name) ? prev.filter(n => n !== name) : [...prev, name]
-    );
-  };
+  const toggle = (name: string) =>
+    setExpanded(prev => prev.includes(name) ? prev.filter(n => n !== name) : [...prev, name]);
 
   const isActive = (href: string) => router.pathname === href;
-  const isParentActive = (children?: { href: string }[]) => 
-    children?.some(child => router.pathname === child.href);
+  const isParentActive = (children?: { href: string }[]) =>
+    children?.some(c => router.pathname.startsWith(c.href));
 
   return (
     <>
-      {/* Mobile overlay */}
-      {isOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden" 
-          onClick={onClose}
-        />
-      )}
+      {isOpen && <div className="fixed inset-0 bg-black/60 z-40 lg:hidden" onClick={onClose} />}
 
-      {/* Sidebar */}
-      <aside className={`
-        fixed top-0 left-0 h-full w-64 bg-white dark:bg-[#1A1A1A] border-r border-gray-200 dark:border-[#2D2D2D] z-50
-        transform transition-transform duration-300 lg:translate-x-0
-        ${isOpen ? 'translate-x-0' : '-translate-x-full'}
-      `}>
+      <aside className={`fixed top-0 left-0 h-full w-64 bg-[#111316] border-r border-white/[0.06] z-50 transform transition-transform duration-300 lg:translate-x-0 flex flex-col ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         {/* Logo */}
-        <div className="h-16 flex items-center justify-between px-6 border-b border-gray-200 dark:border-[#2D2D2D]">
-          <Link href="/admin" className="flex items-center gap-2">
-            <div className="flex items-center justify-center">
-            <img 
-                src="/images/ruaach.png" 
-                alt="RUACH CHURCH Logo" 
-                className="w-10 h-10 rounded-full" />
-            </div>
-            <span className="font-bold text-gray-900 dark:text-white">RuachConnect</span>
+        <div className="h-14 flex items-center justify-between px-5 border-b border-white/[0.06] flex-shrink-0">
+          <Link href="/admin" className="flex items-center gap-2.5">
+            <img src="/brand/ruach-logo.png" alt="Ruach" className="h-7 w-auto" />
+            <span className="text-white font-black text-xs uppercase tracking-widest" style={H}>Admin</span>
           </Link>
-          <button onClick={onClose} className="lg:hidden p-1 text-gray-500">
-            <X className="w-5 h-5" />
+          <button onClick={onClose} className="lg:hidden p-1 text-white/40 hover:text-white">
+            <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Navigation */}
-        <nav className="p-4 space-y-1 overflow-y-auto h-[calc(100%-8rem)]">
-          {navigation.map((item) => (
+        {/* Nav */}
+        <nav className="flex-1 overflow-y-auto py-3 px-3 space-y-0.5">
+          {navigation.map(item => (
             <div key={item.name}>
               {item.children ? (
                 <>
-                  <button
-                    onClick={() => toggleExpand(item.name)}
-                    className={`nav-item w-full justify-between ${isParentActive(item.children) ? 'active' : ''}`}
-                  >
-                    <span className="flex items-center gap-3">
-                      <item.icon className="w-5 h-5" />
+                  <button onClick={() => toggle(item.name)}
+                    className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition-colors ${isParentActive(item.children) ? 'text-white bg-white/[0.06]' : 'text-white/50 hover:text-white/80 hover:bg-white/[0.04]'}`}>
+                    <span className="flex items-center gap-2.5">
+                      <item.icon className="w-4 h-4" />
                       {item.name}
                     </span>
-                    <ChevronDown className={`w-4 h-4 transition-transform ${expandedItems.includes(item.name) ? 'rotate-180' : ''}`} />
+                    <ChevronDown className={`w-3.5 h-3.5 transition-transform ${expanded.includes(item.name) ? 'rotate-180' : ''}`} />
                   </button>
-                  {expandedItems.includes(item.name) && (
-                    <div className="ml-8 mt-1 space-y-1">
-                      {item.children.map((child) => (
-                        <Link
-                          key={child.href}
-                          href={child.href}
-                          className={`nav-item text-sm ${isActive(child.href) ? 'active' : ''}`}
-                          onClick={onClose}
-                        >
+                  {expanded.includes(item.name) && (
+                    <div className="ml-7 mt-0.5 space-y-0.5 border-l border-white/[0.06] pl-3">
+                      {item.children.map(child => (
+                        <Link key={child.href} href={child.href} onClick={onClose}
+                          className={`block px-2.5 py-1.5 rounded-md text-[11px] font-medium transition-colors ${isActive(child.href) ? 'text-[#BF0A30] bg-[#BF0A30]/10' : 'text-white/40 hover:text-white/70'}`}>
                           {child.name}
                         </Link>
                       ))}
@@ -144,12 +103,9 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                   )}
                 </>
               ) : (
-                <Link
-                  href={item.href}
-                  className={`nav-item ${isActive(item.href) ? 'active' : ''}`}
-                  onClick={onClose}
-                >
-                  <item.icon className="w-5 h-5" />
+                <Link href={item.href} onClick={onClose}
+                  className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${isActive(item.href) ? 'text-[#BF0A30] bg-[#BF0A30]/10' : 'text-white/50 hover:text-white/80 hover:bg-white/[0.04]'}`}>
+                  <item.icon className="w-4 h-4" />
                   {item.name}
                 </Link>
               )}
@@ -158,19 +114,17 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         </nav>
 
         {/* User */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200 dark:border-[#2D2D2D] bg-white dark:bg-[#1A1A1A]">
-          <div className="flex items-center gap-3">
-            <div className="avatar">
-              {currentUser?.firstName?.[0]}{currentUser?.lastName?.[0]}
+        <div className="flex-shrink-0 p-3 border-t border-white/[0.06]">
+          <div className="flex items-center gap-2.5 px-2">
+            <div className="w-8 h-8 rounded-full bg-[#BF0A30]/20 flex items-center justify-center text-[#BF0A30] text-xs font-bold flex-shrink-0">
+              {profile?.first_name?.[0]}{profile?.last_name?.[0]}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                {currentUser?.firstName} {currentUser?.lastName}
-              </p>
-              <p className="text-xs text-gray-500 truncate">{currentUser?.memberId}</p>
+              <p className="text-white text-xs font-medium truncate">{profile?.first_name} {profile?.last_name}</p>
+              <p className="text-white/30 text-[10px] truncate">{profile?.role} · {profile?.member_id || profile?.email}</p>
             </div>
-            <button className="p-2 text-gray-400 hover:text-gray-600">
-              <LogOut className="w-4 h-4" />
+            <button onClick={signOut} className="p-1.5 text-white/30 hover:text-white/60 transition-colors" title="Sign out">
+              <LogOut className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>

@@ -1,18 +1,17 @@
-import { useState, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import {
   ArrowLeft, Users, GraduationCap, AlertTriangle, Upload,
   Plus, X, FileText, Film, Globe, File, Trash2, ExternalLink,
   CheckCircle, XCircle, Bell, Send, BookOpen, Calendar,
-  ChevronDown, Paperclip
+  ChevronDown, Paperclip, Loader2
 } from 'lucide-react';
 import { ConnectLayout } from '@/components/connect/ConnectLayout';
-import {
-  mockConnectCohorts, mockConnectStudents, mockConnectSessions,
-  mockConnectExams, getUserById, getTeacherById,
-} from '@/data/connect';
-import { ConnectCohort, ConnectClassSession, ConnectResource } from '@/types';
+import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/context/AuthContext';
+
+const db = supabase as any;
 
 type Tab = 'students' | 'sessions' | 'exams' | 'resources';
 type ResourceType = 'pdf' | 'video' | 'link' | 'document';
@@ -27,27 +26,77 @@ const TYPE_META: Record<ResourceType, { label: string; icon: React.FC<{ classNam
 export default function CohortDetailPage() {
   const router = useRouter();
   const { id } = router.query as { id: string };
+  const { profile, loading: authLoading } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const cohortBase = mockConnectCohorts.find(c => c.id === id);
-  const [cohort, setCohort] = useState<ConnectCohort | undefined>(cohortBase);
-  const [sessions, setSessions] = useState<ConnectClassSession[]>(
-    mockConnectSessions.filter(s => s.cohortId === id)
-  );
-  const [activeTab,      setActiveTab]      = useState<Tab>('students');
+  const [cohort, setCohort] = useState<any>(null);
+  const [students, setStudents] = useState<any[]>([]);
+  const [sessions, setSessions] = useState<any[]>([]);
+  const [exams, setExams] = useState<any[]>([]);
+  const [resources, setResources] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const [activeTab, setActiveTab] = useState<Tab>('students');
 
   // Resource modal state
-  const [showResource,   setShowResource]   = useState(false);
-  const [resSessionId,   setResSessionId]   = useState('');
-  const [resType,        setResType]        = useState<ResourceType>('pdf');
-  const [resTitle,       setResTitle]       = useState('');
-  const [resUrl,         setResUrl]         = useState('');
-  const [resFile,        setResFile]        = useState<File | null>(null);
-  const [resUploading,   setResUploading]   = useState(false);
+  const [showResource, setShowResource] = useState(false);
+  const [resSessionId, setResSessionId] = useState('');
+  const [resType, setResType] = useState<ResourceType>('pdf');
+  const [resTitle, setResTitle] = useState('');
+  const [resUrl, setResUrl] = useState('');
+  const [resFile, setResFile] = useState<File | null>(null);
+  const [resUploading, setResUploading] = useState(false);
 
   // Notify modal state
-  const [showNotify,     setShowNotify]     = useState(false);
-  const [notifyMsg,      setNotifyMsg]      = useState('');
+  const [showNotify, setShowNotify] = useState(false);
+  const [notifyMsg, setNotifyMsg] = useState('');
+
+  useEffect(() => {
+    if (!router.isReady || !id) return;
+    fetchData();
+  }, [router.isReady, id]);
+
+  async function fetchData() {
+    setLoading(true);
+
+    const [cohortRes, studentsRes, sessionsRes, examsRes, resourcesRes] = await Promise.all([
+      db.from('connect_cohorts')
+        .select('*, profiles!connect_cohorts_teacher_id_fkey(first_name, last_name, full_name)')
+        .eq('id', id)
+        .single(),
+      db.from('connect_students')
+        .select('*, profiles(first_name, last_name, full_name, phone)')
+        .eq('cohort_id', id),
+      db.from('connect_sessions')
+        .select('*')
+        .eq('cohort_id', id)
+        .order('session_number'),
+      db.from('connect_exams')
+        .select('*')
+        .eq('cohort_id', id),
+      db.from('connect_resources')
+        .select('*')
+        .eq('cohort_id', id),
+    ]);
+
+    if (cohortRes.data) setCohort(cohortRes.data);
+    if (studentsRes.data) setStudents(studentsRes.data);
+    if (sessionsRes.data) setSessions(sessionsRes.data);
+    if (examsRes.data) setExams(examsRes.data);
+    if (resourcesRes.data) setResources(resourcesRes.data);
+
+    setLoading(false);
+  }
+
+  if (authLoading || loading) {
+    return (
+      <ConnectLayout title="Loading...">
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="w-8 h-8 text-[#BF0A30] animate-spin" />
+        </div>
+      </ConnectLayout>
+    );
+  }
 
   if (!cohort) {
     return (
@@ -60,12 +109,16 @@ export default function CohortDetailPage() {
     );
   }
 
-  const students  = mockConnectStudents.filter(s => s.cohortId === id);
-  const exams     = mockConnectExams.filter(e => e.cohortId === id);
-  const teacher   = getTeacherById(cohort.teacherId);
-  const atRisk    = students.filter(s => s.totalAttendancePercent < cohort.passRequirement.minAttendancePercent);
-  const canGrad   = students.filter(s => s.canGraduate);
-  const allResources = sessions.flatMap(s => s.resources.map(r => ({ ...r, sessionTitle: s.title, sessionId: s.id })));
+  const atRisk = students.filter(s => (s.total_attendance_percent ?? 0) < (cohort.min_attendance_percent ?? 80));
+  const canGrad = students.filter(s => s.can_graduate);
+  const sessionResources = sessions.map(s => ({
+    ...s,
+    sessionResources: resources.filter(r => r.session_id === s.id),
+  }));
+  const allResources = resources.map(r => {
+    const session = sessions.find(s => s.id === r.session_id);
+    return { ...r, sessionTitle: session?.title ?? '', sessionId: r.session_id };
+  });
 
   // ── Add resource ──────────────────────────────────────────────────────────
   const openResourceModal = (sessionId = '') => {
@@ -82,8 +135,7 @@ export default function CohortDetailPage() {
     if (!file) return;
     setResFile(file);
     if (!resTitle) setResTitle(file.name.replace(/\.[^.]+$/, ''));
-    // Infer type from mime
-    if (file.type.includes('pdf'))   setResType('pdf');
+    if (file.type.includes('pdf')) setResType('pdf');
     else if (file.type.includes('video')) setResType('video');
     else setResType('document');
   };
@@ -91,44 +143,36 @@ export default function CohortDetailPage() {
   const addResource = async () => {
     if (!resTitle.trim() || !resSessionId) return;
     setResUploading(true);
-    await new Promise(r => setTimeout(r, 700)); // simulate upload
 
-    const newResource: ConnectResource = {
-      id:         `res-${Date.now()}`,
-      sessionId:  resSessionId,
-      type:       resType,
-      title:      resTitle.trim(),
-      url:        resFile
-        ? `https://storage.ruach.church/${Date.now()}-${resFile.name}`
-        : resUrl.trim(),
-      uploadedAt: new Date().toISOString(),
-    };
+    const url = resFile
+      ? `https://storage.ruach.church/${Date.now()}-${resFile.name}`
+      : resUrl.trim();
 
-    setSessions(prev =>
-      prev.map(s => s.id === resSessionId
-        ? { ...s, resources: [...s.resources, newResource] }
-        : s
-      )
-    );
+    const { error } = await db.from('connect_resources').insert({
+      session_id: resSessionId,
+      cohort_id: id,
+      type: resType,
+      title: resTitle.trim(),
+      url,
+    });
+
     setResUploading(false);
-    setShowResource(false);
-    setActiveTab('resources');
+    if (!error) {
+      await fetchData();
+      setShowResource(false);
+      setActiveTab('resources');
+    }
   };
 
-  const deleteResource = (sessionId: string, resourceId: string) => {
-    setSessions(prev =>
-      prev.map(s => s.id === sessionId
-        ? { ...s, resources: s.resources.filter(r => r.id !== resourceId) }
-        : s
-      )
-    );
+  const deleteResource = async (resourceId: string) => {
+    await db.from('connect_resources').delete().eq('id', resourceId);
+    await fetchData();
   };
 
-  const toggleEnrollment = () => {
-    setCohort(prev => prev ? {
-      ...prev,
-      status: prev.status === 'registration-open' ? 'active' : 'registration-open',
-    } : prev);
+  const toggleEnrollment = async () => {
+    const newStatus = cohort.status === 'registration-open' ? 'active' : 'registration-open';
+    await db.from('connect_cohorts').update({ status: newStatus }).eq('id', id);
+    await fetchData();
   };
 
   const STATUS_COLOR: Record<string, string> = {
@@ -269,7 +313,7 @@ export default function CohortDetailPage() {
                 className="flex-1 py-2.5 bg-[#BF0A30] text-white rounded-xl text-sm font-medium disabled:opacity-40 hover:bg-[#A0021F] flex items-center justify-center gap-2"
               >
                 {resUploading ? (
-                  <><Upload className="w-4 h-4 animate-bounce" /> Uploading...</>
+                  <><Loader2 className="w-4 h-4 animate-spin" /> Uploading...</>
                 ) : (
                   <><Plus className="w-4 h-4" /> Add Resource</>
                 )}
@@ -325,8 +369,8 @@ export default function CohortDetailPage() {
               </span>
             </div>
             <p className="text-sm text-gray-500">{cohort.description}</p>
-            {teacher && (
-              <p className="text-sm text-gray-500 mt-1">Teacher: <span className="text-gray-700 dark:text-gray-300 font-medium">{teacher.fullName}</span></p>
+            {cohort.profiles && (
+              <p className="text-sm text-gray-500 mt-1">Teacher: <span className="text-gray-700 dark:text-gray-300 font-medium">{cohort.profiles?.full_name}</span></p>
             )}
           </div>
           <div className="flex flex-wrap gap-2">
@@ -350,7 +394,7 @@ export default function CohortDetailPage() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
           {[
             { label: 'Enrolled',    value: students.length,    color: 'text-gray-900 dark:text-white' },
-            { label: 'Sessions',    value: `${sessions.filter(s=>s.isCompleted).length}/${sessions.length}`, color: 'text-blue-600' },
+            { label: 'Sessions',    value: `${sessions.filter(s=>s.is_completed).length}/${sessions.length}`, color: 'text-blue-600' },
             { label: 'At Risk',     value: atRisk.length,      color: atRisk.length > 0 ? 'text-amber-600' : 'text-gray-400' },
             { label: 'Can Graduate',value: canGrad.length,     color: canGrad.length > 0 ? 'text-green-600' : 'text-gray-400' },
           ].map(({ label, value, color }) => (
@@ -412,30 +456,29 @@ export default function CohortDetailPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-gray-100 dark:border-white/[0.04]">
-                    {['Student', 'Admission #', 'Attendance', 'Exams', 'Status', ''].map(h => (
+                    {['Student', 'Admission #', 'Attendance', 'Status', ''].map(h => (
                       <th key={h} className="text-left text-xs font-medium text-gray-500 px-4 py-3">{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {students.map(s => {
-                    const u = getUserById(s.userId);
-                    const at = s.totalAttendancePercent;
-                    const atOk = at >= cohort.passRequirement.minAttendancePercent;
+                    const at = s.total_attendance_percent ?? 0;
+                    const atOk = at >= (cohort.min_attendance_percent ?? 80);
                     return (
                       <tr key={s.id} className="border-b border-gray-50 dark:border-white/[0.02] hover:bg-gray-50 dark:hover:bg-white/[0.02]">
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
                             <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${atOk ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'}`}>
-                              {u?.firstName[0]}{u?.lastName[0]}
+                              {s.profiles?.first_name?.[0]}{s.profiles?.last_name?.[0]}
                             </div>
                             <div>
-                              <p className="font-medium text-gray-900 dark:text-white">{u?.fullName}</p>
-                              <p className="text-xs text-gray-400">{u?.phone}</p>
+                              <p className="font-medium text-gray-900 dark:text-white">{s.profiles?.full_name}</p>
+                              <p className="text-xs text-gray-400">{s.profiles?.phone}</p>
                             </div>
                           </div>
                         </td>
-                        <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{s.admissionNumber}</td>
+                        <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{s.admission_number}</td>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
                             <div className="w-12 h-1.5 bg-gray-100 dark:bg-[#2D2D2D] rounded-full overflow-hidden">
@@ -444,7 +487,6 @@ export default function CohortDetailPage() {
                             <span className={`text-xs font-medium ${atOk ? 'text-green-600' : 'text-red-500'}`}>{at}%</span>
                           </div>
                         </td>
-                        <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{s.examResults.length}</td>
                         <td className="px-4 py-3">
                           <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${
                             s.status === 'in-progress' ? 'bg-blue-100 text-blue-800' :
@@ -472,42 +514,45 @@ export default function CohortDetailPage() {
       {/* ── Sessions tab ── */}
       {activeTab === 'sessions' && (
         <div className="space-y-3">
-          {sessions.map(session => (
-            <div key={session.id} className="bg-white dark:bg-[#141414] rounded-2xl border border-gray-200/70 dark:border-white/[0.05] p-5 shadow-sm">
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="flex items-start gap-3">
-                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 ${session.isCompleted ? 'bg-green-100 dark:bg-green-900/30' : 'bg-gray-100 dark:bg-[#1A1A1A]'}`}>
-                    {session.isCompleted
-                      ? <CheckCircle className="w-4 h-4 text-green-600" />
-                      : <Calendar className="w-4 h-4 text-gray-400" />}
+          {sessions.map(session => {
+            const sessionResourceCount = resources.filter(r => r.session_id === session.id).length;
+            return (
+              <div key={session.id} className="bg-white dark:bg-[#141414] rounded-2xl border border-gray-200/70 dark:border-white/[0.05] p-5 shadow-sm">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="flex items-start gap-3">
+                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 ${session.is_completed ? 'bg-green-100 dark:bg-green-900/30' : 'bg-gray-100 dark:bg-[#1A1A1A]'}`}>
+                      {session.is_completed
+                        ? <CheckCircle className="w-4 h-4 text-green-600" />
+                        : <Calendar className="w-4 h-4 text-gray-400" />}
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900 dark:text-white">{session.title}</p>
+                      <p className="text-sm text-gray-500 mt-0.5">
+                        {new Date(session.date).toLocaleDateString('en-KE', { weekday: 'short', day: 'numeric', month: 'short' })} · {session.start_time} – {session.end_time}
+                      </p>
+                      {session.venue && <p className="text-xs text-gray-400 mt-0.5">📍 {session.venue}</p>}
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-medium text-gray-900 dark:text-white">{session.title}</p>
-                    <p className="text-sm text-gray-500 mt-0.5">
-                      {new Date(session.date).toLocaleDateString('en-KE', { weekday: 'short', day: 'numeric', month: 'short' })} · {session.startTime} – {session.endTime}
-                    </p>
-                    {session.venue && <p className="text-xs text-gray-400 mt-0.5">📍 {session.venue}</p>}
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${session.type === 'virtual' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}`}>
-                    {session.type}
-                  </span>
-                  {session.resources.length > 0 && (
-                    <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-gray-100 dark:bg-[#1A1A1A] text-gray-600 dark:text-gray-400">
-                      {session.resources.length} file{session.resources.length !== 1 ? 's' : ''}
+                  <div className="flex items-center gap-2">
+                    <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${session.type === 'virtual' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}`}>
+                      {session.type}
                     </span>
-                  )}
-                  <button
-                    onClick={() => openResourceModal(session.id)}
-                    className="flex items-center gap-1 text-xs text-[#BF0A30] font-medium hover:underline"
-                  >
-                    <Plus className="w-3 h-3" /> Resource
-                  </button>
+                    {sessionResourceCount > 0 && (
+                      <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-gray-100 dark:bg-[#1A1A1A] text-gray-600 dark:text-gray-400">
+                        {sessionResourceCount} file{sessionResourceCount !== 1 ? 's' : ''}
+                      </span>
+                    )}
+                    <button
+                      onClick={() => openResourceModal(session.id)}
+                      className="flex items-center gap-1 text-xs text-[#BF0A30] font-medium hover:underline"
+                    >
+                      <Plus className="w-3 h-3" /> Resource
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
@@ -533,7 +578,7 @@ export default function CohortDetailPage() {
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="font-semibold text-gray-900 dark:text-white">{exam.title}</p>
-                  <p className="text-sm text-gray-500 mt-0.5">{exam.questions.length} questions · {exam.durationMinutes} min · Pass: {exam.passingMarks}/{exam.totalMarks}</p>
+                  <p className="text-sm text-gray-500 mt-0.5">{exam.duration_minutes} min · Pass: {exam.passing_marks}/{exam.total_marks}</p>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${
@@ -572,41 +617,44 @@ export default function CohortDetailPage() {
                 Add first resource →
               </button>
             </div>
-          ) : sessions.filter(s => s.resources.length > 0).map(session => (
-            <div key={session.id} className="bg-white dark:bg-[#141414] rounded-2xl border border-gray-200/70 dark:border-white/[0.05] shadow-sm overflow-hidden">
-              <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100 dark:border-white/[0.04] bg-gray-50 dark:bg-[#1A1A1A]">
-                <p className="font-medium text-sm text-gray-700 dark:text-gray-300">{session.title}</p>
-                <button onClick={() => openResourceModal(session.id)} className="flex items-center gap-1 text-xs text-[#BF0A30] font-medium hover:underline">
-                  <Plus className="w-3 h-3" /> Add
-                </button>
+          ) : sessions.filter(s => resources.some(r => r.session_id === s.id)).map(session => {
+            const sessionRes = resources.filter(r => r.session_id === session.id);
+            return (
+              <div key={session.id} className="bg-white dark:bg-[#141414] rounded-2xl border border-gray-200/70 dark:border-white/[0.05] shadow-sm overflow-hidden">
+                <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100 dark:border-white/[0.04] bg-gray-50 dark:bg-[#1A1A1A]">
+                  <p className="font-medium text-sm text-gray-700 dark:text-gray-300">{session.title}</p>
+                  <button onClick={() => openResourceModal(session.id)} className="flex items-center gap-1 text-xs text-[#BF0A30] font-medium hover:underline">
+                    <Plus className="w-3 h-3" /> Add
+                  </button>
+                </div>
+                <div className="divide-y divide-gray-50 dark:divide-white/[0.02]">
+                  {sessionRes.map(resource => {
+                    const meta = TYPE_META[resource.type as ResourceType] ?? TYPE_META.document;
+                    const Icon = meta.icon;
+                    return (
+                      <div key={resource.id} className="flex items-center gap-4 px-5 py-3.5">
+                        <div className={`w-9 h-9 rounded-xl ${meta.bg} flex items-center justify-center flex-shrink-0`}>
+                          <Icon className={`w-4 h-4 ${meta.color}`} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm text-gray-900 dark:text-white truncate">{resource.title}</p>
+                          <p className="text-xs text-gray-400">{meta.label} · {new Date(resource.uploaded_at ?? resource.created_at).toLocaleDateString()}</p>
+                        </div>
+                        <div className="flex items-center gap-1.5 flex-shrink-0">
+                          <a href={resource.url} target="_blank" rel="noopener noreferrer" className="p-1.5 text-gray-400 hover:text-blue-500 transition-colors rounded-lg">
+                            <ExternalLink className="w-4 h-4" />
+                          </a>
+                          <button onClick={() => deleteResource(resource.id)} className="p-1.5 text-gray-400 hover:text-red-500 transition-colors rounded-lg">
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-              <div className="divide-y divide-gray-50 dark:divide-white/[0.02]">
-                {session.resources.map(resource => {
-                  const meta = TYPE_META[resource.type as ResourceType] ?? TYPE_META.document;
-                  const Icon = meta.icon;
-                  return (
-                    <div key={resource.id} className="flex items-center gap-4 px-5 py-3.5">
-                      <div className={`w-9 h-9 rounded-xl ${meta.bg} flex items-center justify-center flex-shrink-0`}>
-                        <Icon className={`w-4 h-4 ${meta.color}`} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-sm text-gray-900 dark:text-white truncate">{resource.title}</p>
-                        <p className="text-xs text-gray-400">{meta.label} · {new Date(resource.uploadedAt).toLocaleDateString()}</p>
-                      </div>
-                      <div className="flex items-center gap-1.5 flex-shrink-0">
-                        <a href={resource.url} target="_blank" rel="noopener noreferrer" className="p-1.5 text-gray-400 hover:text-blue-500 transition-colors rounded-lg">
-                          <ExternalLink className="w-4 h-4" />
-                        </a>
-                        <button onClick={() => deleteResource(session.id, resource.id)} className="p-1.5 text-gray-400 hover:text-red-500 transition-colors rounded-lg">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </ConnectLayout>

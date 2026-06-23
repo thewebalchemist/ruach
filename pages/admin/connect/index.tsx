@@ -1,13 +1,73 @@
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Plus, Users, BookOpen, CheckCircle, Clock, AlertCircle, UserCheck } from 'lucide-react';
+import { useRouter } from 'next/router';
+import { Plus, Users, BookOpen, CheckCircle, Clock, AlertCircle, UserCheck, Loader2 } from 'lucide-react';
 import { AdminLayout, PageHeader } from '@/components/connect/AdminLayout';
-import { mockConnectCohorts, mockConnectStudents, mockLegacyRequests, getUserById } from '@/data';
+import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/context/AuthContext';
+
+const db = supabase as any;
 
 export default function AdminConnectPage() {
-  const activeCohorts = mockConnectCohorts.filter(c => c.status === 'active');
-  const openCohorts = mockConnectCohorts.filter(c => c.status === 'registration-open');
-  const pendingLegacy = mockLegacyRequests.filter(r => r.status === 'pending');
-  const readyToGraduate = mockConnectStudents.filter(s => s.canGraduate && !s.graduatedAt);
+  const router = useRouter();
+  const { profile, loading: authLoading } = useAuth();
+
+  const [loading, setLoading] = useState(true);
+  const [cohorts, setCohorts] = useState<any[]>([]);
+  const [totalStudents, setTotalStudents] = useState(0);
+  const [pendingLegacy, setPendingLegacy] = useState<any[]>([]);
+  const [readyToGraduateCount, setReadyToGraduateCount] = useState(0);
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (!profile) { router.push('/connect'); return; }
+    if (!['admin', 'pastor'].includes(profile.role)) {
+      router.push('/connect');
+      return;
+    }
+    load();
+  }, [authLoading, profile]);
+
+  async function load() {
+    setLoading(true);
+    const [
+      { data: cohortData },
+      { count: studentCount },
+      { data: legacyData },
+      { count: graduateCount },
+    ] = await Promise.all([
+      db.from('connect_cohorts')
+        .select('*, profiles!connect_cohorts_teacher_id_fkey(first_name, last_name)')
+        .order('created_at', { ascending: false }),
+      supabase.from('connect_students')
+        .select('id', { count: 'exact', head: true })
+        .in('status', ['enrolled', 'in-progress']),
+      db.from('legacy_member_requests')
+        .select('*')
+        .eq('status', 'pending'),
+      supabase.from('connect_students')
+        .select('id', { count: 'exact', head: true })
+        .eq('can_graduate', true)
+        .neq('status', 'completed'),
+    ]);
+
+    setCohorts(cohortData ?? []);
+    setTotalStudents(studentCount ?? 0);
+    setPendingLegacy(legacyData ?? []);
+    setReadyToGraduateCount(graduateCount ?? 0);
+    setLoading(false);
+  }
+
+  if (loading) return (
+    <AdminLayout title="Connect Class">
+      <div className="flex items-center justify-center py-24">
+        <Loader2 className="w-7 h-7 text-[#BF0A30] animate-spin" />
+      </div>
+    </AdminLayout>
+  );
+
+  const activeCohorts = cohorts.filter(c => c.status === 'active');
+  const openCohorts = cohorts.filter(c => c.status === 'registration-open');
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -52,7 +112,7 @@ export default function AdminConnectPage() {
             </div>
             <span className="text-sm text-gray-500">Total Students</span>
           </div>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{mockConnectStudents.length}</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-white">{totalStudents}</p>
         </div>
         <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-4">
           <div className="flex items-center gap-3 mb-2">
@@ -70,7 +130,7 @@ export default function AdminConnectPage() {
             </div>
             <span className="text-sm text-gray-500">Ready to Graduate</span>
           </div>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{readyToGraduate.length}</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-white">{readyToGraduateCount}</p>
         </div>
       </div>
 
@@ -82,9 +142,7 @@ export default function AdminConnectPage() {
             <Link href="/admin/connect/cohorts" className="text-sm text-[#BF0A30] hover:underline">View all</Link>
           </div>
           <div className="space-y-3">
-            {mockConnectCohorts.slice(0, 5).map((cohort) => {
-              const teacher = getUserById(cohort.teacherId);
-              const cohortStudents = mockConnectStudents.filter(s => s.cohortId === cohort.id);
+            {cohorts.slice(0, 5).map((cohort) => {
               return (
                 <Link
                   key={cohort.id}
@@ -95,7 +153,7 @@ export default function AdminConnectPage() {
                     <div>
                       <p className="font-semibold text-gray-900 dark:text-white">{cohort.name}</p>
                       <p className="text-sm text-gray-500">
-                        {teacher?.firstName} {teacher?.lastName} • {cohortStudents.length}/{cohort.maxCapacity} students
+                        {cohort.profiles?.first_name} {cohort.profiles?.last_name} • {cohort.enrolled_count ?? 0}/{cohort.max_capacity} students
                       </p>
                     </div>
                     <span className={`px-2 py-0.5 text-xs font-semibold rounded-full capitalize ${getStatusColor(cohort.status)}`}>
@@ -105,13 +163,8 @@ export default function AdminConnectPage() {
                   <div className="flex items-center gap-4 text-xs text-gray-500">
                     <span className="flex items-center gap-1">
                       <Clock className="w-3.5 h-3.5" />
-                      {new Date(cohort.startDate).toLocaleDateString()} – {new Date(cohort.endDate).toLocaleDateString()}
+                      {new Date(cohort.start_date).toLocaleDateString()} – {new Date(cohort.end_date).toLocaleDateString()}
                     </span>
-                    {cohort.status === 'active' && (
-                      <span className="text-green-600">
-                        {cohortStudents.filter(s => s.canGraduate).length} ready to graduate
-                      </span>
-                    )}
                   </div>
                 </Link>
               );
@@ -139,9 +192,9 @@ export default function AdminConnectPage() {
               </Link>
               <Link href="/admin/connect/graduates" className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-[#252525] text-sm font-medium text-gray-700 dark:text-gray-300">
                 <CheckCircle className="w-4 h-4 text-[#BF0A30]" />Graduate Students
-                {readyToGraduate.length > 0 && (
+                {readyToGraduateCount > 0 && (
                   <span className="ml-auto bg-[#BF0A30] text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
-                    {readyToGraduate.length}
+                    {readyToGraduateCount}
                   </span>
                 )}
               </Link>
@@ -159,8 +212,8 @@ export default function AdminConnectPage() {
                 {pendingLegacy.slice(0, 3).map((req) => (
                   <div key={req.id} className="flex items-center justify-between text-sm">
                     <div>
-                      <p className="font-medium text-gray-900 dark:text-white">{req.fullName}</p>
-                      <p className="text-xs text-gray-500">Joined {req.yearJoined}</p>
+                      <p className="font-medium text-gray-900 dark:text-white">{req.full_name}</p>
+                      <p className="text-xs text-gray-500">Joined {req.year_joined}</p>
                     </div>
                     <Link
                       href={`/admin/connect/legacy/${req.id}`}

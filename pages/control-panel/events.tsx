@@ -181,54 +181,48 @@ export default function EventsCP() {
   async function handleSave() {
     if (!form.title || !form.event_date) { setError('Title and date are required.'); return; }
     setSaving(true); setError('');
-    const payload: Record<string, unknown> = {
-      title:           form.title,
-      event_date:      form.event_date,
-      end_date:        form.end_date || null,
-      start_time:      form.start_time || null,
-      end_time:        form.end_time || null,
-      location:        form.location || null,
-      description:     form.description || null,
-      image_url:       form.image_url || null,
-      link_url:        form.link_url || null,
-      link_label:      form.link_label || null,
-      is_public:       form.is_public,
-      chatbot_enabled: form.chatbot_enabled,
-      category:        form.category,
-    };
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const payload: Record<string, unknown> = {
+        title:           form.title,
+        event_date:      form.event_date,
+        end_date:        form.end_date || null,
+        start_time:      form.start_time || null,
+        end_time:        form.end_time || null,
+        location:        form.location || null,
+        description:     form.description || null,
+        image_url:       form.image_url || null,
+        is_public:       form.is_public,
+        chatbot_enabled: form.chatbot_enabled,
+        category:        form.category,
+      };
 
-    let err: { message: string } | null = null;
-    if (editing) {
-      ({ error: err } = await (supabase.from('events') as any).update(payload).eq('id', editing.id));
-    } else {
-      ({ error: err } = await (supabase.from('events') as any).insert(payload));
-    }
+      if (editing) payload.id = editing.id;
 
-    setSaving(false);
-    if (err) {
-      // If link_url / link_label columns don't exist yet, retry without them
-      if (err.message?.includes('link_url') || err.message?.includes('link_label')) {
-        delete payload.link_url;
-        delete payload.link_label;
-        let err2: { message: string } | null = null;
-        if (editing) {
-          ({ error: err2 } = await (supabase.from('events') as any).update(payload).eq('id', editing.id));
-        } else {
-          ({ error: err2 } = await (supabase.from('events') as any).insert(payload));
-        }
-        if (err2) { setError(err2.message); return; }
-        setError('⚠️ Event saved but CTA link was ignored — add link_url & link_label columns to your events table in Supabase.');
-      } else {
-        setError(err.message); return;
-      }
+      const res = await fetch('/api/control-panel/events', {
+        method:  editing ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
+        body:    JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!res.ok) { setError(data.error || 'Failed to save event'); setSaving(false); return; }
+
+      setSaving(false);
+      setSaved(true);
+      setTimeout(() => { setSaved(false); setShowForm(false); loadData(); }, 1800);
+    } catch (e: any) {
+      setError(e?.message || 'Failed to save event');
+      setSaving(false);
     }
-    setSaved(true);
-    setTimeout(() => { setSaved(false); setShowForm(false); loadData(); }, 1800);
   }
 
-  async function handleDelete(id: number) {
+  async function handleDelete(id: string | number) {
     if (!confirm('Delete this event? This cannot be undone.')) return;
-    await (supabase.from('events') as any).delete().eq('id', id);
+    const { data: { session } } = await supabase.auth.getSession();
+    await fetch(`/api/control-panel/events?id=${id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${session?.access_token}` },
+    });
     loadData();
   }
 

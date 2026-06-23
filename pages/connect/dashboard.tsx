@@ -1,44 +1,113 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import {
   Users, Calendar, GraduationCap, Plus, TrendingUp,
   Upload, BookOpen, AlertTriangle, Bell, Search, Eye,
-  FileText, MoreVertical, ChevronRight, X, CheckCircle
+  FileText, MoreVertical, ChevronRight, X, CheckCircle, Loader2
 } from 'lucide-react';
 import { ConnectLayout } from '@/components/connect/ConnectLayout';
-import {
-  mockConnectCohorts, mockConnectStudents, mockConnectSessions,
-  mockConnectExams, mockLegacyRequests, mockTeachers, getUserById,
-  getTeacherById,
-} from '@/data/connect';
+import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/context/AuthContext';
 
 type Tab = 'overview' | 'students' | 'cohorts' | 'exams';
 
 export default function ConnectDashboardPage() {
-  const [selectedCohortId, setSelectedCohortId] = useState(mockConnectCohorts[0]?.id ?? '');
+  const router = useRouter();
+  const { profile, loading: authLoading } = useAuth();
+  const db = supabase as any;
+
+  const [loading,           setLoading]           = useState(true);
+  const [selectedCohortId,  setSelectedCohortId]  = useState('');
   const [searchQuery,       setSearchQuery]       = useState('');
   const [activeTab,         setActiveTab]         = useState<Tab>('overview');
   const [warnStudentId,     setWarnStudentId]     = useState<string | null>(null);
   const [warnMsg,           setWarnMsg]           = useState('');
 
-  const teacher       = mockTeachers[0];
-  const activeCohorts = mockConnectCohorts.filter(c => c.status === 'active');
-  const openCohorts   = mockConnectCohorts.filter(c => c.status === 'registration-open');
-  const pendingLegacy = mockLegacyRequests.filter(r => r.status === 'pending');
+  const [allCohorts,        setAllCohorts]        = useState<any[]>([]);
+  const [allStudents,       setAllStudents]       = useState<any[]>([]);
+  const [allSessions,       setAllSessions]       = useState<any[]>([]);
+  const [allExams,          setAllExams]          = useState<any[]>([]);
+  const [legacyRequests,    setLegacyRequests]    = useState<any[]>([]);
+  const [graduatesCount,    setGraduatesCount]    = useState(0);
+  const [recentActivity,    setRecentActivity]    = useState<any[]>([]);
 
-  const cohort         = mockConnectCohorts.find(c => c.id === selectedCohortId);
-  const students       = mockConnectStudents.filter(s => s.cohortId === selectedCohortId);
-  const sessions       = mockConnectSessions.filter(s => s.cohortId === selectedCohortId);
-  const exams          = mockConnectExams.filter(e => e.cohortId === selectedCohortId);
-  const totalEnrolled  = activeCohorts.reduce((sum, c) => sum + c.enrolledCount, 0);
-  const atRisk         = students.filter(s => s.totalAttendancePercent < 80);
-  const completedSess  = sessions.filter(s => s.isCompleted).length;
+  useEffect(() => {
+    if (authLoading) return;
+    if (!profile) { router.push('/connect'); return; }
+    if (!['teacher', 'admin', 'pastor', 'leader'].includes(profile.role)) {
+      router.push('/connect'); return;
+    }
+    load();
+  }, [authLoading, profile]);
 
-  const filteredStudents = students.filter(s => {
-    const user = getUserById(s.userId);
-    if (!user) return false;
-    return `${user.fullName} ${s.admissionNumber}`.toLowerCase().includes(searchQuery.toLowerCase());
-  });
+  async function load() {
+    setLoading(true);
+    const [
+      { data: cohortData },
+      { data: legacyData },
+      { count: gradCount },
+      { data: recentData },
+    ] = await Promise.all([
+      db.from('connect_cohorts')
+        .select('*, profiles!connect_cohorts_teacher_id_fkey(first_name, last_name)')
+        .order('created_at', { ascending: false }),
+      db.from('legacy_member_requests')
+        .select('*')
+        .eq('status', 'pending'),
+      supabase.from('connect_students')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'completed'),
+      db.from('connect_students')
+        .select('id, status, created_at, admission_number, profiles(first_name, last_name)')
+        .order('created_at', { ascending: false })
+        .limit(5),
+    ]);
+
+    const cohorts = (cohortData ?? []) as any[];
+    setAllCohorts(cohorts);
+    setLegacyRequests((legacyData ?? []) as any[]);
+    setGraduatesCount(gradCount ?? 0);
+    setRecentActivity((recentData ?? []) as any[]);
+
+    // Set default selected cohort
+    if (cohorts.length > 0 && !selectedCohortId) {
+      const firstActive = cohorts.find((c: any) => c.status === 'active');
+      setSelectedCohortId(firstActive?.id ?? cohorts[0].id);
+    }
+
+    setLoading(false);
+  }
+
+  // Reload students/sessions/exams when selectedCohortId changes
+  useEffect(() => {
+    if (!selectedCohortId) return;
+
+    async function loadCohortData() {
+      const [
+        { data: studentData },
+        { data: sessionData },
+        { data: examData },
+      ] = await Promise.all([
+        db.from('connect_students')
+          .select('*, profiles(first_name, last_name)')
+          .eq('cohort_id', selectedCohortId),
+        db.from('connect_sessions')
+          .select('*')
+          .eq('cohort_id', selectedCohortId)
+          .order('created_at', { ascending: true }),
+        db.from('connect_exams')
+          .select('*')
+          .eq('cohort_id', selectedCohortId),
+      ]);
+
+      setAllStudents((studentData ?? []) as any[]);
+      setAllSessions((sessionData ?? []) as any[]);
+      setAllExams((examData ?? []) as any[]);
+    }
+
+    loadCohortData();
+  }, [selectedCohortId]);
 
   const sendWarning = () => {
     // production: POST /api/connect/students/:id/warnings
@@ -46,8 +115,36 @@ export default function ConnectDashboardPage() {
     setWarnMsg('');
   };
 
+  if (loading) return (
+    <ConnectLayout title="Dashboard" notificationCount={0}>
+      <div className="flex items-center justify-center py-24">
+        <Loader2 className="w-7 h-7 text-[#BF0A30] animate-spin" />
+      </div>
+    </ConnectLayout>
+  );
+
+  const activeCohorts = allCohorts.filter(c => c.status === 'active');
+  const openCohorts   = allCohorts.filter(c => c.status === 'registration-open');
+
+  const cohort         = allCohorts.find(c => c.id === selectedCohortId);
+  const students       = allStudents;
+  const sessions       = allSessions;
+  const exams          = allExams;
+  const totalEnrolled  = activeCohorts.reduce((sum: number, c: any) => sum + (c.enrolled_count ?? 0), 0);
+  const atRisk         = students.filter((s: any) => (s.total_attendance_percent ?? 100) < 80);
+  const completedSess  = sessions.filter((s: any) => s.is_completed).length;
+
+  const completionRate = students.length > 0
+    ? Math.round((students.filter((s: any) => s.status === 'completed').length / students.length) * 100) + '%'
+    : '—';
+
+  const filteredStudents = students.filter((s: any) => {
+    const name = `${s.profiles?.first_name ?? ''} ${s.profiles?.last_name ?? ''} ${s.admission_number ?? ''}`;
+    return name.toLowerCase().includes(searchQuery.toLowerCase());
+  });
+
   return (
-    <ConnectLayout title="Dashboard" notificationCount={pendingLegacy.length}>
+    <ConnectLayout title="Dashboard" notificationCount={legacyRequests.length}>
 
       {/* ── Warning modal ── */}
       {warnStudentId && (
@@ -86,17 +183,17 @@ export default function ConnectDashboardPage() {
       <div className="flex items-center justify-between mb-5">
         <div>
           <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-            Welcome back, {teacher.firstName}!
+            Welcome back, {profile?.first_name}!
           </h1>
           <p className="text-sm text-gray-500 mt-0.5">Connect Class Management</p>
         </div>
-        {pendingLegacy.length > 0 && (
+        {legacyRequests.length > 0 && (
           <Link
             href="/connect/legacy-requests"
             className="flex items-center gap-2 px-3 py-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50 rounded-xl text-amber-700 dark:text-amber-400 text-sm font-medium"
           >
             <Bell className="w-4 h-4" />
-            {pendingLegacy.length} pending
+            {legacyRequests.length} pending
           </Link>
         )}
       </div>
@@ -107,8 +204,8 @@ export default function ConnectDashboardPage() {
           { icon: Calendar,      color: 'text-[#BF0A30]',  bg: 'bg-[#BF0A30]/8',   val: activeCohorts.length,  label: 'Active Cohorts'    },
           { icon: Users,         color: 'text-blue-500',   bg: 'bg-blue-50 dark:bg-blue-900/20',   val: totalEnrolled,         label: 'Enrolled'          },
           { icon: AlertTriangle, color: 'text-amber-500',  bg: 'bg-amber-50 dark:bg-amber-900/20', val: atRisk.length,         label: 'At Risk'           },
-          { icon: GraduationCap, color: 'text-purple-500', bg: 'bg-purple-50 dark:bg-purple-900/20', val: 520,                  label: 'Total Graduates'   },
-          { icon: TrendingUp,    color: 'text-green-500',  bg: 'bg-green-50 dark:bg-green-900/20', val: '87%',                 label: 'Completion Rate'   },
+          { icon: GraduationCap, color: 'text-purple-500', bg: 'bg-purple-50 dark:bg-purple-900/20', val: graduatesCount,       label: 'Total Graduates'   },
+          { icon: TrendingUp,    color: 'text-green-500',  bg: 'bg-green-50 dark:bg-green-900/20', val: completionRate,        label: 'Completion Rate'   },
         ].map(({ icon: Icon, color, bg, val, label }) => (
           <div key={label} className="bg-white dark:bg-[#141414] rounded-2xl border border-gray-200/70 dark:border-white/[0.05] p-4 shadow-sm">
             <div className={`w-8 h-8 rounded-xl ${bg} flex items-center justify-center mb-3`}>
@@ -126,7 +223,7 @@ export default function ConnectDashboardPage() {
           { href: '/connect/cohorts/new',       icon: Plus,          bg: 'bg-[#BF0A30]/10', ic: 'text-[#BF0A30]',   label: 'New Cohort',  badge: 0 },
           { href: '/connect/attendance/import', icon: Upload,        bg: 'bg-blue-100 dark:bg-blue-900/30',    ic: 'text-blue-600',    label: 'Attendance',  badge: 0 },
           { href: '/connect/exams/new',         icon: BookOpen,      bg: 'bg-green-100 dark:bg-green-900/30',  ic: 'text-green-600',   label: 'Create Exam', badge: 0 },
-          { href: '/connect/legacy-requests',   icon: FileText,      bg: 'bg-amber-100 dark:bg-amber-900/30', ic: 'text-amber-600',   label: 'Legacy',      badge: pendingLegacy.length },
+          { href: '/connect/legacy-requests',   icon: FileText,      bg: 'bg-amber-100 dark:bg-amber-900/30', ic: 'text-amber-600',   label: 'Legacy',      badge: legacyRequests.length },
           { href: '/connect/graduates',         icon: GraduationCap, bg: 'bg-purple-100 dark:bg-purple-900/30', ic: 'text-purple-600', label: 'Graduates',  badge: 0 },
           { href: '/connect/settings',          icon: Users,         bg: 'bg-gray-100 dark:bg-gray-800',       ic: 'text-gray-600',    label: 'Students',    badge: 0 },
         ].map(({ href, icon: Icon, bg, ic, label, badge }) => (
@@ -164,7 +261,7 @@ export default function ConnectDashboardPage() {
                   onChange={e => setSelectedCohortId(e.target.value)}
                   className="text-sm px-3 py-1.5 border border-gray-200 dark:border-white/[0.06] rounded-xl bg-white dark:bg-[#1A1A1A] text-gray-900 dark:text-white focus:outline-none focus:border-[#BF0A30]"
                 >
-                  {mockConnectCohorts.map(c => (
+                  {allCohorts.map(c => (
                     <option key={c.id} value={c.id}>{c.name}</option>
                   ))}
                 </select>
@@ -201,7 +298,7 @@ export default function ConnectDashboardPage() {
                           'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400'
                         }`}>{cohort.status.replace('-', ' ')}</span>
                       )},
-                      { label: 'Enrollment', value: <span className="font-bold text-gray-900 dark:text-white">{cohort.enrolledCount}/{cohort.maxCapacity}</span> },
+                      { label: 'Enrollment', value: <span className="font-bold text-gray-900 dark:text-white">{cohort.enrolled_count ?? 0}/{cohort.max_capacity ?? 0}</span> },
                       { label: 'Sessions',   value: <span className="font-bold text-gray-900 dark:text-white">{completedSess}/{sessions.length} done</span> },
                       { label: 'At Risk',    value: <span className="font-bold text-amber-600">{atRisk.length}</span> },
                     ].map(({ label, value }) => (
@@ -224,7 +321,7 @@ export default function ConnectDashboardPage() {
                       />
                     </div>
                     <p className="text-xs text-gray-400 mt-2">
-                      {new Date(cohort.startDate).toLocaleDateString()} – {new Date(cohort.endDate).toLocaleDateString()}
+                      {cohort.start_date ? new Date(cohort.start_date).toLocaleDateString() : '—'} – {cohort.end_date ? new Date(cohort.end_date).toLocaleDateString() : '—'}
                     </p>
                   </div>
 
@@ -232,8 +329,8 @@ export default function ConnectDashboardPage() {
                     <Link href={`/connect/cohorts/${cohort.id}`} className="flex-1 py-2.5 text-center text-sm font-medium border border-[#BF0A30] text-[#BF0A30] rounded-xl hover:bg-[#BF0A30]/5 transition-colors">
                       View Full Cohort
                     </Link>
-                    {cohort.whatsappLink && (
-                      <a href={cohort.whatsappLink} target="_blank" rel="noopener noreferrer" className="flex-1 py-2.5 text-center text-sm font-medium bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors">
+                    {cohort.whatsapp_link && (
+                      <a href={cohort.whatsapp_link} target="_blank" rel="noopener noreferrer" className="flex-1 py-2.5 text-center text-sm font-medium bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors">
                         WhatsApp Group
                       </a>
                     )}
@@ -255,24 +352,24 @@ export default function ConnectDashboardPage() {
                     />
                   </div>
                   <div className="space-y-2 max-h-72 overflow-y-auto">
-                    {filteredStudents.map(student => {
-                      const user = getUserById(student.userId);
-                      if (!user) return null;
-                      const risk = student.totalAttendancePercent < 80;
+                    {filteredStudents.map((student: any) => {
+                      const firstName = student.profiles?.first_name ?? '';
+                      const lastName  = student.profiles?.last_name ?? '';
+                      const risk = (student.total_attendance_percent ?? 100) < 80;
                       return (
                         <div key={student.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-[#1A1A1A] rounded-xl">
                           <div className="flex items-center gap-3">
                             <div className={`w-9 h-9 rounded-full flex items-center justify-center font-semibold text-xs flex-shrink-0 ${risk ? 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400' : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'}`}>
-                              {user.firstName[0]}{user.lastName[0]}
+                              {firstName[0] ?? ''}{lastName[0] ?? ''}
                             </div>
                             <div>
-                              <p className="text-sm font-medium text-gray-900 dark:text-white">{user.fullName}</p>
-                              <p className="text-xs text-gray-400">{student.admissionNumber}</p>
+                              <p className="text-sm font-medium text-gray-900 dark:text-white">{firstName} {lastName}</p>
+                              <p className="text-xs text-gray-400">{student.admission_number}</p>
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
                             <span className={`text-sm font-bold ${risk ? 'text-red-500' : 'text-green-600'}`}>
-                              {student.totalAttendancePercent}%
+                              {student.total_attendance_percent ?? '—'}%
                             </span>
                             {risk && (
                               <button
@@ -297,9 +394,10 @@ export default function ConnectDashboardPage() {
               {/* Cohorts (replaces sessions) */}
               {activeTab === 'cohorts' && (
                 <div className="space-y-2">
-                  {mockConnectCohorts.map(c => {
-                    const count = mockConnectStudents.filter(s => s.cohortId === c.id).length;
-                    const tchr  = getTeacherById(c.teacherId);
+                  {allCohorts.map((c: any) => {
+                    const teacherName = c.profiles
+                      ? `${c.profiles.first_name ?? ''} ${c.profiles.last_name ?? ''}`
+                      : '';
                     return (
                       <Link
                         key={c.id}
@@ -308,7 +406,7 @@ export default function ConnectDashboardPage() {
                       >
                         <div>
                           <p className="text-sm font-medium text-gray-900 dark:text-white">{c.name}</p>
-                          <p className="text-xs text-gray-400">{count} students · {tchr?.firstName} {tchr?.lastName}</p>
+                          <p className="text-xs text-gray-400">{c.enrolled_count ?? 0} students · {teacherName}</p>
                         </div>
                         <div className="flex items-center gap-2">
                           <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${
@@ -333,7 +431,7 @@ export default function ConnectDashboardPage() {
               {/* Exams */}
               {activeTab === 'exams' && (
                 <div className="space-y-3">
-                  {exams.length > 0 ? exams.map(exam => (
+                  {exams.length > 0 ? exams.map((exam: any) => (
                     <div key={exam.id} className="p-4 bg-gray-50 dark:bg-[#1A1A1A] rounded-xl">
                       <div className="flex items-center justify-between mb-1">
                         <p className="text-sm font-semibold text-gray-900 dark:text-white">{exam.title}</p>
@@ -343,7 +441,7 @@ export default function ConnectDashboardPage() {
                           'bg-gray-100 text-gray-700'
                         }`}>{exam.status}</span>
                       </div>
-                      <p className="text-xs text-gray-500">{exam.questions.length} questions · {exam.durationMinutes} min · Pass: {exam.passingMarks}/{exam.totalMarks}</p>
+                      <p className="text-xs text-gray-500">{exam.duration_minutes} min · Pass: {exam.passing_marks}/{exam.total_marks}</p>
                     </div>
                   )) : (
                     <div className="text-center py-8 text-gray-400">
@@ -390,11 +488,11 @@ export default function ConnectDashboardPage() {
           {/* Open registrations */}
           <div className="bg-white dark:bg-[#141414] rounded-2xl border border-gray-200/70 dark:border-white/[0.05] p-4 shadow-sm">
             <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Registration Open</h3>
-            {openCohorts.length > 0 ? openCohorts.map(c => (
+            {openCohorts.length > 0 ? openCohorts.map((c: any) => (
               <div key={c.id} className="p-3 bg-gray-50 dark:bg-[#1A1A1A] rounded-xl mb-2">
                 <p className="text-sm font-medium text-gray-900 dark:text-white">{c.name}</p>
-                <p className="text-xs text-gray-500 mt-0.5">Starts {new Date(c.startDate).toLocaleDateString()}</p>
-                <p className="text-xs text-[#BF0A30] mt-0.5">{c.enrolledCount} enrolled</p>
+                <p className="text-xs text-gray-500 mt-0.5">Starts {c.start_date ? new Date(c.start_date).toLocaleDateString() : '—'}</p>
+                <p className="text-xs text-[#BF0A30] mt-0.5">{c.enrolled_count ?? 0} enrolled</p>
               </div>
             )) : (
               <p className="text-sm text-gray-400">No open registrations</p>
@@ -405,19 +503,19 @@ export default function ConnectDashboardPage() {
           </div>
 
           {/* Pending legacy */}
-          {pendingLegacy.length > 0 && (
+          {legacyRequests.length > 0 && (
             <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/40 rounded-2xl p-4">
               <h3 className="text-sm font-semibold text-amber-800 dark:text-amber-200 mb-3">Pending Verifications</h3>
               <div className="space-y-2">
-                {pendingLegacy.slice(0, 3).map(req => (
+                {legacyRequests.slice(0, 3).map((req: any) => (
                   <div key={req.id} className="p-2.5 bg-white/70 dark:bg-amber-900/20 rounded-xl">
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">{req.fullName}</p>
-                    <p className="text-xs text-gray-500">Joined {req.yearJoined} · {req.yearsAsMember} yrs</p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">{req.full_name}</p>
+                    <p className="text-xs text-gray-500">Joined {req.year_joined} · {req.years_as_member} yrs</p>
                   </div>
                 ))}
               </div>
               <Link href="/connect/legacy-requests" className="mt-3 block text-center py-2 text-sm font-medium bg-amber-600 text-white rounded-xl hover:bg-amber-700 transition-colors">
-                Review All ({pendingLegacy.length})
+                Review All ({legacyRequests.length})
               </Link>
             </div>
           )}
@@ -426,19 +524,25 @@ export default function ConnectDashboardPage() {
           <div className="bg-white dark:bg-[#141414] rounded-2xl border border-gray-200/70 dark:border-white/[0.05] p-4 shadow-sm">
             <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Recent Activity</h3>
             <div className="space-y-3">
-              {[
-                { dot: 'bg-green-500', text: '5 students marked present', sub: 'Session 2 · 2 hr ago' },
-                { dot: 'bg-blue-500',  text: 'New student enrolled',      sub: 'John Kamau · Today' },
-                { dot: 'bg-amber-500', text: 'Warning sent',              sub: 'Mary W. · Attendance' },
-              ].map(({ dot, text, sub }) => (
-                <div key={text} className="flex items-start gap-3 text-sm">
-                  <div className={`w-2 h-2 rounded-full ${dot} mt-1.5 flex-shrink-0`} />
+              {recentActivity.length > 0 ? recentActivity.map((row: any) => (
+                <div key={row.id} className="flex items-start gap-3 text-sm">
+                  <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
+                    row.status === 'completed' ? 'bg-green-500' :
+                    row.status === 'enrolled'  ? 'bg-blue-500' : 'bg-amber-500'
+                  }`} />
                   <div>
-                    <p className="text-gray-800 dark:text-gray-200">{text}</p>
-                    <p className="text-xs text-gray-400">{sub}</p>
+                    <p className="text-gray-800 dark:text-gray-200">
+                      {row.profiles?.first_name ?? ''} {row.profiles?.last_name ?? ''} — {row.status}
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      {row.admission_number ? `#${row.admission_number} · ` : ''}
+                      {new Date(row.created_at).toLocaleDateString('en-KE', { day: 'numeric', month: 'short' })}
+                    </p>
                   </div>
                 </div>
-              ))}
+              )) : (
+                <p className="text-sm text-gray-400">No recent activity</p>
+              )}
             </div>
           </div>
 

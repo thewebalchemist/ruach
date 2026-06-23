@@ -6,9 +6,9 @@ import ExpectGallery from '@/components/shared/ExpectGallery';
 import { supabase } from '@/lib/supabase';
 import type { GetStaticProps } from 'next';
 
-interface Sermon   { id: string; title: string; slug: string; preacher: string; service_date: string; }
+interface HomeSermon { id: string; title: string; slug: string; preacher: string; service_date: string; youtube_url: string; thumbnail_url: string | null; description: string | null; }
 interface UpcomingEvent { id: string; title: string; description: string | null; event_date: string; end_date: string | null; start_time: string | null; location: string | null; image_url: string | null; }
-interface PageProps { latestSermon: Sermon | null; isLive: boolean; upcomingEvents: UpcomingEvent[]; }
+interface PageProps { recentSermons: HomeSermon[]; isLive: boolean; upcomingEvents: UpcomingEvent[]; }
 
 // Font styles
 const H = { fontFamily: 'Montserrat, sans-serif', fontWeight: 900 };
@@ -65,7 +65,13 @@ function FaqItem({ q, a }: { q: string; a: string }) {
   );
 }
 
-export default function HomePage({ latestSermon, isLive, upcomingEvents }: PageProps) {
+function getSermonThumb(s: HomeSermon) {
+  if (s.thumbnail_url) return s.thumbnail_url;
+  const id = s.youtube_url?.match(/(?:v=|youtu\.be\/)([^&?/]+)/)?.[1];
+  return id ? `https://img.youtube.com/vi/${id}/maxresdefault.jpg` : '/church-photos/IMG_1716.jpg';
+}
+
+export default function HomePage({ recentSermons, isLive, upcomingEvents }: PageProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [muted, setMuted] = useState(true);
 
@@ -350,20 +356,20 @@ export default function HomePage({ latestSermon, isLive, upcomingEvents }: PageP
             <div className="rounded-3xl bg-[#000000] p-7 flex flex-col min-h-[220px]">
               <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-4" style={H}>Watch Sermons</p>
               <div className="flex-1">
-                {latestSermon && (
+                {recentSermons[0] && (
                   <p className="text-white/80 text-sm leading-snug mb-2" style={{ ...serif, fontStyle: 'italic' }}>
-                    &ldquo;{latestSermon.title}&rdquo;
+                    &ldquo;{recentSermons[0].title}&rdquo;
                   </p>
                 )}
                 <p className="text-white/50 text-sm leading-relaxed">
-                  Find our most recent sermon, along with a library of all our past messages.
+                  Kingdom-focused messages that will transform your life.
                 </p>
               </div>
               <Link href="/sermons"
                 className="mt-5 flex items-center justify-between bg-[#BF0A30] text-white font-bold text-xs uppercase tracking-wider px-5 py-3.5 rounded-2xl hover:bg-[#9A0826] transition-colors"
                 style={H}
               >
-                Latest Sermon <ArrowRight className="w-3.5 h-3.5" />
+                All Sermons <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>
 
@@ -489,7 +495,7 @@ export default function HomePage({ latestSermon, isLive, upcomingEvents }: PageP
           </p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
             {[
-              { number: '10,000+', label: 'Attended Rhema Feast 2025', sub: 'Uhuru Park, Nairobi' },
+              { number: '100,000+', label: 'Attended Rhema Feast 2025', sub: 'Uhuru Park, Nairobi' },
               { number: '3,000+',  label: 'Weekly Congregation',        sub: 'Across 3 Sunday services' },
               { number: '5',       label: 'Nairobi Assemblies',          sub: 'And still planting' },
               { number: '18+',     label: 'Years of Ministry',           sub: 'Since 2007' },
@@ -524,7 +530,7 @@ export default function HomePage({ latestSermon, isLive, upcomingEvents }: PageP
           <div className="mt-4 flex items-center justify-between">
             <div>
               <p className="text-white font-black text-lg" style={H}>Rhema Feast 2025</p>
-              <p className="text-[#8B95A8] text-sm">10th Edition · Uhuru Park, Nairobi · 10,000+ in attendance</p>
+              <p className="text-[#8B95A8] text-sm">10th Edition · Uhuru Park, Nairobi · 100,000+ in attendance</p>
             </div>
           </div>
         </div>
@@ -601,27 +607,10 @@ export default function HomePage({ latestSermon, isLive, upcomingEvents }: PageP
           </div>
 
           {upcomingEvents.length === 0 ? (
-            /* Fallback to hardcoded 7 Days of Glory */
-            <div className="grid lg:grid-cols-2 gap-10 items-start">
-              <div className="rounded-2xl overflow-hidden w-full max-w-sm mx-auto lg:max-w-none" style={{ aspectRatio: '3/4' }}>
-                <img src="/events/7-days-of-glory.jpg" alt="7 Days of Glory" className="w-full h-full object-cover object-center"
-                  onError={(e) => { (e.target as HTMLImageElement).src = '/church-photos/worship1.jpg'; }} />
-              </div>
-              <div>
-                <p className="text-[#BF0A30] text-xs font-bold uppercase tracking-widest mb-4" style={H}>25th – 31st May 2026</p>
-                <h2 className="text-4xl md:text-5xl text-white leading-tight mb-6" style={H}>7 Days of<br /><span style={serif}>Glory</span></h2>
-                <p className="text-white/60 text-sm leading-relaxed mb-8">Seven evenings of worship, prayer, revival, and divine encounters. Come expectant for fresh fire, fresh grace, and a fresh touch from God.</p>
-                <div className="space-y-3 mb-8">
-                  {[{ icon: '🗓', text: '25th May – 31st May 2026' }, { icon: '⏰', text: '5:00PM – 8:00PM' }, { icon: '📍', text: 'Rhema Grounds, Northern Bypass — next to Shell Windsor, Nairobi' }].map(item => (
-                    <div key={item.text} className="flex items-start gap-3 text-sm text-white/70">
-                      <span className="text-base flex-shrink-0">{item.icon}</span><span>{item.text}</span>
-                    </div>
-                  ))}
-                </div>
-                <Link href="/r-events" className="inline-flex items-center gap-2 bg-[#BF0A30] hover:bg-[#9A0826] text-white font-black text-sm uppercase tracking-widest px-7 py-4 rounded-2xl transition-all hover:-translate-y-0.5 shadow-xl shadow-[rgba(191,10,48,0.4)]" style={H}>
-                  See All Events <ArrowRight className="w-4 h-4" />
-                </Link>
-              </div>
+            <div className="text-center py-12 rounded-2xl" style={{ background: 'rgba(18,21,28,0.9)', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <CalendarDays className="w-10 h-10 text-[#BF0A30]/30 mx-auto mb-4" />
+              <p className="text-white/50 text-sm mb-4">No upcoming events at the moment.</p>
+              <Link href="/r-events" className="text-[#BF0A30] text-xs font-bold uppercase tracking-widest hover:underline" style={H}>View Past Events →</Link>
             </div>
           ) : (
             <div className={`grid gap-6 ${upcomingEvents.length === 1 ? 'lg:grid-cols-2' : 'sm:grid-cols-2'}`}>
@@ -658,37 +647,42 @@ export default function HomePage({ latestSermon, isLive, upcomingEvents }: PageP
       </section>
 
       {/* ════════════════════════════════
-          LATEST SERMON — YouTube embed
+          SERMONS — Netflix-style row
       ════════════════════════════════ */}
-      <section className="bg-[#0A0C10] py-24 border-t border-white/5">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-12">
-            <div>
-              <p className="text-[#BF0A30] text-xs font-bold uppercase tracking-widest mb-3" style={H}>Latest Sermon</p>
-              <h2 className="text-4xl md:text-5xl text-white leading-tight" style={H}>
-                Watch the<br /><span style={serif}>Latest Message</span>
+      {recentSermons.length > 0 && (
+        <section className="bg-[#0A0C10] py-16 sm:py-24 border-t border-white/5 overflow-hidden">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex items-center justify-between gap-4 mb-8 px-4 sm:px-6 lg:px-12">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl text-white leading-tight" style={H}>
+                Sermons
               </h2>
+              <Link href="/sermons" className="flex-shrink-0 border border-white/20 text-white/70 hover:text-white hover:border-white/40 font-bold text-[10px] sm:text-xs uppercase tracking-widest px-4 sm:px-5 py-2.5 sm:py-3 rounded-2xl transition-all" style={H}>
+                View All →
+              </Link>
             </div>
-            <Link href="/sermons" className="self-start border border-white/20 text-white/70 hover:text-white hover:border-white/40 font-bold text-xs uppercase tracking-widest px-5 py-3 rounded-2xl transition-all" style={H}>
-              All Sermons →
-            </Link>
+            <div className="flex gap-3 sm:gap-4 overflow-x-auto pb-4 px-4 sm:px-6 lg:px-12" style={{ scrollbarWidth: 'none' }}>
+              {recentSermons.map(s => (
+                <Link key={s.id} href={`/${s.slug}`} className="group flex-shrink-0 w-[200px] sm:w-[240px]">
+                  <div className="relative aspect-video rounded-xl overflow-hidden group-hover:scale-[1.04] transition-transform duration-300">
+                    <img src={getSermonThumb(s)} alt={s.title} className="w-full h-full object-cover"
+                      onError={e => { (e.target as HTMLImageElement).src = '/church-photos/IMG_1716.jpg'; }} />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/5 to-transparent" />
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                      <div className="w-11 h-11 rounded-full bg-[#BF0A30]/90 flex items-center justify-center shadow-xl">
+                        <Play className="w-5 h-5 text-white fill-white ml-0.5" />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-2.5 px-0.5">
+                    <p className="text-white font-bold text-sm leading-snug line-clamp-2 group-hover:text-[#BF0A30] transition-colors" style={H}>{s.title}</p>
+                    <p className="text-white/50 text-xs mt-0.5">{s.preacher}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
           </div>
-          {/* YouTube embed — responsive */}
-          <div className="rounded-2xl overflow-hidden" style={{ aspectRatio: '16/9', maxWidth: '860px' }}>
-            <iframe
-              width="100%"
-              height="100%"
-              src="https://www.youtube.com/embed/nznXwkJlJ44?si=tngN68AvAVS69CZn"
-              title="Latest Sermon — Ruach Tabernacle"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              referrerPolicy="strict-origin-when-cross-origin"
-              allowFullScreen
-              style={{ display: 'block', width: '100%', height: '100%' }}
-            />
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* ════════════════════════════════════════
           GALLERY — Shared ExpectGallery component
@@ -731,21 +725,21 @@ export default function HomePage({ latestSermon, isLive, upcomingEvents }: PageP
 export const getStaticProps: GetStaticProps = async () => {
   try {
     const today = new Date().toISOString().split('T')[0];
-    const [{ data: sermon }, { data: stream }, { data: events }] = await Promise.all([
-      supabase.from('sermons').select('id,title,slug,preacher,service_date').order('service_date', { ascending: false }).limit(1).single(),
+    const [{ data: sermons }, { data: stream }, { data: events }] = await Promise.all([
+      supabase.from('sermons').select('id,title,slug,preacher,service_date,youtube_url,thumbnail_url,description').order('service_date', { ascending: false }).limit(12),
       supabase.from('stream_settings').select('is_live').limit(1).single(),
       supabase.from('events').select('id,title,description,event_date,end_date,start_time,location,image_url')
         .gte('event_date', today).neq('status', 'cancelled').order('event_date', { ascending: true }).limit(2),
     ]);
     return {
       props: {
-        latestSermon:   sermon ?? null,
+        recentSermons:  sermons ?? [],
         isLive:         stream?.is_live ?? false,
         upcomingEvents: events ?? [],
       },
       revalidate: 300,
     };
   } catch {
-    return { props: { latestSermon: null, isLive: false, upcomingEvents: [] }, revalidate: 300 };
+    return { props: { recentSermons: [], isLive: false, upcomingEvents: [] }, revalidate: 300 };
   }
 };

@@ -1,20 +1,76 @@
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import {
   ArrowLeft, Users, CheckCircle, AlertCircle, Download,
-  Plus, ClipboardList, Trophy
+  Plus, ClipboardList, Trophy, Loader2
 } from 'lucide-react';
 import { AdminLayout, PageHeader } from '@/components/connect/AdminLayout';
-import {
-  mockConnectCohorts, mockConnectStudents, mockConnectSessions,
-  mockConnectExams, getUserById,
-} from '@/data';
+import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/context/AuthContext';
+
+const db = supabase as any;
 
 export default function AdminConnectCohortPage() {
   const router = useRouter();
   const { id } = router.query;
+  const { profile, loading: authLoading } = useAuth();
 
-  const cohort = mockConnectCohorts.find(c => c.id === id);
+  const [loading, setLoading] = useState(true);
+  const [cohort, setCohort] = useState<any>(null);
+  const [students, setStudents] = useState<any[]>([]);
+  const [sessions, setSessions] = useState<any[]>([]);
+  const [exams, setExams] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (!profile) { router.push('/connect'); return; }
+    if (!['admin', 'pastor'].includes(profile.role)) {
+      router.push('/connect');
+      return;
+    }
+    if (id) load();
+  }, [authLoading, profile, id]);
+
+  async function load() {
+    setLoading(true);
+    const [
+      { data: cohortData },
+      { data: studentData },
+      { data: sessionData },
+      { data: examData },
+    ] = await Promise.all([
+      db.from('connect_cohorts')
+        .select('*, profiles!connect_cohorts_teacher_id_fkey(first_name, last_name)')
+        .eq('id', id)
+        .single(),
+      db.from('connect_students')
+        .select('*, profiles(first_name, last_name, email, phone)')
+        .eq('cohort_id', id),
+      db.from('connect_sessions')
+        .select('*')
+        .eq('cohort_id', id)
+        .order('session_number'),
+      db.from('connect_exams')
+        .select('*')
+        .eq('cohort_id', id),
+    ]);
+
+    setCohort(cohortData ?? null);
+    setStudents(studentData ?? []);
+    setSessions(sessionData ?? []);
+    setExams(examData ?? []);
+    setLoading(false);
+  }
+
+  if (loading) return (
+    <AdminLayout title="Loading...">
+      <div className="flex items-center justify-center py-24">
+        <Loader2 className="w-7 h-7 text-[#BF0A30] animate-spin" />
+      </div>
+    </AdminLayout>
+  );
+
   if (!cohort) {
     return (
       <AdminLayout title="Not Found">
@@ -23,15 +79,10 @@ export default function AdminConnectCohortPage() {
     );
   }
 
-  const teacher = getUserById(cohort.teacherId);
-  const students = mockConnectStudents.filter(s => s.cohortId === cohort.id);
-  const sessions = mockConnectSessions?.filter(s => s.cohortId === cohort.id) ?? [];
-  const exams = mockConnectExams?.filter(e => e.cohortId === cohort.id) ?? [];
-
-  const passing = students.filter(s => s.canGraduate);
+  const passing = students.filter(s => s.can_graduate);
   const atRisk = students.filter(
-    s => s.totalAttendancePercent < cohort.passRequirement.minAttendancePercent ||
-      s.averageExamScore < cohort.passRequirement.minExamScore
+    s => s.total_attendance_percent < cohort.min_attendance_percent ||
+      s.average_exam_score < cohort.min_exam_score
   );
 
   const getStudentStatusColor = (status: string) => {
@@ -52,7 +103,7 @@ export default function AdminConnectCohortPage() {
           <ArrowLeft className="w-4 h-4" />Back to Connect
         </Link>
         <div className="flex items-start justify-between">
-          <PageHeader title={cohort.name} subtitle={`${students.length} students • Teacher: ${teacher?.firstName} ${teacher?.lastName}`} />
+          <PageHeader title={cohort.name} subtitle={`${students.length} students • Teacher: ${cohort.profiles?.first_name} ${cohort.profiles?.last_name}`} />
           <div className="flex items-center gap-2">
             <Link
               href={`/connect/dashboard?cohort=${cohort.id}`}
@@ -127,37 +178,36 @@ export default function AdminConnectCohortPage() {
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-[#2D2D2D]">
               {students.map((student) => {
-                const user = getUserById(student.userId);
                 return (
                   <tr key={student.id} className="hover:bg-gray-50 dark:hover:bg-[#252525]">
                     <td className="py-3 px-4">
                       <Link href={`/admin/connect/students/${student.id}`} className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-[#BF0A30] flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
-                          {user?.firstName[0]}{user?.lastName[0]}
+                          {student.profiles?.first_name?.[0]}{student.profiles?.last_name?.[0]}
                         </div>
                         <div>
                           <p className="font-medium text-gray-900 dark:text-white text-sm">
-                            {user?.firstName} {user?.lastName}
+                            {student.profiles?.first_name} {student.profiles?.last_name}
                           </p>
-                          <p className="text-xs text-gray-400">{user?.phone}</p>
+                          <p className="text-xs text-gray-400">{student.profiles?.phone}</p>
                         </div>
                       </Link>
                     </td>
-                    <td className="py-3 px-4 text-sm font-mono text-gray-600 dark:text-gray-400">{student.admissionNumber}</td>
+                    <td className="py-3 px-4 text-sm font-mono text-gray-600 dark:text-gray-400">{student.admission_number}</td>
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-2">
                         <div className="flex-1 h-1.5 bg-gray-100 dark:bg-[#2D2D2D] rounded-full overflow-hidden w-16">
                           <div
-                            className={`h-full rounded-full ${student.totalAttendancePercent >= cohort.passRequirement.minAttendancePercent ? 'bg-green-500' : 'bg-amber-500'}`}
-                            style={{ width: `${student.totalAttendancePercent}%` }}
+                            className={`h-full rounded-full ${student.total_attendance_percent >= cohort.min_attendance_percent ? 'bg-green-500' : 'bg-amber-500'}`}
+                            style={{ width: `${student.total_attendance_percent}%` }}
                           />
                         </div>
-                        <span className="text-sm text-gray-600 dark:text-gray-400">{student.totalAttendancePercent}%</span>
+                        <span className="text-sm text-gray-600 dark:text-gray-400">{student.total_attendance_percent}%</span>
                       </div>
                     </td>
                     <td className="py-3 px-4">
-                      <span className={`text-sm font-medium ${student.averageExamScore >= cohort.passRequirement.minExamScore ? 'text-green-600' : 'text-amber-500'}`}>
-                        {student.averageExamScore}%
+                      <span className={`text-sm font-medium ${student.average_exam_score >= cohort.min_exam_score ? 'text-green-600' : 'text-amber-500'}`}>
+                        {student.average_exam_score}%
                       </span>
                     </td>
                     <td className="py-3 px-4">
@@ -166,7 +216,7 @@ export default function AdminConnectCohortPage() {
                       </span>
                     </td>
                     <td className="py-3 px-4">
-                      {student.canGraduate ? (
+                      {student.can_graduate ? (
                         <CheckCircle className="w-5 h-5 text-green-500" />
                       ) : (
                         <AlertCircle className="w-5 h-5 text-amber-400" />

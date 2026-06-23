@@ -1,14 +1,15 @@
 // pages/admin/users/new.tsx
 // Admin: Create new teachers, leaders, HoDs with full details
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import Link from 'next/link';
 import {
-  ArrowLeft, User, Mail, Phone, Shield, CheckCircle, Loader2,
+  User, Mail, Phone, Shield, CheckCircle, Loader2,
   Eye, EyeOff, UserPlus, Building, MapPin, Calendar
 } from 'lucide-react';
 import { AdminLayout, PageHeader } from '@/components/connect/AdminLayout';
-import { mockCrosspoints } from '@/data';
+import { supabase } from '@/lib/supabase';
 
 type UserRole = 'teacher' | 'leader' | 'admin' | 'pastor';
 
@@ -24,7 +25,18 @@ interface NewUserForm {
   crosspointId: string;
   department:   string;
   sendWelcome:  boolean;
-  tempPassword: string;
+}
+
+interface Credentials {
+  email: string;
+  password: string;
+  loginUrl: string;
+}
+
+interface CrosspointOption {
+  id: string;
+  name: string;
+  area: string;
 }
 
 const ROLE_CONFIG: Record<UserRole, { label: string; description: string; color: string; bg: string }> = {
@@ -69,20 +81,46 @@ const DEPARTMENTS = [
 ];
 
 export default function CreateUserPage() {
+  const router = useRouter();
+  const [pageLoading, setPageLoading] = useState(true);
+  const [crosspoints, setCrosspoints] = useState<CrosspointOption[]>([]);
   const [form, setForm] = useState<NewUserForm>({
     firstName: '', lastName: '', email: '', phone: '',
     role: 'teacher', gender: '', dateOfBirth: '',
     branch: 'ruach-tabernacle', crosspointId: '', department: '',
-    sendWelcome: true, tempPassword: '',
+    sendWelcome: true,
   });
   const [showPassword, setShowPassword] = useState(false);
   const [saving,       setSaving]       = useState(false);
   const [success,      setSuccess]      = useState(false);
+  const [credentials,  setCredentials]  = useState<Credentials | null>(null);
   const [errors,       setErrors]       = useState<Partial<Record<keyof NewUserForm, string>>>({});
+  const [apiError,     setApiError]     = useState('');
+
+  useEffect(() => { checkAuth(); }, []);
+
+  async function checkAuth() {
+    const { data } = await supabase.auth.getSession();
+    if (!data.session) { router.push('/auth/login?redirectTo=' + router.asPath); return; }
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', data.session.user.id).single();
+    if (!profile || !['admin', 'pastor', 'teacher', 'leader'].includes(profile.role)) { router.push('/'); return; }
+    loadDropdowns();
+  }
+
+  async function loadDropdowns() {
+    const { data } = await supabase
+      .from('crosspoints')
+      .select('id, name, area')
+      .eq('status', 'active')
+      .order('name');
+    if (data) setCrosspoints(data);
+    setPageLoading(false);
+  }
 
   function update(field: keyof NewUserForm, value: string | boolean) {
     setForm(prev => ({ ...prev, [field]: value }));
     if (errors[field]) setErrors(prev => ({ ...prev, [field]: undefined }));
+    setApiError('');
   }
 
   function validate(): boolean {
@@ -93,8 +131,6 @@ export default function CreateUserPage() {
       newErrors.email = 'Valid email is required';
     if (form.phone && !/^\+?[\d\s\-()]{10,}$/.test(form.phone))
       newErrors.phone = 'Enter a valid phone number';
-    if (!form.tempPassword || form.tempPassword.length < 8)
-      newErrors.tempPassword = 'Password must be at least 8 characters';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   }
@@ -102,18 +138,41 @@ export default function CreateUserPage() {
   async function handleCreate() {
     if (!validate()) return;
     setSaving(true);
-    await new Promise(r => setTimeout(r, 2000));
+    setApiError('');
+
+    const res = await fetch('/api/control-panel/invite-member', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        firstName: form.firstName.trim(),
+        lastName: form.lastName.trim(),
+        email: form.email.trim(),
+        role: form.role,
+      }),
+    });
+
+    const data = await res.json();
     setSaving(false);
-    setSuccess(true);
+
+    if (res.ok && data.success) {
+      setCredentials(data.credentials);
+      setSuccess(true);
+    } else {
+      setApiError(data.error || 'Failed to create user');
+    }
   }
 
-  function formatKenyanPhone(raw: string): string {
-    const d = raw.replace(/\D/g, '');
-    if (d.startsWith('0') && d.length === 10) return '+254' + d.slice(1);
-    return raw;
+  if (pageLoading) {
+    return (
+      <AdminLayout title="Create User">
+        <div className="flex items-center justify-center py-20">
+          <div className="w-8 h-8 border-4 border-[#BF0A30] border-t-transparent rounded-full animate-spin" />
+        </div>
+      </AdminLayout>
+    );
   }
 
-  if (success) {
+  if (success && credentials) {
     return (
       <AdminLayout title="User Created">
         <div className="max-w-lg mx-auto text-center py-16">
@@ -138,11 +197,11 @@ export default function CreateUserPage() {
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Email</span>
-                <span className="font-medium text-gray-900 dark:text-white">{form.email}</span>
+                <span className="font-medium text-gray-900 dark:text-white">{credentials.email}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Temp. Password</span>
-                <span className="font-mono text-gray-900 dark:text-white">{form.tempPassword}</span>
+                <span className="font-mono text-gray-900 dark:text-white">{credentials.password}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Role</span>
@@ -153,7 +212,7 @@ export default function CreateUserPage() {
 
           <div className="flex gap-3">
             <Link href="/admin/members" className="btn btn-secondary flex-1">View All Users</Link>
-            <button onClick={() => { setSuccess(false); setForm({ firstName: '', lastName: '', email: '', phone: '', role: 'teacher', gender: '', dateOfBirth: '', branch: 'ruach-tabernacle', crosspointId: '', department: '', sendWelcome: true, tempPassword: '' }); }}
+            <button onClick={() => { setSuccess(false); setCredentials(null); setForm({ firstName: '', lastName: '', email: '', phone: '', role: 'teacher', gender: '', dateOfBirth: '', branch: 'ruach-tabernacle', crosspointId: '', department: '', sendWelcome: true }); }}
               className="btn btn-primary flex-1 gap-2">
               <UserPlus className="w-4 h-4" /> Create Another
             </button>
@@ -167,6 +226,12 @@ export default function CreateUserPage() {
     <AdminLayout title="Create User">
       <div className="max-w-3xl mx-auto">
         <PageHeader title="Create New User" subtitle="Add a teacher, leader, or admin to the platform" />
+
+        {apiError && (
+          <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-sm text-red-700 dark:text-red-300">
+            {apiError}
+          </div>
+        )}
 
         <div className="space-y-6">
 
@@ -221,6 +286,7 @@ export default function CreateUserPage() {
           {/* Contact details */}
           <div className="bg-white dark:bg-[#1A1A1A] rounded-2xl border border-gray-200 dark:border-[#2D2D2D] p-6">
             <h2 className="section-title mb-4">Contact & Login</h2>
+            <p className="text-sm text-gray-500 mb-4">A secure password will be generated automatically by the server</p>
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="form-group">
                 <label className="form-label">Email Address<span className="required">*</span></label>
@@ -231,29 +297,11 @@ export default function CreateUserPage() {
               <div className="form-group">
                 <label className="form-label">Phone Number</label>
                 <div className="flex">
-                  <div className="phone-prefix"><span>🇰🇪</span><span>+254</span></div>
+                  <div className="phone-prefix"><span>+254</span></div>
                   <input type="tel" value={form.phone} onChange={e => update('phone', e.target.value)}
                     placeholder="7XX XXX XXX" className={`input phone-input ${errors.phone ? 'error' : ''}`} />
                 </div>
                 {errors.phone && <p className="form-error">{errors.phone}</p>}
-              </div>
-              <div className="form-group sm:col-span-2">
-                <label className="form-label">Temporary Password<span className="required">*</span></label>
-                <div className="relative">
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    value={form.tempPassword}
-                    onChange={e => update('tempPassword', e.target.value)}
-                    placeholder="Minimum 8 characters"
-                    className={`input pr-12 ${errors.tempPassword ? 'error' : ''}`}
-                  />
-                  <button type="button" onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
-                {errors.tempPassword && <p className="form-error">{errors.tempPassword}</p>}
-                <p className="form-help">User will be prompted to change this on first login</p>
               </div>
             </div>
           </div>
@@ -274,7 +322,7 @@ export default function CreateUserPage() {
                   <label className="form-label">Assigned Crosspoint</label>
                   <select value={form.crosspointId} onChange={e => update('crosspointId', e.target.value)} className="select">
                     <option value="">No crosspoint (yet)</option>
-                    {mockCrosspoints.map(cp => (
+                    {crosspoints.map(cp => (
                       <option key={cp.id} value={cp.id}>{cp.name} — {cp.area}</option>
                     ))}
                   </select>
@@ -316,7 +364,7 @@ export default function CreateUserPage() {
             <Link href="/admin/members" className="btn btn-secondary flex-1">Cancel</Link>
             <button onClick={handleCreate} disabled={saving} className="btn btn-primary flex-1 gap-2">
               {saving
-                ? <><Loader2 className="w-4 h-4 animate-spin" /> Creating Account…</>
+                ? <><Loader2 className="w-4 h-4 animate-spin" /> Creating Account...</>
                 : <><UserPlus className="w-4 h-4" /> Create {ROLE_CONFIG[form.role].label}</>}
             </button>
           </div>

@@ -1,34 +1,102 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 import { AdminLayout, PageHeader } from '@/components/connect/AdminLayout';
-import { mockMembers } from '@/data';
+import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/context/AuthContext';
+
+const db = supabase as any;
+
+interface ProfileOption {
+  id: string;
+  first_name: string;
+  last_name: string;
+}
 
 export default function NewCrosspointPage() {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
+  const { profile, loading: authLoading } = useAuth();
+  const [pageLoading, setPageLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [leaders, setLeaders] = useState<ProfileOption[]>([]);
+  const [allMembers, setAllMembers] = useState<ProfileOption[]>([]);
   const [formData, setFormData] = useState({
     name: '',
     location: '',
     area: '',
-    leaderId: '',
-    assistantId: '',
-    treasurerId: '',
-    meetingDay: '',
-    meetingTime: '',
+    leader_id: '',
+    assistant_id: '',
+    treasurer_id: '',
+    meeting_day: '',
+    meeting_time: '',
     venue: '',
-    maxMembers: '15',
+    max_members: '15',
   });
 
-  const leaders = mockMembers.filter(m => ['leader', 'admin', 'pastor'].includes(m.role));
+  useEffect(() => {
+    if (authLoading) return;
+    if (!profile) { router.push('/auth/login?redirectTo=' + router.asPath); return; }
+    if (!['admin', 'pastor', 'teacher', 'leader'].includes(profile.role)) { router.push('/'); return; }
+    loadData();
+  }, [authLoading, profile]);
+
+  async function loadData() {
+    setPageLoading(true);
+
+    // Fetch leaders (admin, pastor, leader roles)
+    const { data: leaderData } = await db
+      .from('profiles')
+      .select('id, first_name, last_name')
+      .in('role', ['leader', 'admin', 'pastor']);
+
+    setLeaders((leaderData ?? []) as ProfileOption[]);
+
+    // Fetch all profiles for assistant/treasurer dropdowns
+    const { data: memberData } = await db
+      .from('profiles')
+      .select('id, first_name, last_name')
+      .order('first_name');
+
+    setAllMembers((memberData ?? []) as ProfileOption[]);
+
+    setPageLoading(false);
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setLoading(false);
-    router.push('/admin/crosspoints');
+    setSubmitting(true);
+
+    try {
+      const res = await fetch('/api/admin/crosspoints', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name,
+          location: formData.location || null,
+          area: formData.area,
+          leader_id: formData.leader_id || null,
+          assistant_id: formData.assistant_id || null,
+          treasurer_id: formData.treasurer_id || null,
+          meeting_day: formData.meeting_day,
+          meeting_time: formData.meeting_time,
+          venue: formData.venue || null,
+          max_members: parseInt(formData.max_members, 10) || 15,
+          status: 'active',
+        }),
+      });
+
+      if (res.ok) {
+        router.push('/admin/crosspoints');
+      } else {
+        const err = await res.json();
+        alert(err.error || 'Failed to create crosspoint');
+      }
+    } catch {
+      alert('Network error');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -37,13 +105,23 @@ export default function NewCrosspointPage() {
 
   const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
+  if (pageLoading) {
+    return (
+      <AdminLayout title="Create Crosspoint">
+        <div className="flex items-center justify-center py-24">
+          <Loader2 className="w-7 h-7 text-[#BF0A30] animate-spin" />
+        </div>
+      </AdminLayout>
+    );
+  }
+
   return (
     <AdminLayout title="Create Crosspoint">
       <div className="max-w-3xl">
         <Link href="/admin/crosspoints" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 mb-4">
           <ArrowLeft className="w-4 h-4" />Back to Crosspoints
         </Link>
-        
+
         <PageHeader title="Create Crosspoint" subtitle="Set up a new home church" />
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -65,7 +143,7 @@ export default function NewCrosspointPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Max Members</label>
-                <input type="number" name="maxMembers" value={formData.maxMembers} onChange={handleChange} className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg" />
+                <input type="number" name="max_members" value={formData.max_members} onChange={handleChange} className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg" />
               </div>
             </div>
           </div>
@@ -76,23 +154,23 @@ export default function NewCrosspointPage() {
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Leader *</label>
-                <select name="leaderId" value={formData.leaderId} onChange={handleChange} required className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg">
+                <select name="leader_id" value={formData.leader_id} onChange={handleChange} required className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg">
                   <option value="">Select leader...</option>
-                  {leaders.map(l => <option key={l.id} value={l.id}>{l.firstName} {l.lastName}</option>)}
+                  {leaders.map(l => <option key={l.id} value={l.id}>{l.first_name} {l.last_name}</option>)}
                 </select>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Assistant Leader</label>
-                <select name="assistantId" value={formData.assistantId} onChange={handleChange} className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg">
+                <select name="assistant_id" value={formData.assistant_id} onChange={handleChange} className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg">
                   <option value="">Select assistant...</option>
-                  {mockMembers.map(m => <option key={m.id} value={m.id}>{m.firstName} {m.lastName}</option>)}
+                  {allMembers.map(m => <option key={m.id} value={m.id}>{m.first_name} {m.last_name}</option>)}
                 </select>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Treasurer</label>
-                <select name="treasurerId" value={formData.treasurerId} onChange={handleChange} className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg">
+                <select name="treasurer_id" value={formData.treasurer_id} onChange={handleChange} className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg">
                   <option value="">Select treasurer...</option>
-                  {mockMembers.map(m => <option key={m.id} value={m.id}>{m.firstName} {m.lastName}</option>)}
+                  {allMembers.map(m => <option key={m.id} value={m.id}>{m.first_name} {m.last_name}</option>)}
                 </select>
               </div>
             </div>
@@ -104,14 +182,14 @@ export default function NewCrosspointPage() {
             <div className="grid sm:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Meeting Day *</label>
-                <select name="meetingDay" value={formData.meetingDay} onChange={handleChange} required className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg">
+                <select name="meeting_day" value={formData.meeting_day} onChange={handleChange} required className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg">
                   <option value="">Select day...</option>
                   {days.map(d => <option key={d} value={d}>{d}</option>)}
                 </select>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Meeting Time *</label>
-                <input type="text" name="meetingTime" value={formData.meetingTime} onChange={handleChange} required placeholder="e.g., 7:00 PM" className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg" />
+                <input type="text" name="meeting_time" value={formData.meeting_time} onChange={handleChange} required placeholder="e.g., 7:00 PM" className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Venue</label>
@@ -123,8 +201,8 @@ export default function NewCrosspointPage() {
           {/* Actions */}
           <div className="flex items-center justify-end gap-3">
             <Link href="/admin/crosspoints" className="px-4 py-2.5 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50">Cancel</Link>
-            <button type="submit" disabled={loading} className="flex items-center gap-2 px-6 py-2.5 text-sm font-medium bg-[#BF0A30] text-white rounded-lg hover:bg-[#B00325] disabled:opacity-50">
-              <Save className="w-4 h-4" />{loading ? 'Creating...' : 'Create Crosspoint'}
+            <button type="submit" disabled={submitting} className="flex items-center gap-2 px-6 py-2.5 text-sm font-medium bg-[#BF0A30] text-white rounded-lg hover:bg-[#B00325] disabled:opacity-50">
+              <Save className="w-4 h-4" />{submitting ? 'Creating...' : 'Create Crosspoint'}
             </button>
           </div>
         </form>

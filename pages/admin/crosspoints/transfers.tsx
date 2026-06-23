@@ -1,11 +1,131 @@
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
 import Link from 'next/link';
-import { ArrowLeft, ArrowRight, Check, X, Clock, Home } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, X, Clock, Home, Loader2 } from 'lucide-react';
 import { AdminLayout, PageHeader } from '@/components/connect/AdminLayout';
-import { mockTransferRequests, getUserById, getCrosspointById } from '@/data';
+import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/context/AuthContext';
+
+const db = supabase as any;
+
+interface TransferRow {
+  id: string;
+  user_id: string;
+  from_crosspoint_id: string;
+  to_crosspoint_id: string;
+  reason: string;
+  request_date: string;
+  status: string;
+}
+
+interface ProfileRow {
+  id: string;
+  first_name: string;
+  last_name: string;
+  member_id: string | null;
+  phone: string | null;
+}
+
+interface CrosspointRow {
+  id: string;
+  name: string;
+  area: string;
+}
 
 export default function TransfersPage() {
-  const pending = mockTransferRequests.filter(t => t.status === 'pending');
-  const processed = mockTransferRequests.filter(t => t.status !== 'pending');
+  const router = useRouter();
+  const { profile, loading: authLoading } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [transfers, setTransfers] = useState<TransferRow[]>([]);
+  const [profiles, setProfiles] = useState<Record<string, ProfileRow>>({});
+  const [crosspoints, setCrosspoints] = useState<Record<string, CrosspointRow>>({});
+  const [processing, setProcessing] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (!profile) { router.push('/auth/login?redirectTo=' + router.asPath); return; }
+    if (!['admin', 'pastor', 'teacher', 'leader'].includes(profile.role)) { router.push('/'); return; }
+    loadData();
+  }, [authLoading, profile]);
+
+  async function loadData() {
+    setLoading(true);
+
+    const { data: transferData } = await db
+      .from('transfer_requests')
+      .select('*')
+      .order('request_date', { ascending: false });
+
+    const rows = (transferData ?? []) as TransferRow[];
+    setTransfers(rows);
+
+    // Fetch unique user profiles
+    const userIds = [...new Set(rows.map(r => r.user_id))];
+    if (userIds.length > 0) {
+      const { data: profileData } = await db
+        .from('profiles')
+        .select('id, first_name, last_name, member_id, phone')
+        .in('id', userIds);
+
+      const profileMap: Record<string, ProfileRow> = {};
+      for (const p of (profileData ?? []) as ProfileRow[]) {
+        profileMap[p.id] = p;
+      }
+      setProfiles(profileMap);
+    }
+
+    // Fetch unique crosspoints
+    const cpIds = [...new Set(rows.flatMap(r => [r.from_crosspoint_id, r.to_crosspoint_id]))];
+    if (cpIds.length > 0) {
+      const { data: cpData } = await db
+        .from('crosspoints')
+        .select('id, name, area')
+        .in('id', cpIds);
+
+      const cpMap: Record<string, CrosspointRow> = {};
+      for (const cp of (cpData ?? []) as CrosspointRow[]) {
+        cpMap[cp.id] = cp;
+      }
+      setCrosspoints(cpMap);
+    }
+
+    setLoading(false);
+  }
+
+  async function handleAction(id: string, status: 'approved' | 'declined') {
+    setProcessing(id);
+    try {
+      const res = await fetch('/api/admin/crosspoint-transfers', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, status }),
+      });
+
+      if (res.ok) {
+        await loadData();
+      } else {
+        const err = await res.json();
+        alert(err.error || 'Action failed');
+      }
+    } catch {
+      alert('Network error');
+    } finally {
+      setProcessing(null);
+    }
+  }
+
+  const pending = transfers.filter(t => t.status === 'pending');
+  const processed = transfers.filter(t => t.status !== 'pending');
+
+  if (loading) {
+    return (
+      <AdminLayout title="Transfer Requests">
+        <div className="flex items-center justify-center py-24">
+          <Loader2 className="w-7 h-7 text-[#BF0A30] animate-spin" />
+        </div>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout title="Transfer Requests">
@@ -20,31 +140,29 @@ export default function TransfersPage() {
         <div className="space-y-4 mb-8">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Pending Requests</h2>
           {pending.map((req) => {
-            // FIX: requests use userId (UserAccount.id), not memberId
-            const user = getUserById(req.userId);
-            const fromCP = getCrosspointById(req.fromCrosspointId);
-            const toCP = getCrosspointById(req.toCrosspointId);
+            const user = profiles[req.user_id];
+            const fromCP = crosspoints[req.from_crosspoint_id];
+            const toCP = crosspoints[req.to_crosspoint_id];
 
             return (
               <div key={req.id} className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-5">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-full bg-[#BF0A30] flex items-center justify-center text-white font-semibold">
-                      {user?.firstName[0]}{user?.lastName[0]}
+                      {user?.first_name?.[0]}{user?.last_name?.[0]}
                     </div>
                     <div>
                       <p className="font-semibold text-gray-900 dark:text-white">
-                        {user?.firstName} {user?.lastName}
+                        {user?.first_name} {user?.last_name}
                       </p>
-                      {/* memberId may be undefined for non-members, phone always exists */}
                       <p className="text-sm text-gray-500">
-                        {user?.memberId ?? 'No member ID'} • {user?.phone}
+                        {user?.member_id ?? 'No member ID'} {user?.phone ? `• ${user.phone}` : ''}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-gray-500">
                     <Clock className="w-4 h-4" />
-                    {new Date(req.requestDate).toLocaleDateString()}
+                    {new Date(req.request_date).toLocaleDateString()}
                   </div>
                 </div>
 
@@ -72,10 +190,18 @@ export default function TransfersPage() {
                 </div>
 
                 <div className="flex gap-3 pt-4 border-t border-gray-100 dark:border-[#2D2D2D]">
-                  <button className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700">
+                  <button
+                    disabled={processing === req.id}
+                    onClick={() => handleAction(req.id, 'approved')}
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 disabled:opacity-50"
+                  >
                     <Check className="w-4 h-4" />Approve Transfer
                   </button>
-                  <button className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 border border-gray-300 dark:border-[#2D2D2D] text-gray-700 dark:text-gray-300 font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-[#252525]">
+                  <button
+                    disabled={processing === req.id}
+                    onClick={() => handleAction(req.id, 'declined')}
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 border border-gray-300 dark:border-[#2D2D2D] text-gray-700 dark:text-gray-300 font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-[#252525] disabled:opacity-50"
+                  >
                     <X className="w-4 h-4" />Decline
                   </button>
                 </div>
@@ -85,7 +211,6 @@ export default function TransfersPage() {
         </div>
       ) : (
         <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-12 text-center mb-8">
-          <div className="text-4xl mb-4">✨</div>
           <p className="text-gray-500">No pending transfer requests</p>
         </div>
       )}
@@ -106,15 +231,15 @@ export default function TransfersPage() {
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-[#2D2D2D]">
                 {processed.map((req) => {
-                  const user = getUserById(req.userId);
-                  const fromCP = getCrosspointById(req.fromCrosspointId);
-                  const toCP = getCrosspointById(req.toCrosspointId);
+                  const user = profiles[req.user_id];
+                  const fromCP = crosspoints[req.from_crosspoint_id];
+                  const toCP = crosspoints[req.to_crosspoint_id];
                   return (
                     <tr key={req.id}>
-                      <td className="py-3 px-4 font-medium">{user?.firstName} {user?.lastName}</td>
+                      <td className="py-3 px-4 font-medium">{user?.first_name} {user?.last_name}</td>
                       <td className="py-3 px-4 text-sm">{fromCP?.name}</td>
                       <td className="py-3 px-4 text-sm">{toCP?.name}</td>
-                      <td className="py-3 px-4 text-sm text-gray-500">{new Date(req.requestDate).toLocaleDateString()}</td>
+                      <td className="py-3 px-4 text-sm text-gray-500">{new Date(req.request_date).toLocaleDateString()}</td>
                       <td className="py-3 px-4">
                         <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${req.status === 'approved' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                           {req.status}

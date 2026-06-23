@@ -1,39 +1,101 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import { ArrowLeft, Save, User } from 'lucide-react';
+import { ArrowLeft, Save } from 'lucide-react';
 import { AdminLayout, PageHeader } from '@/components/connect/AdminLayout';
-import { mockCrosspoints, mockDepartments } from '@/data';
+import { supabase } from '@/lib/supabase';
+
+interface CrosspointOption {
+  id: string;
+  name: string;
+  status: string;
+  member_count: number;
+  max_members: number;
+}
 
 export default function NewMemberPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
+  const [crosspoints, setCrosspoints] = useState<CrosspointOption[]>([]);
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
+    first_name: '',
+    last_name: '',
     email: '',
     phone: '',
     gender: '',
-    dateOfBirth: '',
+    date_of_birth: '',
     address: '',
     occupation: '',
-    maritalStatus: '',
-    crosspointId: '',
+    marital_status: '',
+    crosspoint_id: '',
     role: 'member',
   });
+
+  useEffect(() => { checkAuth(); }, []);
+
+  async function checkAuth() {
+    const { data } = await supabase.auth.getSession();
+    if (!data.session) { router.push('/auth/login?redirectTo=' + router.asPath); return; }
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', data.session.user.id).single();
+    if (!profile || !['admin', 'pastor', 'teacher', 'leader'].includes(profile.role)) { router.push('/'); return; }
+    loadDropdowns();
+  }
+
+  async function loadDropdowns() {
+    const { data } = await supabase
+      .from('crosspoints')
+      .select('id, name, status, member_count, max_members')
+      .eq('status', 'active')
+      .order('name');
+    if (data) setCrosspoints(data);
+    setPageLoading(false);
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    const res = await fetch('/api/admin/members', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        first_name: formData.first_name,
+        last_name: formData.last_name,
+        email: formData.email || null,
+        phone: formData.phone,
+        gender: formData.gender || null,
+        date_of_birth: formData.date_of_birth || null,
+        address: formData.address || null,
+        occupation: formData.occupation || null,
+        marital_status: formData.marital_status || null,
+        role: formData.role,
+        status: 'active',
+      }),
+    });
+
     setLoading(false);
-    router.push('/admin/members');
+    if (res.ok) {
+      router.push('/admin/members');
+    } else {
+      const err = await res.json();
+      alert(err.error || 'Failed to create member');
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
+
+  if (pageLoading) {
+    return (
+      <AdminLayout title="Add Member">
+        <div className="flex items-center justify-center py-20">
+          <div className="w-8 h-8 border-4 border-[#BF0A30] border-t-transparent rounded-full animate-spin" />
+        </div>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout title="Add Member">
@@ -41,7 +103,7 @@ export default function NewMemberPage() {
         <Link href="/admin/members" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 mb-4">
           <ArrowLeft className="w-4 h-4" />Back to Members
         </Link>
-        
+
         <PageHeader title="Add New Member" subtitle="Create a new member record" />
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -51,11 +113,11 @@ export default function NewMemberPage() {
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">First Name *</label>
-                <input type="text" name="firstName" value={formData.firstName} onChange={handleChange} required className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg bg-white dark:bg-[#1A1A1A] focus:outline-none focus:ring-2 focus:ring-[#BF0A30]" />
+                <input type="text" name="first_name" value={formData.first_name} onChange={handleChange} required className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg bg-white dark:bg-[#1A1A1A] focus:outline-none focus:ring-2 focus:ring-[#BF0A30]" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Last Name *</label>
-                <input type="text" name="lastName" value={formData.lastName} onChange={handleChange} required className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg bg-white dark:bg-[#1A1A1A] focus:outline-none focus:ring-2 focus:ring-[#BF0A30]" />
+                <input type="text" name="last_name" value={formData.last_name} onChange={handleChange} required className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg bg-white dark:bg-[#1A1A1A] focus:outline-none focus:ring-2 focus:ring-[#BF0A30]" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Phone *</label>
@@ -75,7 +137,7 @@ export default function NewMemberPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date of Birth</label>
-                <input type="date" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleChange} className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg bg-white dark:bg-[#1A1A1A] focus:outline-none focus:ring-2 focus:ring-[#BF0A30]" />
+                <input type="date" name="date_of_birth" value={formData.date_of_birth} onChange={handleChange} className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg bg-white dark:bg-[#1A1A1A] focus:outline-none focus:ring-2 focus:ring-[#BF0A30]" />
               </div>
             </div>
           </div>
@@ -94,7 +156,7 @@ export default function NewMemberPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Marital Status</label>
-                <select name="maritalStatus" value={formData.maritalStatus} onChange={handleChange} className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg bg-white dark:bg-[#1A1A1A] focus:outline-none focus:ring-2 focus:ring-[#BF0A30]">
+                <select name="marital_status" value={formData.marital_status} onChange={handleChange} className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg bg-white dark:bg-[#1A1A1A] focus:outline-none focus:ring-2 focus:ring-[#BF0A30]">
                   <option value="">Select...</option>
                   <option value="single">Single</option>
                   <option value="married">Married</option>
@@ -119,10 +181,10 @@ export default function NewMemberPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Crosspoint</label>
-                <select name="crosspointId" value={formData.crosspointId} onChange={handleChange} className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg bg-white dark:bg-[#1A1A1A] focus:outline-none focus:ring-2 focus:ring-[#BF0A30]">
+                <select name="crosspoint_id" value={formData.crosspoint_id} onChange={handleChange} className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg bg-white dark:bg-[#1A1A1A] focus:outline-none focus:ring-2 focus:ring-[#BF0A30]">
                   <option value="">Not assigned</option>
-                  {mockCrosspoints.filter(cp => cp.status === 'active').map(cp => (
-                    <option key={cp.id} value={cp.id}>{cp.name} ({cp.memberCount}/{cp.maxMembers})</option>
+                  {crosspoints.map(cp => (
+                    <option key={cp.id} value={cp.id}>{cp.name} ({cp.member_count}/{cp.max_members})</option>
                   ))}
                 </select>
               </div>

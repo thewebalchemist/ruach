@@ -1,19 +1,74 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Plus, Calendar, MapPin, Users, Clock, Eye, Edit, Filter } from 'lucide-react';
+import { Plus, Calendar, MapPin, Users, Clock, Eye, Edit, Trash2 } from 'lucide-react';
 import { AdminLayout, PageHeader } from '@/components/connect/AdminLayout';
-import { mockEvents } from '@/data';
+import { supabase } from '@/lib/supabase';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
+
+interface EventRow {
+  id: string;
+  title: string;
+  description: string | null;
+  category: string;
+  event_date: string;
+  end_date: string | null;
+  start_time: string | null;
+  end_time: string | null;
+  location: string | null;
+  image_url: string | null;
+  is_public: boolean;
+  chatbot_enabled: boolean;
+  created_at: string;
+}
 
 export default function EventsPage() {
+  const { loading: authLoading, authHeaders } = useAdminAuth();
   const [filter, setFilter] = useState('all');
+  const [events, setEvents] = useState<EventRow[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filtered = mockEvents.filter(e => filter === 'all' || e.type === filter);
-  const upcoming = mockEvents.filter(e => e.status === 'upcoming').length;
+  useEffect(() => {
+    if (authLoading) return;
+    fetchEvents();
+  }, [authLoading]);
+
+  async function fetchEvents() {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('events')
+      .select('*')
+      .order('event_date', { ascending: false });
+    if (!error && data) setEvents(data);
+    setLoading(false);
+  }
+
+  async function handleDelete(id: string) {
+    if (!confirm('Are you sure you want to delete this event?')) return;
+    const headers = authHeaders();
+    await fetch(`/api/control-panel/events?id=${id}`, { method: 'DELETE', headers });
+    setEvents(prev => prev.filter(e => e.id !== id));
+  }
+
+  const filtered = events.filter(e => filter === 'all' || e.category === filter);
+  const now = new Date().toISOString().split('T')[0];
+  const upcoming = events.filter(e => e.event_date >= now).length;
+  const churchWide = events.filter(e => e.category === 'church-wide').length;
+  const department = events.filter(e => e.category === 'department').length;
+
+  if (authLoading || loading) {
+    return (
+      <AdminLayout title="Events">
+        <div className="flex items-center justify-center py-20">
+          <div className="w-8 h-8 border-2 border-[#BF0A30] border-t-transparent rounded-full animate-spin" />
+        </div>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout title="Events">
-      <PageHeader 
-        title="Events" 
+      <PageHeader
+        title="Events"
         subtitle={`${upcoming} upcoming events`}
         actions={<Link href="/admin/events/new" className="flex items-center gap-2 px-3 py-2 text-sm font-medium bg-[#BF0A30] text-white rounded-lg hover:bg-[#B00325]"><Plus className="w-4 h-4" />Create Event</Link>}
       />
@@ -26,15 +81,15 @@ export default function EventsPage() {
         </div>
         <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-4">
           <p className="text-sm text-gray-500">Church-wide</p>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{mockEvents.filter(e => e.type === 'church-wide').length}</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-white">{churchWide}</p>
         </div>
         <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-4">
           <p className="text-sm text-gray-500">Department</p>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{mockEvents.filter(e => e.type === 'department').length}</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-white">{department}</p>
         </div>
         <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-4">
-          <p className="text-sm text-gray-500">Total Registered</p>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{mockEvents.reduce((s, e) => s + e.registeredCount, 0)}</p>
+          <p className="text-sm text-gray-500">Total Events</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-white">{events.length}</p>
         </div>
       </div>
 
@@ -62,66 +117,62 @@ export default function EventsPage() {
 
       {/* Events List */}
       <div className="space-y-4">
-        {filtered.map((event) => (
-          <div key={event.id} className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-5">
-            <div className="flex gap-4">
-              {/* Date Box */}
-              <div className="flex-shrink-0 w-16 text-center">
-                <div className="bg-[#BF0A30]/10 rounded-xl p-3">
-                  <p className="text-xs font-medium text-[#BF0A30] uppercase">
-                    {new Date(event.startDate).toLocaleDateString('en-US', { month: 'short' })}
-                  </p>
-                  <p className="text-2xl font-bold text-[#BF0A30]">
-                    {new Date(event.startDate).getDate()}
-                  </p>
+        {filtered.map((event) => {
+          const eventDate = new Date(event.event_date);
+          const isUpcoming = event.event_date >= now;
+          return (
+            <div key={event.id} className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-5">
+              <div className="flex gap-4">
+                {/* Date Box */}
+                <div className="flex-shrink-0 w-16 text-center">
+                  <div className="bg-[#BF0A30]/10 rounded-xl p-3">
+                    <p className="text-xs font-medium text-[#BF0A30] uppercase">
+                      {eventDate.toLocaleDateString('en-US', { month: 'short' })}
+                    </p>
+                    <p className="text-2xl font-bold text-[#BF0A30]">
+                      {eventDate.getDate()}
+                    </p>
+                  </div>
                 </div>
-              </div>
 
-              {/* Event Info */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-start justify-between mb-2">
-                  <div>
-                    <h3 className="font-semibold text-gray-900 dark:text-white">{event.title}</h3>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${
-                        event.type === 'church-wide' ? 'bg-[#BF0A30] text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
-                      }`}>{event.type}</span>
-                      <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${
-                        event.status === 'upcoming' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-700'
-                      }`}>{event.status}</span>
+                {/* Event Info */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between mb-2">
+                    <div>
+                      <h3 className="font-semibold text-gray-900 dark:text-white">{event.title}</h3>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${
+                          event.category === 'church-wide' ? 'bg-[#BF0A30] text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
+                        }`}>{event.category}</span>
+                        <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${
+                          isUpcoming ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-700'
+                        }`}>{isUpcoming ? 'upcoming' : 'past'}</span>
+                      </div>
+                    </div>
+                    <div className="flex gap-1">
+                      <Link href={`/admin/events/${event.id}`} className="p-2 text-gray-400 hover:text-gray-600"><Eye className="w-4 h-4" /></Link>
+                      <Link href={`/admin/events/${event.id}/edit`} className="p-2 text-gray-400 hover:text-gray-600"><Edit className="w-4 h-4" /></Link>
+                      <button onClick={() => handleDelete(event.id)} className="p-2 text-gray-400 hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
                     </div>
                   </div>
-                  <div className="flex gap-1">
-                    <Link href={`/admin/events/${event.id}`} className="p-2 text-gray-400 hover:text-gray-600"><Eye className="w-4 h-4" /></Link>
-                    <Link href={`/admin/events/${event.id}/edit`} className="p-2 text-gray-400 hover:text-gray-600"><Edit className="w-4 h-4" /></Link>
-                  </div>
-                </div>
 
-                <p className="text-sm text-gray-500 mb-3 line-clamp-2">{event.description}</p>
-
-                <div className="flex flex-wrap gap-4 text-sm text-gray-600 dark:text-gray-400">
-                  <span className="flex items-center gap-1"><Clock className="w-4 h-4" />{event.time}</span>
-                  <span className="flex items-center gap-1"><MapPin className="w-4 h-4" />{event.venue}</span>
-                  {event.capacity && (
-                    <span className="flex items-center gap-1"><Users className="w-4 h-4" />{event.registeredCount}/{event.capacity} registered</span>
+                  {event.description && (
+                    <p className="text-sm text-gray-500 mb-3 line-clamp-2">{event.description}</p>
                   )}
-                </div>
 
-                {event.requiresRegistration && event.capacity && (
-                  <div className="mt-3">
-                    <div className="flex justify-between text-xs text-gray-500 mb-1">
-                      <span>Registration</span>
-                      <span>{Math.round((event.registeredCount / event.capacity) * 100)}%</span>
-                    </div>
-                    <div className="h-2 bg-gray-100 dark:bg-[#2D2D2D] rounded-full overflow-hidden">
-                      <div className="h-full bg-[#BF0A30] rounded-full" style={{ width: `${(event.registeredCount / event.capacity) * 100}%` }} />
-                    </div>
+                  <div className="flex flex-wrap gap-4 text-sm text-gray-600 dark:text-gray-400">
+                    {event.start_time && (
+                      <span className="flex items-center gap-1"><Clock className="w-4 h-4" />{event.start_time}{event.end_time ? ` - ${event.end_time}` : ''}</span>
+                    )}
+                    {event.location && (
+                      <span className="flex items-center gap-1"><MapPin className="w-4 h-4" />{event.location}</span>
+                    )}
                   </div>
-                )}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {filtered.length === 0 && (

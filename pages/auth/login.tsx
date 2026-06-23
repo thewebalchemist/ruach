@@ -66,11 +66,13 @@ export default function AdminLogin() {
       const role       = data?.role ?? '';
       const redirectTo = router.query.redirectTo as string | undefined;
 
-      if (['admin', 'pastor', 'media'].includes(role)) {
-        // admin, pastor, and media all land in the control panel
+      if (['admin', 'pastor'].includes(role)) {
         const dest = (redirectTo?.startsWith('/admin') || redirectTo?.startsWith('/control-panel'))
           ? redirectTo
-          : '/control-panel';
+          : '/auth/portal-select';
+        await router.push(dest);
+      } else if (role === 'media') {
+        const dest = redirectTo?.startsWith('/control-panel') ? redirectTo : '/control-panel';
         await router.push(dest);
       } else if (['teacher', 'leader'].includes(role)) {
         // teacher/leader can use the church-admin area but not the control panel

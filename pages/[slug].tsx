@@ -1,7 +1,7 @@
 import { GetServerSideProps } from 'next';
 import Head from 'next/head';
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   Share2,
   Play,
@@ -64,6 +64,17 @@ export default function SermonPage({ sermon, relatedSermons, seriesSermons }: Se
       setIsInWatchlist(true);
     }
   };
+
+  const shareRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!shareOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (shareRef.current && !shareRef.current.contains(e.target as Node)) setShareOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [shareOpen]);
 
   const handleShare = async () => {
     const url = window.location.href;
@@ -212,39 +223,42 @@ export default function SermonPage({ sermon, relatedSermons, seriesSermons }: Se
                   {isInWatchlist ? <Check className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
                   {isInWatchlist ? 'Saved' : 'Save'}
                 </button>
-                <div className="relative">
+                <div className="relative" ref={shareRef}>
                   <button onClick={handleShare}
                     className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/[0.08] hover:bg-white/[0.14] text-white border border-white/10 text-xs font-bold uppercase tracking-wider transition-colors" style={H}>
                     <Share2 className="w-4 h-4" /> Share
                   </button>
                   {shareOpen && (
-                    <div className="absolute right-0 md:right-0 left-0 md:left-auto top-full mt-2 w-auto md:w-72 bg-[#1A1E28] border border-white/10 rounded-2xl p-4 shadow-2xl z-50">
-                      <p className="text-xs text-[#8B95A8] mb-3 font-semibold uppercase tracking-wider">Share this sermon</p>
-                      <div className="flex items-center gap-2 bg-[#0A0C10] rounded-xl p-2.5">
-                        <input readOnly value={pageUrl} className="flex-1 bg-transparent text-xs text-white/70 outline-none truncate" />
-                        <button onClick={copyLink} className="flex items-center gap-1 px-3 py-1.5 bg-[#BF0A30] text-white text-[10px] font-bold uppercase tracking-wider rounded-lg hover:bg-[#9A0826] transition-colors" style={H}>
-                          {copied ? <><CheckCircle className="w-3 h-3" /> Copied</> : <><Copy className="w-3 h-3" /> Copy</>}
-                        </button>
+                    <>
+                      <div className="fixed inset-0 bg-black/40 z-40 sm:hidden" onClick={() => setShareOpen(false)} />
+                      <div className="fixed bottom-0 left-0 right-0 sm:absolute sm:bottom-auto sm:left-auto sm:right-0 sm:top-full sm:mt-2 w-full sm:w-80 bg-[#1A1E28] border-t sm:border border-white/10 sm:rounded-2xl rounded-t-2xl p-5 sm:p-4 shadow-2xl z-50">
+                        <p className="text-xs text-[#8B95A8] mb-3 font-semibold uppercase tracking-wider">Share this sermon</p>
+                        <div className="flex items-center gap-2 bg-[#0A0C10] rounded-xl p-2.5">
+                          <input readOnly value={pageUrl} className="flex-1 bg-transparent text-xs text-white/70 outline-none truncate" />
+                          <button onClick={copyLink} className="flex items-center gap-1 px-3 py-1.5 bg-[#BF0A30] text-white text-[10px] font-bold uppercase tracking-wider rounded-lg hover:bg-[#9A0826] transition-colors" style={H}>
+                            {copied ? <><CheckCircle className="w-3 h-3" /> Copied</> : <><Copy className="w-3 h-3" /> Copy</>}
+                          </button>
+                        </div>
+                        <div className="flex gap-2 mt-3">
+                          <a href={`https://wa.me/?text=${encodeURIComponent(`Watch "${sermon.title}" by ${sermon.preacher}\n${pageUrl}`)}`}
+                            target="_blank" rel="noopener noreferrer"
+                            className="flex-1 text-center py-2.5 bg-[#25D366]/10 text-[#25D366] text-[10px] font-bold uppercase tracking-wider rounded-lg hover:bg-[#25D366]/20 transition-colors" style={H}>
+                            WhatsApp
+                          </a>
+                          <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`"${sermon.title}" by ${sermon.preacher}`)}&url=${encodeURIComponent(pageUrl)}`}
+                            target="_blank" rel="noopener noreferrer"
+                            className="flex-1 text-center py-2.5 bg-white/5 text-white text-[10px] font-bold uppercase tracking-wider rounded-lg hover:bg-white/10 transition-colors" style={H}>
+                            X / Twitter
+                          </a>
+                          <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(pageUrl)}`}
+                            target="_blank" rel="noopener noreferrer"
+                            className="flex-1 text-center py-2.5 bg-[#1877F2]/10 text-[#1877F2] text-[10px] font-bold uppercase tracking-wider rounded-lg hover:bg-[#1877F2]/20 transition-colors" style={H}>
+                            Facebook
+                          </a>
+                        </div>
+                        <button onClick={() => setShareOpen(false)} className="mt-4 w-full text-center text-sm text-[#8B95A8] hover:text-white transition-colors py-2">Close</button>
                       </div>
-                      <div className="flex gap-2 mt-3">
-                        <a href={`https://wa.me/?text=${encodeURIComponent(`Watch "${sermon.title}" by ${sermon.preacher}\n${pageUrl}`)}`}
-                          target="_blank" rel="noopener noreferrer"
-                          className="flex-1 text-center py-2 bg-[#25D366]/10 text-[#25D366] text-[10px] font-bold uppercase tracking-wider rounded-lg hover:bg-[#25D366]/20 transition-colors" style={H}>
-                          WhatsApp
-                        </a>
-                        <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`"${sermon.title}" by ${sermon.preacher}`)}&url=${encodeURIComponent(pageUrl)}`}
-                          target="_blank" rel="noopener noreferrer"
-                          className="flex-1 text-center py-2 bg-white/5 text-white text-[10px] font-bold uppercase tracking-wider rounded-lg hover:bg-white/10 transition-colors" style={H}>
-                          X / Twitter
-                        </a>
-                        <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(pageUrl)}`}
-                          target="_blank" rel="noopener noreferrer"
-                          className="flex-1 text-center py-2 bg-[#1877F2]/10 text-[#1877F2] text-[10px] font-bold uppercase tracking-wider rounded-lg hover:bg-[#1877F2]/20 transition-colors" style={H}>
-                          Facebook
-                        </a>
-                      </div>
-                      <button onClick={() => setShareOpen(false)} className="mt-3 w-full text-center text-xs text-[#8B95A8] hover:text-white transition-colors">Close</button>
-                    </div>
+                    </>
                   )}
                 </div>
               </div>

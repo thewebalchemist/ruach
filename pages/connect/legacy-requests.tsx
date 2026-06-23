@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Clock, CheckCircle, XCircle, Search, User, Calendar, MapPin, Building } from 'lucide-react';
+import { ArrowLeft, Clock, CheckCircle, XCircle, Search, User, Calendar, MapPin, Building, Loader2 } from 'lucide-react';
 import { ConnectLayout } from '@/components/connect/ConnectLayout';
-import { mockLegacyRequests } from '@/data/connect';
-import { LegacyMemberRequest, LegacyMemberStatus } from '@/types';
+import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/context/AuthContext';
+
+const db = supabase as any;
 
 const branchLabels: Record<string, string> = {
   'ruach-tabernacle': 'Ruach Tabernacle',
@@ -21,17 +23,33 @@ const zoneLabels: Record<string, string> = {
 };
 
 export default function LegacyRequestsPage() {
-  const [requests, setRequests] = useState<LegacyMemberRequest[]>(mockLegacyRequests);
-  const [selectedRequest, setSelectedRequest] = useState<LegacyMemberRequest | null>(null);
-  const [filterStatus, setFilterStatus] = useState<LegacyMemberStatus | 'all'>('all');
+  const { profile, loading: authLoading } = useAuth();
+  const [requests, setRequests] = useState<any[]>([]);
+  const [selectedRequest, setSelectedRequest] = useState<any | null>(null);
+  const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'verified' | 'rejected'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [reviewNotes, setReviewNotes] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  async function fetchRequests() {
+    setLoading(true);
+    const { data } = await db
+      .from('legacy_member_requests')
+      .select('*')
+      .order('requested_at', { ascending: false });
+    setRequests(data ?? []);
+    setLoading(false);
+  }
+
+  useEffect(() => {
+    if (!authLoading && profile) fetchRequests();
+  }, [authLoading, profile]);
 
   const filteredRequests = requests.filter(r => {
     const matchesStatus = filterStatus === 'all' || r.status === filterStatus;
-    const matchesSearch = r.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          r.email.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = (r.full_name ?? '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          (r.email ?? '').toLowerCase().includes(searchQuery.toLowerCase());
     return matchesStatus && matchesSearch;
   });
 
@@ -47,33 +65,65 @@ export default function LegacyRequestsPage() {
   const handleVerify = async () => {
     if (!selectedRequest) return;
     setIsProcessing(true);
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    const memberNumber = calculateMemberNumber(selectedRequest.yearsAsMember);
-    setRequests(prev => prev.map(r => 
-      r.id === selectedRequest.id 
-        ? { ...r, status: 'verified' as LegacyMemberStatus, reviewNotes, assignedMemberId: memberNumber, reviewedAt: new Date().toISOString() }
-        : r
-    ));
-    setSelectedRequest(prev => prev ? { ...prev, status: 'verified', reviewNotes, assignedMemberId: memberNumber } : null);
-    setReviewNotes('');
-    setIsProcessing(false);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch('/api/admin/verify-legacy-request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
+        body: JSON.stringify({ requestId: selectedRequest.id, status: 'verified', notes: reviewNotes }),
+      });
+      if (!res.ok) throw new Error('Failed to verify request');
+      await fetchRequests();
+      // Update selected request to reflect new status
+      setSelectedRequest((prev: any) => prev ? { ...prev, status: 'verified', review_notes: reviewNotes, assigned_member_id: calculateMemberNumber(prev.years_as_member) } : null);
+      setReviewNotes('');
+    } catch (err) {
+      console.error('Verify error:', err);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const handleReject = async () => {
     if (!selectedRequest) return;
     setIsProcessing(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    setRequests(prev => prev.map(r => 
-      r.id === selectedRequest.id 
-        ? { ...r, status: 'rejected' as LegacyMemberStatus, reviewNotes, reviewedAt: new Date().toISOString() }
-        : r
-    ));
-    setSelectedRequest(prev => prev ? { ...prev, status: 'rejected', reviewNotes } : null);
-    setReviewNotes('');
-    setIsProcessing(false);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch('/api/admin/verify-legacy-request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
+        body: JSON.stringify({ requestId: selectedRequest.id, status: 'rejected', notes: reviewNotes }),
+      });
+      if (!res.ok) throw new Error('Failed to reject request');
+      await fetchRequests();
+      setSelectedRequest((prev: any) => prev ? { ...prev, status: 'rejected', review_notes: reviewNotes } : null);
+      setReviewNotes('');
+    } catch (err) {
+      console.error('Reject error:', err);
+    } finally {
+      setIsProcessing(false);
+    }
   };
+
+  if (authLoading || loading) {
+    return (
+      <ConnectLayout title="Legacy Verification">
+        <div className="flex items-center justify-center py-32">
+          <Loader2 className="w-8 h-8 animate-spin text-[#BF0A30]" />
+        </div>
+      </ConnectLayout>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <ConnectLayout title="Legacy Verification">
+        <div className="flex items-center justify-center py-32">
+          <p className="text-gray-500">Please sign in to view legacy requests.</p>
+        </div>
+      </ConnectLayout>
+    );
+  }
 
   return (
     <ConnectLayout title="Legacy Verification">
@@ -152,7 +202,7 @@ export default function LegacyRequestsPage() {
                     }`}
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <p className="font-medium text-gray-900 dark:text-white">{request.fullName}</p>
+                      <p className="font-medium text-gray-900 dark:text-white">{request.full_name}</p>
                       <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${
                         request.status === 'pending' ? 'bg-amber-100 text-amber-800' :
                         request.status === 'verified' ? 'bg-green-100 text-green-800' :
@@ -162,7 +212,7 @@ export default function LegacyRequestsPage() {
                       </span>
                     </div>
                     <p className="text-sm text-gray-500">{request.email}</p>
-                    <p className="text-xs text-gray-400 mt-1">Joined {request.yearJoined} • {request.yearsAsMember} years</p>
+                    <p className="text-xs text-gray-400 mt-1">Joined {request.year_joined} • {request.years_as_member} years</p>
                   </button>
                 ))
               )}
@@ -176,7 +226,7 @@ export default function LegacyRequestsPage() {
                 <div className="p-6 border-b border-gray-200 dark:border-[#2D2D2D]">
                   <div className="flex items-start justify-between">
                     <div>
-                      <h2 className="text-xl font-bold text-gray-900 dark:text-white">{selectedRequest.fullName}</h2>
+                      <h2 className="text-xl font-bold text-gray-900 dark:text-white">{selectedRequest.full_name}</h2>
                       <p className="text-gray-500">{selectedRequest.email}</p>
                     </div>
                     <span className={`px-3 py-1 text-sm font-semibold rounded-full flex items-center gap-1 ${
@@ -215,14 +265,14 @@ export default function LegacyRequestsPage() {
                         <MapPin className="w-5 h-5 text-gray-400" />
                         <div>
                           <p className="text-xs text-gray-500">Zone</p>
-                          <p className="font-medium">{zoneLabels[selectedRequest.crosspointZone]}</p>
+                          <p className="font-medium">{zoneLabels[selectedRequest.crosspoint_zone]}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-[#252525] rounded-lg">
                         <Calendar className="w-5 h-5 text-gray-400" />
                         <div>
                           <p className="text-xs text-gray-500">Requested</p>
-                          <p className="font-medium">{new Date(selectedRequest.requestedAt).toLocaleDateString()}</p>
+                          <p className="font-medium">{new Date(selectedRequest.requested_at).toLocaleDateString()}</p>
                         </div>
                       </div>
                     </div>
@@ -234,25 +284,25 @@ export default function LegacyRequestsPage() {
                     <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4 space-y-3">
                       <div className="flex justify-between">
                         <span className="text-blue-700 dark:text-blue-300">Connect Cohort Attended</span>
-                        <span className="font-semibold text-blue-900 dark:text-blue-100">{selectedRequest.cohortAttended}</span>
+                        <span className="font-semibold text-blue-900 dark:text-blue-100">{selectedRequest.cohort_attended}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-blue-700 dark:text-blue-300">Year Joined Ruach</span>
-                        <span className="font-semibold text-blue-900 dark:text-blue-100">{selectedRequest.yearJoined}</span>
+                        <span className="font-semibold text-blue-900 dark:text-blue-100">{selectedRequest.year_joined}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-blue-700 dark:text-blue-300">Years as Member</span>
-                        <span className="font-semibold text-blue-900 dark:text-blue-100">{selectedRequest.yearsAsMember} years</span>
+                        <span className="font-semibold text-blue-900 dark:text-blue-100">{selectedRequest.years_as_member} years</span>
                       </div>
                     </div>
                   </div>
 
                   {/* Additional Info */}
-                  {selectedRequest.additionalInfo && (
+                  {selectedRequest.additional_info && (
                     <div>
                       <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Additional Information</h3>
                       <p className="p-4 bg-gray-50 dark:bg-[#252525] rounded-lg text-gray-700 dark:text-gray-300">
-                        {selectedRequest.additionalInfo}
+                        {selectedRequest.additional_info}
                       </p>
                     </div>
                   )}
@@ -261,8 +311,8 @@ export default function LegacyRequestsPage() {
                   {selectedRequest.status === 'pending' && (
                     <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl p-4">
                       <h3 className="text-sm font-semibold text-green-800 dark:text-green-200 mb-2">Suggested Member Number</h3>
-                      <p className="text-2xl font-bold text-green-700 dark:text-green-300">{calculateMemberNumber(selectedRequest.yearsAsMember)}</p>
-                      <p className="text-xs text-green-600 mt-1">Based on {selectedRequest.yearsAsMember} years of membership</p>
+                      <p className="text-2xl font-bold text-green-700 dark:text-green-300">{calculateMemberNumber(selectedRequest.years_as_member)}</p>
+                      <p className="text-xs text-green-600 mt-1">Based on {selectedRequest.years_as_member} years of membership</p>
                     </div>
                   )}
 
@@ -274,11 +324,11 @@ export default function LegacyRequestsPage() {
                       <h3 className={`text-sm font-semibold mb-2 ${selectedRequest.status === 'verified' ? 'text-green-800' : 'text-red-800'}`}>
                         {selectedRequest.status === 'verified' ? 'Verified' : 'Rejected'}
                       </h3>
-                      {selectedRequest.assignedMemberId && (
-                        <p className="text-lg font-bold text-green-700 mb-2">Member ID: {selectedRequest.assignedMemberId}</p>
+                      {selectedRequest.assigned_member_id && (
+                        <p className="text-lg font-bold text-green-700 mb-2">Member ID: {selectedRequest.assigned_member_id}</p>
                       )}
-                      {selectedRequest.reviewNotes && (
-                        <p className="text-sm text-gray-600">Notes: {selectedRequest.reviewNotes}</p>
+                      {selectedRequest.review_notes && (
+                        <p className="text-sm text-gray-600">Notes: {selectedRequest.review_notes}</p>
                       )}
                     </div>
                   )}

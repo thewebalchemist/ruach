@@ -1,18 +1,70 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import { MessageSquare, CheckCircle, Clock, User, AlertCircle, Heart } from 'lucide-react';
 import { AdminLayout, PageHeader } from '@/components/connect/AdminLayout';
-import { mockPrayerRequests } from '@/data';
+import { supabase } from '@/lib/supabase';
+
+interface PrayerRequest {
+  id: string;
+  user_id: string | null;
+  user_name: string | null;
+  is_anonymous: boolean;
+  category: string;
+  request: string;
+  is_urgent: boolean;
+  status: string;
+  created_at: string;
+}
 
 export default function PrayerRequestsPage() {
+  const router = useRouter();
+  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
+  const [requests, setRequests] = useState<PrayerRequest[]>([]);
+  const [updating, setUpdating] = useState<string | null>(null);
 
-  const filtered = mockPrayerRequests.filter(pr => filter === 'all' || pr.status === filter);
+  useEffect(() => { checkAuth(); }, []);
+
+  async function checkAuth() {
+    const { data } = await supabase.auth.getSession();
+    if (!data.session) { router.push('/auth/login?redirectTo=' + router.asPath); return; }
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', data.session.user.id).single();
+    if (!profile || !['admin', 'pastor', 'teacher', 'leader'].includes(profile.role)) { router.push('/'); return; }
+    loadData();
+  }
+
+  async function loadData() {
+    const { data, error } = await supabase
+      .from('prayer_requests')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (!error && data) {
+      setRequests(data);
+    }
+    setLoading(false);
+  }
+
+  async function updateStatus(id: string, status: string) {
+    setUpdating(id);
+    const res = await fetch('/api/admin/prayer-requests', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, status }),
+    });
+    if (res.ok) {
+      setRequests(prev => prev.map(pr => pr.id === id ? { ...pr, status } : pr));
+    }
+    setUpdating(null);
+  }
+
+  const filtered = requests.filter(pr => filter === 'all' || pr.status === filter);
 
   const stats = {
-    total: mockPrayerRequests.length,
-    pending: mockPrayerRequests.filter(p => p.status === 'pending').length,
-    praying: mockPrayerRequests.filter(p => p.status === 'praying').length,
-    answered: mockPrayerRequests.filter(p => p.status === 'answered').length,
+    total: requests.length,
+    pending: requests.filter(p => p.status === 'pending').length,
+    praying: requests.filter(p => p.status === 'praying').length,
+    answered: requests.filter(p => p.status === 'answered').length,
   };
 
   const getCategoryColor = (cat: string) => {
@@ -26,6 +78,16 @@ export default function PrayerRequestsPage() {
     };
     return colors[cat] || colors.other;
   };
+
+  if (loading) {
+    return (
+      <AdminLayout title="Prayer Requests">
+        <div className="flex items-center justify-center py-20">
+          <div className="w-8 h-8 border-4 border-[#BF0A30] border-t-transparent rounded-full animate-spin" />
+        </div>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout title="Prayer Requests">
@@ -57,24 +119,24 @@ export default function PrayerRequestsPage() {
           <div key={pr.id} className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-5">
             <div className="flex items-start justify-between mb-3">
               <div className="flex items-center gap-3">
-                {pr.isAnonymous ? (
+                {pr.is_anonymous ? (
                   <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-[#2D2D2D] flex items-center justify-center">
                     <User className="w-5 h-5 text-gray-400" />
                   </div>
                 ) : (
                   <div className="w-10 h-10 rounded-full bg-[#BF0A30] flex items-center justify-center text-white font-semibold">
-                    {pr.userName?.[0] || 'A'}
+                    {pr.user_name?.[0] || 'A'}
                   </div>
                 )}
                 <div>
                   <p className="font-medium text-gray-900 dark:text-white">
-                    {pr.isAnonymous ? 'Anonymous' : pr.userName}
+                    {pr.is_anonymous ? 'Anonymous' : pr.user_name}
                   </p>
-                  <p className="text-sm text-gray-500">{new Date(pr.createdAt).toLocaleDateString()}</p>
+                  <p className="text-sm text-gray-500">{new Date(pr.created_at).toLocaleDateString()}</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                {pr.isUrgent && (
+                {pr.is_urgent && (
                   <span className="flex items-center gap-1 px-2 py-0.5 text-xs font-semibold rounded-full bg-red-100 text-red-800">
                     <AlertCircle className="w-3 h-3" />Urgent
                   </span>
@@ -94,10 +156,22 @@ export default function PrayerRequestsPage() {
               </div>
               <div className="flex gap-2">
                 {pr.status === 'pending' && (
-                  <button className="px-4 py-2 text-sm font-medium bg-[#BF0A30] text-white rounded-lg hover:bg-[#B00325]">Mark as Praying</button>
+                  <button
+                    onClick={() => updateStatus(pr.id, 'praying')}
+                    disabled={updating === pr.id}
+                    className="px-4 py-2 text-sm font-medium bg-[#BF0A30] text-white rounded-lg hover:bg-[#B00325] disabled:opacity-50"
+                  >
+                    {updating === pr.id ? 'Updating...' : 'Mark as Praying'}
+                  </button>
                 )}
                 {pr.status === 'praying' && (
-                  <button className="px-4 py-2 text-sm font-medium bg-green-600 text-white rounded-lg hover:bg-green-700">Mark Answered</button>
+                  <button
+                    onClick={() => updateStatus(pr.id, 'answered')}
+                    disabled={updating === pr.id}
+                    className="px-4 py-2 text-sm font-medium bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+                  >
+                    {updating === pr.id ? 'Updating...' : 'Mark Answered'}
+                  </button>
                 )}
                 <button className="px-4 py-2 text-sm font-medium border border-gray-300 dark:border-[#2D2D2D] rounded-lg hover:bg-gray-50 dark:hover:bg-[#252525]">Assign to Intercessors</button>
               </div>

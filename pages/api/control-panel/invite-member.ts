@@ -1,9 +1,5 @@
-// pages/api/control-panel/invite-member.ts
-// Creates a new staff account (media, teacher, leader, pastor).
-// Caller must be authenticated as admin or pastor.
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { createClient } from '@supabase/supabase-js';
-import { supabaseAdmin } from '@/lib/supabase-admin';
+import { getCallerProfile, supabaseAdmin } from '@/lib/api-auth';
 
 const INVITABLE_ROLES = ['media', 'teacher', 'leader', 'pastor'] as const;
 type InvitableRole = typeof INVITABLE_ROLES[number];
@@ -27,27 +23,8 @@ function generatePassword(): string {
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
 
-  // Verify the caller has an active session and is admin/pastor
-  const authHeader = req.headers.authorization ?? '';
-  const token = authHeader.replace('Bearer ', '');
-  if (!token) return res.status(401).json({ error: 'Missing authorization header' });
-
-  const callerClient = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  );
-  const { data: { user: caller } } = await callerClient.auth.getUser(token);
-  if (!caller) return res.status(401).json({ error: 'Invalid session' });
-
-  const { data: callerProfile } = await supabaseAdmin
-    .from('profiles')
-    .select('role, status')
-    .eq('id', caller.id)
-    .single();
-
-  if (!callerProfile || !['admin', 'pastor'].includes(callerProfile.role) || callerProfile.status === 'suspended') {
-    return res.status(403).json({ error: 'Only admins and pastors can invite team members' });
-  }
+  const callerProfile = await getCallerProfile(req);
+  if (!callerProfile) return res.status(403).json({ error: 'Only admins and pastors can invite team members' });
 
   const { firstName, lastName, email, role } = req.body as {
     firstName: string; lastName: string; email: string; role: string;

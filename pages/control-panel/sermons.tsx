@@ -152,8 +152,9 @@ export default function SermonsCP() {
     }
     setSaving(true); setError('');
     try {
+      const { data: { session } } = await supabase.auth.getSession();
       const thumb = getYouTubeThumbnail(form.youtube_url);
-      const payload = {
+      const payload: Record<string, unknown> = {
         title:          form.title,
         preacher:       form.preacher,
         youtube_url:    form.youtube_url,
@@ -170,14 +171,16 @@ export default function SermonsCP() {
         transcript:     form.transcript || null,
       };
 
-      let err;
-      if (editing) {
-        ({ error: err } = await (supabase.from('sermons') as any).update(payload).eq('id', editing.id));
-      } else {
-        ({ error: err } = await (supabase.from('sermons') as any).insert(payload));
-      }
+      if (editing) payload.id = editing.id;
 
-      if (err) { setError(err.message); setSaving(false); return; }
+      const res = await fetch('/api/control-panel/sermons', {
+        method:  editing ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
+        body:    JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!res.ok) { setError(data.error || 'Failed to save sermon'); setSaving(false); return; }
+
       setSaving(false);
       setSaved(true);
       setTimeout(() => { setSaved(false); setShowForm(false); loadData(); }, 1500);
@@ -190,7 +193,11 @@ export default function SermonsCP() {
   async function handleDelete(id: string) {
     if (!confirm('Delete this sermon? This cannot be undone.')) return;
     setDeleting(id);
-    await (supabase.from('sermons') as any).delete().eq('id', id);
+    const { data: { session } } = await supabase.auth.getSession();
+    await fetch(`/api/control-panel/sermons?id=${id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${session?.access_token}` },
+    });
     setDeleting(null);
     loadData();
   }
