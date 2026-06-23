@@ -132,7 +132,7 @@ export default function MemberDetailPage() {
     <AdminLayout title={`${member.first_name} ${member.last_name}`}>
       {/* Header */}
       <div className="mb-6">
-        <Link href="/admin/members" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 mb-4">
+        <Link href="/admin/members" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-white/70 mb-4">
           <ArrowLeft className="w-4 h-4" />Back to Members
         </Link>
 
@@ -142,7 +142,7 @@ export default function MemberDetailPage() {
               {member.first_name[0]}{member.last_name[0]}
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+              <h1 className="text-2xl font-bold text-white">
                 {member.first_name} {member.last_name}
               </h1>
               <div className="flex items-center gap-3 mt-1">
@@ -150,7 +150,7 @@ export default function MemberDetailPage() {
                 <span className={`px-2 py-0.5 text-xs font-semibold rounded-full capitalize ${
                   member.role === 'pastor' ? 'bg-[#BF0A30] text-white' :
                   member.role === 'leader' ? 'bg-blue-100 text-blue-800' :
-                  'bg-gray-100 text-gray-700'
+                  'bg-white/5 text-gray-700'
                 }`}>{member.role}</span>
                 <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-green-100 text-green-800">
                   {member.status}
@@ -171,47 +171,47 @@ export default function MemberDetailPage() {
         {/* Main Info */}
         <div className="lg:col-span-2 space-y-6">
           {/* Contact */}
-          <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-6">
-            <h2 className="font-semibold text-gray-900 dark:text-white mb-4">Contact Information</h2>
+          <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-6">
+            <h2 className="font-semibold text-white mb-4">Contact Information</h2>
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-[#252525] flex items-center justify-center">
+                <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center">
                   <Phone className="w-5 h-5 text-gray-500" />
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Phone</p>
-                  <p className="font-medium text-gray-900 dark:text-white">{member.phone || '—'}</p>
+                  <p className="font-medium text-white">{member.phone || '—'}</p>
                 </div>
               </div>
               {member.email && (
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-[#252525] flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center">
                     <Mail className="w-5 h-5 text-gray-500" />
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">Email</p>
-                    <p className="font-medium text-gray-900 dark:text-white">{member.email}</p>
+                    <p className="font-medium text-white">{member.email}</p>
                   </div>
                 </div>
               )}
               {member.address && (
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-[#252525] flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center">
                     <MapPin className="w-5 h-5 text-gray-500" />
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">Address</p>
-                    <p className="font-medium text-gray-900 dark:text-white">{member.address}</p>
+                    <p className="font-medium text-white">{member.address}</p>
                   </div>
                 </div>
               )}
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-[#252525] flex items-center justify-center">
+                <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center">
                   <Calendar className="w-5 h-5 text-gray-500" />
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Member Since</p>
-                  <p className="font-medium text-gray-900 dark:text-white">
+                  <p className="font-medium text-white">
                     {member.member_since
                       ? new Date(member.member_since).toLocaleDateString()
                       : new Date(member.created_at).toLocaleDateString()}
@@ -222,8 +222,8 @@ export default function MemberDetailPage() {
           </div>
 
           {/* Personal Details */}
-          <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-6">
-            <h2 className="font-semibold text-gray-900 dark:text-white mb-4">Personal Details</h2>
+          <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-6">
+            <h2 className="font-semibold text-white mb-4">Personal Details</h2>
             <div className="grid sm:grid-cols-2 gap-4 text-sm">
               {member.gender && (
                 <div><span className="text-gray-500">Gender:</span> <span className="font-medium capitalize ml-1">{member.gender}</span></div>
@@ -243,18 +243,18 @@ export default function MemberDetailPage() {
           </div>
 
           {/* Departments */}
-          <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-6">
-            <h2 className="font-semibold text-gray-900 dark:text-white mb-4">Departments</h2>
+          <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-6">
+            <h2 className="font-semibold text-white mb-4">Departments</h2>
             {deptMemberships.length > 0 ? (
               <div className="space-y-3">
                 {deptMemberships.map((d, i) => (
-                  <div key={i} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-[#252525] rounded-lg">
+                  <div key={i} className="flex items-center justify-between p-3 bg-white/[0.04] rounded-lg">
                     <div>
-                      <p className="font-medium text-gray-900 dark:text-white">{d.departments?.name ?? 'Unknown'}</p>
+                      <p className="font-medium text-white">{d.departments?.name ?? 'Unknown'}</p>
                       <p className="text-sm text-gray-500">Joined {new Date(d.joined_date).toLocaleDateString()}</p>
                     </div>
                     <span className={`px-2 py-0.5 text-xs font-semibold rounded-full capitalize ${
-                      d.role === 'leader' ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-700'
+                      d.role === 'leader' ? 'bg-amber-100 text-amber-800' : 'bg-white/5 text-gray-700'
                     }`}>{d.role}</span>
                   </div>
                 ))}
@@ -268,20 +268,20 @@ export default function MemberDetailPage() {
         {/* Sidebar */}
         <div className="space-y-6">
           {/* Crosspoint */}
-          <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-6">
-            <h2 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+          <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-6">
+            <h2 className="font-semibold text-white mb-4 flex items-center gap-2">
               <Users className="w-5 h-5" />Crosspoint
             </h2>
             {crosspoint ? (
               <div>
-                <p className="font-medium text-gray-900 dark:text-white">{crosspoint.name}</p>
+                <p className="font-medium text-white">{crosspoint.name}</p>
                 <p className="text-sm text-gray-500">{crosspoint.area}</p>
                 {crosspoint.meeting_day && crosspoint.meeting_time && (
                   <p className="text-sm text-gray-500 mt-1">{crosspoint.meeting_day}s at {crosspoint.meeting_time}</p>
                 )}
-                <div className="mt-3 pt-3 border-t border-gray-100 dark:border-[#2D2D2D]">
+                <div className="mt-3 pt-3 border-t border-white/[0.04]">
                   <span className={`px-2 py-0.5 text-xs font-semibold rounded-full capitalize ${
-                    cpMembership?.role === 'leader' ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-700'
+                    cpMembership?.role === 'leader' ? 'bg-amber-100 text-amber-800' : 'bg-white/5 text-gray-700'
                   }`}>{cpMembership?.role}</span>
                 </div>
               </div>
@@ -291,8 +291,8 @@ export default function MemberDetailPage() {
           </div>
 
           {/* Connect Class */}
-          <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-6">
-            <h2 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+          <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-6">
+            <h2 className="font-semibold text-white mb-4 flex items-center gap-2">
               <Award className="w-5 h-5" />Connect Class
             </h2>
             {member.connect_graduated_at ? (
@@ -316,8 +316,8 @@ export default function MemberDetailPage() {
           </div>
 
           {/* Discipleship */}
-          <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-6">
-            <h2 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+          <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-6">
+            <h2 className="font-semibold text-white mb-4 flex items-center gap-2">
               <GraduationCap className="w-5 h-5" />Discipleship
             </h2>
             {discStudents.length > 0 ? (
@@ -359,8 +359,8 @@ export default function MemberDetailPage() {
           </div>
 
           {/* Activity */}
-          <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-6">
-            <h2 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+          <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-6">
+            <h2 className="font-semibold text-white mb-4 flex items-center gap-2">
               <Clock className="w-5 h-5" />Activity
             </h2>
             <div className="text-sm space-y-2">

@@ -169,18 +169,18 @@ export default function NewExamPage() {
   return (
     <ConnectLayout title="Create Exam">
       <Link href={cohortParam ? `/connect/cohorts/${cohortParam}` : '/connect/exams'}
-        className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 mb-5 transition-colors">
+        className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-white/70 dark:hover:text-gray-300 mb-5 transition-colors">
         <ArrowLeft className="w-4 h-4" /> Back
       </Link>
 
       <div className="flex items-center justify-between mb-5">
         <div>
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white" style={H}>Create Exam</h1>
+          <h1 className="text-xl font-bold text-white" style={H}>Create Exam</h1>
           <p className="text-sm text-gray-500 mt-0.5">{totalMarks} total marks · {questions.length} question{questions.length !== 1 ? 's' : ''}</p>
         </div>
         <div className="flex gap-2">
           <button onClick={() => handleSave('draft')} disabled={!title.trim() || saving}
-            className="flex items-center gap-1.5 px-4 py-2.5 border border-gray-200 dark:border-white/[0.06] rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 disabled:opacity-40 hover:border-gray-300 transition-colors">
+            className="flex items-center gap-1.5 px-4 py-2.5 border border-white/[0.06] rounded-xl text-sm font-medium text-white/50 disabled:opacity-40 hover:border-white/10 transition-colors">
             <Save className="w-4 h-4" /> Save Draft
           </button>
           <button onClick={() => handleSave('published')} disabled={!isValid || saving}
@@ -201,18 +201,18 @@ export default function NewExamPage() {
         {/* ── Questions ── */}
         <div className="lg:col-span-2 space-y-4">
           {questions.map((q, idx) => (
-            <div key={q.id} className="bg-white dark:bg-[#141414] rounded-2xl border border-gray-200/70 dark:border-white/[0.05] shadow-sm overflow-hidden">
+            <div key={q.id} className="bg-[#12151C] rounded-2xl border border-white/[0.06]/70 shadow-sm overflow-hidden">
 
               {/* Header */}
-              <div className="flex items-center gap-3 px-5 py-3 border-b border-gray-100 dark:border-white/[0.04] bg-gray-50 dark:bg-[#1A1A1A]">
+              <div className="flex items-center gap-3 px-5 py-3 border-b border-white/[0.04] bg-gray-50">
                 <span className="w-6 h-6 rounded-lg bg-[#BF0A30] text-white text-xs font-bold flex items-center justify-center flex-shrink-0" style={H}>
                   {idx + 1}
                 </span>
-                <p className="flex-1 text-sm font-medium text-gray-700 dark:text-gray-300 truncate">
+                <p className="flex-1 text-sm font-medium text-white/70 truncate">
                   {q.question.trim() || 'Question text...'}
                 </p>
                 <div className="flex items-center gap-1">
-                  <button onClick={() => toggleExpand(q.id)} className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg">
+                  <button onClick={() => toggleExpand(q.id)} className="p-1.5 text-gray-400 hover:text-white/50 dark:hover:text-gray-300 rounded-lg">
                     {q.expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                   </button>
                   {questions.length > 1 && (
@@ -228,14 +228,14 @@ export default function NewExamPage() {
                   {/* Type + marks */}
                   <div className="flex gap-3">
                     <div className="flex-1">
-                      <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">Type</label>
+                      <label className="block text-xs font-medium text-white/50 mb-1.5">Type</label>
                       <div className="flex gap-2">
                         {(['single', 'multi', 'true-false'] as QType[]).map(t => (
                           <button key={t} onClick={() => changeType(q.id, t)}
                             className={`flex-1 py-2 rounded-xl border-2 text-xs font-medium transition-colors ${
                               q.questionType === t
                                 ? 'border-[#BF0A30] bg-[#BF0A30]/5 text-[#BF0A30]'
-                                : 'border-gray-200 dark:border-white/[0.06] text-gray-500'
+                                : 'border-white/[0.06] text-gray-500'
                             }`}>
                             {t === 'single' ? 'Single' : t === 'multi' ? 'Multi-select' : 'True/False'}
                           </button>
@@ -246,26 +246,26 @@ export default function NewExamPage() {
                       )}
                     </div>
                     <div className="w-24">
-                      <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">Marks</label>
+                      <label className="block text-xs font-medium text-white/50 mb-1.5">Marks</label>
                       <input type="number" min={1} max={20} value={q.marks}
                         onChange={e => updateQ(q.id, { marks: Math.max(1, parseInt(e.target.value) || 1) })}
-                        className="w-full px-3 py-2 border border-gray-200 dark:border-white/[0.06] rounded-xl bg-gray-50 dark:bg-[#1A1A1A] text-sm text-gray-900 dark:text-white text-center focus:outline-none focus:border-[#BF0A30]"
+                        className="w-full px-3 py-2 border border-white/[0.06] rounded-xl bg-[#0A0C10] text-sm text-white text-center focus:outline-none focus:border-[#BF0A30]"
                       />
                     </div>
                   </div>
 
                   {/* Question text */}
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">Question *</label>
+                    <label className="block text-xs font-medium text-white/50 mb-1.5">Question *</label>
                     <textarea value={q.question} onChange={e => updateQ(q.id, { question: e.target.value })}
                       rows={2} placeholder="Type the question..."
-                      className="w-full px-4 py-2.5 border border-gray-200 dark:border-white/[0.06] rounded-xl bg-gray-50 dark:bg-[#1A1A1A] text-sm text-gray-900 dark:text-white resize-none focus:outline-none focus:border-[#BF0A30] placeholder:text-gray-400"
+                      className="w-full px-4 py-2.5 border border-white/[0.06] rounded-xl bg-[#0A0C10] text-sm text-white resize-none focus:outline-none focus:border-[#BF0A30] placeholder:text-gray-400"
                     />
                   </div>
 
                   {/* Options */}
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">
+                    <label className="block text-xs font-medium text-white/50 mb-1.5">
                       Options — {q.questionType === 'multi' ? 'check all correct answers' : 'select the correct one'}
                     </label>
                     <div className="space-y-2">
@@ -277,8 +277,8 @@ export default function NewExamPage() {
                               title={q.questionType === 'multi' ? 'Toggle correct' : 'Mark as correct'}
                               className={`flex-shrink-0 flex items-center justify-center transition-colors ${
                                 q.questionType === 'multi'
-                                  ? `w-5 h-5 rounded border-2 ${isCorrect ? 'border-green-500 bg-green-500' : 'border-gray-300 dark:border-gray-600 hover:border-green-400'}`
-                                  : `w-5 h-5 rounded-full border-2 ${isCorrect ? 'border-green-500 bg-green-500' : 'border-gray-300 dark:border-gray-600 hover:border-green-400'}`
+                                  ? `w-5 h-5 rounded border-2 ${isCorrect ? 'border-green-500 bg-green-500' : 'border-white/10 dark:border-gray-600 hover:border-green-400'}`
+                                  : `w-5 h-5 rounded-full border-2 ${isCorrect ? 'border-green-500 bg-green-500' : 'border-white/10 dark:border-gray-600 hover:border-green-400'}`
                               }`}>
                               {isCorrect && (
                                 <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 12 12">
@@ -289,13 +289,13 @@ export default function NewExamPage() {
                               )}
                             </button>
                             {q.questionType === 'true-false' ? (
-                              <span className="flex-1 px-3 py-2 bg-gray-50 dark:bg-[#1A1A1A] border border-gray-200 dark:border-white/[0.06] rounded-xl text-sm text-gray-600 dark:text-gray-400">
+                              <span className="flex-1 px-3 py-2 bg-[#0A0C10] border border-white/[0.06] rounded-xl text-sm text-white/50">
                                 {opt}
                               </span>
                             ) : (
                               <input value={opt} onChange={e => setOption(q.id, i, e.target.value)}
                                 placeholder={`Option ${String.fromCharCode(65 + i)}`}
-                                className="flex-1 px-3 py-2 border border-gray-200 dark:border-white/[0.06] rounded-xl bg-gray-50 dark:bg-[#1A1A1A] text-sm text-gray-900 dark:text-white focus:outline-none focus:border-[#BF0A30] placeholder:text-gray-400"
+                                className="flex-1 px-3 py-2 border border-white/[0.06] rounded-xl bg-[#0A0C10] text-sm text-white focus:outline-none focus:border-[#BF0A30] placeholder:text-gray-400"
                               />
                             )}
                           </div>
@@ -314,36 +314,36 @@ export default function NewExamPage() {
           ))}
 
           <button onClick={addQ}
-            className="flex items-center justify-center gap-2 w-full py-3.5 border-2 border-dashed border-gray-300 dark:border-[#2D2D2D] rounded-2xl text-sm text-gray-500 hover:border-[#BF0A30] hover:text-[#BF0A30] transition-colors">
+            className="flex items-center justify-center gap-2 w-full py-3.5 border-2 border-dashed border-white/10 dark:border-[#2D2D2D] rounded-2xl text-sm text-gray-500 hover:border-[#BF0A30] hover:text-[#BF0A30] transition-colors">
             <Plus className="w-4 h-4" /> Add Question
           </button>
         </div>
 
         {/* ── Settings ── */}
         <div className="space-y-4">
-          <div className="bg-white dark:bg-[#141414] rounded-2xl border border-gray-200/70 dark:border-white/[0.05] p-5 shadow-sm">
-            <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-4" style={H}>Exam Details</h3>
+          <div className="bg-[#12151C] rounded-2xl border border-white/[0.06]/70 p-5 shadow-sm">
+            <h3 className="text-sm font-semibold text-white mb-4" style={H}>Exam Details</h3>
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">Title *</label>
+                <label className="block text-xs font-medium text-white/50 mb-1.5">Title *</label>
                 <input value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. Session 2 Quiz"
-                  className="w-full px-4 py-2.5 border border-gray-200 dark:border-white/[0.06] rounded-xl bg-gray-50 dark:bg-[#1A1A1A] text-sm text-gray-900 dark:text-white focus:outline-none focus:border-[#BF0A30] placeholder:text-gray-400"
+                  className="w-full px-4 py-2.5 border border-white/[0.06] rounded-xl bg-[#0A0C10] text-sm text-white focus:outline-none focus:border-[#BF0A30] placeholder:text-gray-400"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">Description</label>
+                <label className="block text-xs font-medium text-white/50 mb-1.5">Description</label>
                 <textarea value={description} onChange={e => setDescription(e.target.value)}
                   rows={2} placeholder="Optional description..."
-                  className="w-full px-4 py-2.5 border border-gray-200 dark:border-white/[0.06] rounded-xl bg-gray-50 dark:bg-[#1A1A1A] text-sm text-gray-900 dark:text-white resize-none focus:outline-none focus:border-[#BF0A30] placeholder:text-gray-400"
+                  className="w-full px-4 py-2.5 border border-white/[0.06] rounded-xl bg-[#0A0C10] text-sm text-white resize-none focus:outline-none focus:border-[#BF0A30] placeholder:text-gray-400"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">Cohort *</label>
+                <label className="block text-xs font-medium text-white/50 mb-1.5">Cohort *</label>
                 {loadingCohorts ? (
-                  <div className="h-10 rounded-xl bg-gray-100 dark:bg-[#1A1A1A] animate-pulse" />
+                  <div className="h-10 rounded-xl bg-white/5 animate-pulse" />
                 ) : (
                   <select value={cohortId} onChange={e => { setCohortId(e.target.value); setSessionId(''); }}
-                    className="w-full px-4 py-2.5 border border-gray-200 dark:border-white/[0.06] rounded-xl bg-gray-50 dark:bg-[#1A1A1A] text-sm text-gray-900 dark:text-white focus:outline-none focus:border-[#BF0A30]">
+                    className="w-full px-4 py-2.5 border border-white/[0.06] rounded-xl bg-[#0A0C10] text-sm text-white focus:outline-none focus:border-[#BF0A30]">
                     {cohorts.length === 0 && <option value="">No cohorts found</option>}
                     {cohorts.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                   </select>
@@ -351,57 +351,57 @@ export default function NewExamPage() {
               </div>
               {sessions.length > 0 && (
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">Linked Session (optional)</label>
+                  <label className="block text-xs font-medium text-white/50 mb-1.5">Linked Session (optional)</label>
                   <select value={sessionId} onChange={e => setSessionId(e.target.value)}
-                    className="w-full px-4 py-2.5 border border-gray-200 dark:border-white/[0.06] rounded-xl bg-gray-50 dark:bg-[#1A1A1A] text-sm text-gray-900 dark:text-white focus:outline-none focus:border-[#BF0A30]">
+                    className="w-full px-4 py-2.5 border border-white/[0.06] rounded-xl bg-[#0A0C10] text-sm text-white focus:outline-none focus:border-[#BF0A30]">
                     <option value="">— No session link —</option>
                     {sessions.map(s => <option key={s.id} value={s.id}>{s.title}</option>)}
                   </select>
                 </div>
               )}
               <div>
-                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">Duration (minutes)</label>
+                <label className="block text-xs font-medium text-white/50 mb-1.5">Duration (minutes)</label>
                 <input type="number" min={5} max={180} value={durationMin}
                   onChange={e => setDurationMin(Math.max(5, parseInt(e.target.value) || 30))}
-                  className="w-full px-4 py-2.5 border border-gray-200 dark:border-white/[0.06] rounded-xl bg-gray-50 dark:bg-[#1A1A1A] text-sm text-gray-900 dark:text-white focus:outline-none focus:border-[#BF0A30]"
+                  className="w-full px-4 py-2.5 border border-white/[0.06] rounded-xl bg-[#0A0C10] text-sm text-white focus:outline-none focus:border-[#BF0A30]"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">Pass Requirement (%)</label>
+                <label className="block text-xs font-medium text-white/50 mb-1.5">Pass Requirement (%)</label>
                 <div className="flex items-center gap-3">
                   <input type="range" min={50} max={100} step={5} value={passingPct}
                     onChange={e => setPassingPct(parseInt(e.target.value))}
                     className="flex-1 accent-[#BF0A30]"
                   />
-                  <span className="text-sm font-bold text-gray-700 dark:text-gray-300 w-10 text-right">{passingPct}%</span>
+                  <span className="text-sm font-bold text-white/70 w-10 text-right">{passingPct}%</span>
                 </div>
                 <p className="text-xs text-gray-400 mt-1">= {passMark}/{totalMarks} marks</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white dark:bg-[#141414] rounded-2xl border border-gray-200/70 dark:border-white/[0.05] p-5 shadow-sm">
-            <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-4" style={H}>Availability Window</h3>
+          <div className="bg-[#12151C] rounded-2xl border border-white/[0.06]/70 p-5 shadow-sm">
+            <h3 className="text-sm font-semibold text-white mb-4" style={H}>Availability Window</h3>
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">Opens</label>
+                <label className="block text-xs font-medium text-white/50 mb-1.5">Opens</label>
                 <input type="datetime-local" value={availableFrom} onChange={e => setAvailableFrom(e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-200 dark:border-white/[0.06] rounded-xl bg-gray-50 dark:bg-[#1A1A1A] text-sm text-gray-900 dark:text-white focus:outline-none focus:border-[#BF0A30]"
+                  className="w-full px-4 py-2.5 border border-white/[0.06] rounded-xl bg-[#0A0C10] text-sm text-white focus:outline-none focus:border-[#BF0A30]"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">Closes</label>
+                <label className="block text-xs font-medium text-white/50 mb-1.5">Closes</label>
                 <input type="datetime-local" value={availableUntil} onChange={e => setAvailableUntil(e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-200 dark:border-white/[0.06] rounded-xl bg-gray-50 dark:bg-[#1A1A1A] text-sm text-gray-900 dark:text-white focus:outline-none focus:border-[#BF0A30]"
+                  className="w-full px-4 py-2.5 border border-white/[0.06] rounded-xl bg-[#0A0C10] text-sm text-white focus:outline-none focus:border-[#BF0A30]"
                 />
               </div>
             </div>
           </div>
 
-          <div className="bg-gray-50 dark:bg-[#1A1A1A] rounded-2xl border border-gray-200/70 dark:border-white/[0.05] p-4">
+          <div className="bg-[#0A0C10] rounded-2xl border border-white/[0.06]/70 p-4">
             <div className="flex items-center gap-2 mb-3">
               <BookOpen className="w-4 h-4 text-gray-500" />
-              <p className="text-sm font-semibold text-gray-700 dark:text-gray-300" style={H}>Summary</p>
+              <p className="text-sm font-semibold text-white/70" style={H}>Summary</p>
             </div>
             <div className="space-y-1.5 text-xs text-gray-500">
               {[
@@ -413,7 +413,7 @@ export default function NewExamPage() {
               ].map(([k, v]) => (
                 <div key={String(k)} className="flex justify-between">
                   <span>{k}</span>
-                  <span className="font-medium text-gray-700 dark:text-gray-300">{v}</span>
+                  <span className="font-medium text-white/70">{v}</span>
                 </div>
               ))}
             </div>
@@ -425,7 +425,7 @@ export default function NewExamPage() {
               {saving ? <><Clock className="w-4 h-4 animate-spin" /> Saving...</> : <><Send className="w-4 h-4" /> Publish Exam</>}
             </button>
             <button onClick={() => handleSave('draft')} disabled={!title.trim() || saving}
-              className="w-full py-2.5 border border-gray-200 dark:border-white/[0.06] rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 disabled:opacity-40 hover:border-gray-300 transition-colors flex items-center justify-center gap-2">
+              className="w-full py-2.5 border border-white/[0.06] rounded-xl text-sm font-medium text-white/50 disabled:opacity-40 hover:border-white/10 transition-colors flex items-center justify-center gap-2">
               <Save className="w-4 h-4" /> Save as Draft
             </button>
           </div>

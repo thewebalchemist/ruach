@@ -79,10 +79,10 @@ export default function CrosspointsPage() {
       <PageHeader title="Crosspoints" subtitle={`${crosspoints.length} home churches`}
         actions={<Link href="/admin/crosspoints/new" className="flex items-center gap-2 px-3 py-2 text-sm font-medium bg-[#BF0A30] text-white rounded-lg"><Plus className="w-4 h-4" />Create</Link>} />
 
-      <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-4 mb-6">
+      <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-4 mb-6">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input type="text" placeholder="Search..." className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg" value={search} onChange={(e) => setSearch(e.target.value)} />
+          <input type="text" placeholder="Search..." className="w-full pl-10 pr-4 py-2.5 text-sm border border-white/10 dark:border-[#2D2D2D] rounded-lg" value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
       </div>
 
@@ -95,15 +95,15 @@ export default function CrosspointsPage() {
           {filtered.map((cp) => {
             const leader = cp.leader_id ? leaders[cp.leader_id] : null;
             return (
-              <div key={cp.id} className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-5">
+              <div key={cp.id} className="bg-[#12151C] rounded-xl border border-white/[0.06] p-5">
                 <div className="flex justify-between mb-3">
                   <div><h3 className="font-semibold">{cp.name}</h3><p className="text-sm text-gray-500 flex items-center gap-1"><MapPin className="w-3 h-3" />{cp.area}</p></div>
                   <span className={`h-fit px-2 py-0.5 text-xs font-medium rounded-full ${cp.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'}`}>{cp.status}</span>
                 </div>
-                <p className="text-sm text-gray-600 mb-2">{cp.member_count}/{cp.max_members} members</p>
+                <p className="text-sm text-white/50 mb-2">{cp.member_count}/{cp.max_members} members</p>
                 <p className="text-sm text-gray-500 flex items-center gap-1 mb-4"><Calendar className="w-3 h-3" />{cp.meeting_day}s {cp.meeting_time}</p>
                 {leader && <p className="text-sm text-gray-500 mb-4">Leader: {leader.first_name} {leader.last_name}</p>}
-                <Link href={`/admin/crosspoints/${cp.id}`} className="block w-full text-center px-3 py-2 text-sm font-medium border border-gray-300 rounded-lg hover:bg-gray-50">View Details</Link>
+                <Link href={`/admin/crosspoints/${cp.id}`} className="block w-full text-center px-3 py-2 text-sm font-medium border border-white/10 rounded-lg hover:bg-gray-50">View Details</Link>
               </div>
             );
           })}

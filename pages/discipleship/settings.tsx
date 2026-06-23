@@ -59,7 +59,7 @@ export default function DiscipleshipSettingsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white">Discipleship Settings</h1>
+          <h1 className="text-xl font-bold text-white">Discipleship Settings</h1>
           <p className="text-gray-500">Configure the KDC program requirements and calendar</p>
         </div>
         <button
@@ -78,37 +78,37 @@ export default function DiscipleshipSettingsPage() {
 
       <div className="space-y-6">
         {/* Program Info */}
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-5">
+        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-5">
           <div className="flex items-center gap-2 mb-4">
             <BookOpen className="w-5 h-5 text-[#BF0A30]" />
-            <h2 className="font-semibold text-gray-900 dark:text-white">Program Information</h2>
+            <h2 className="font-semibold text-white">Program Information</h2>
           </div>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Program Name</label>
+              <label className="block text-sm font-medium text-white/70 mb-1">Program Name</label>
               <input
                 type="text"
-                className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg bg-transparent text-gray-900 dark:text-white focus:outline-none focus:border-[#BF0A30]"
+                className="w-full px-4 py-2.5 text-sm border border-white/10 dark:border-[#2D2D2D] rounded-lg bg-transparent text-white focus:outline-none focus:border-[#BF0A30]"
                 value={settings.programName}
                 onChange={e => setSettings(s => ({ ...s, programName: e.target.value }))}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
+              <label className="block text-sm font-medium text-white/70 mb-1">Description</label>
               <textarea
                 rows={3}
-                className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg bg-transparent text-gray-900 dark:text-white focus:outline-none focus:border-[#BF0A30] resize-none"
+                className="w-full px-4 py-2.5 text-sm border border-white/10 dark:border-[#2D2D2D] rounded-lg bg-transparent text-white focus:outline-none focus:border-[#BF0A30] resize-none"
                 value={settings.programDescription}
                 onChange={e => setSettings(s => ({ ...s, programDescription: e.target.value }))}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Default Max Capacity per Cohort</label>
+              <label className="block text-sm font-medium text-white/70 mb-1">Default Max Capacity per Cohort</label>
               <input
                 type="number"
                 min={5}
                 max={200}
-                className="w-full sm:w-48 px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg bg-transparent text-gray-900 dark:text-white focus:outline-none focus:border-[#BF0A30]"
+                className="w-full sm:w-48 px-4 py-2.5 text-sm border border-white/10 dark:border-[#2D2D2D] rounded-lg bg-transparent text-white focus:outline-none focus:border-[#BF0A30]"
                 value={settings.maxCapacityPerCohort}
                 onChange={e => setSettings(s => ({ ...s, maxCapacityPerCohort: Number(e.target.value) }))}
               />
@@ -117,26 +117,26 @@ export default function DiscipleshipSettingsPage() {
         </div>
 
         {/* Academic Calendar */}
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-5">
+        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-5">
           <div className="flex items-center gap-2 mb-4">
             <Calendar className="w-5 h-5 text-[#BF0A30]" />
-            <h2 className="font-semibold text-gray-900 dark:text-white">Academic Calendar</h2>
+            <h2 className="font-semibold text-white">Academic Calendar</h2>
           </div>
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Academic Year Start</label>
+              <label className="block text-sm font-medium text-white/70 mb-1">Academic Year Start</label>
               <input
                 type="date"
-                className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg bg-transparent text-gray-900 dark:text-white focus:outline-none focus:border-[#BF0A30]"
+                className="w-full px-4 py-2.5 text-sm border border-white/10 dark:border-[#2D2D2D] rounded-lg bg-transparent text-white focus:outline-none focus:border-[#BF0A30]"
                 value={settings.academicYearStart}
                 onChange={e => setSettings(s => ({ ...s, academicYearStart: e.target.value }))}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Academic Year End</label>
+              <label className="block text-sm font-medium text-white/70 mb-1">Academic Year End</label>
               <input
                 type="date"
-                className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg bg-transparent text-gray-900 dark:text-white focus:outline-none focus:border-[#BF0A30]"
+                className="w-full px-4 py-2.5 text-sm border border-white/10 dark:border-[#2D2D2D] rounded-lg bg-transparent text-white focus:outline-none focus:border-[#BF0A30]"
                 value={settings.academicYearEnd}
                 onChange={e => setSettings(s => ({ ...s, academicYearEnd: e.target.value }))}
               />
@@ -145,24 +145,24 @@ export default function DiscipleshipSettingsPage() {
         </div>
 
         {/* Pass Requirements per Level */}
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-5">
+        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-5">
           <div className="flex items-center gap-2 mb-1">
             <Shield className="w-5 h-5 text-[#BF0A30]" />
-            <h2 className="font-semibold text-gray-900 dark:text-white">Pass Requirements</h2>
+            <h2 className="font-semibold text-white">Pass Requirements</h2>
           </div>
           <p className="text-sm text-gray-500 mb-4">Set minimum thresholds students must meet to pass each level.</p>
           <div className="space-y-4">
             {settings.levelRequirements.map(req => (
-              <div key={req.level} className="p-4 bg-gray-50 dark:bg-[#252525] rounded-xl">
+              <div key={req.level} className="p-4 bg-white/[0.04] rounded-xl">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-10 h-10 rounded-lg bg-[#BF0A30] text-white flex items-center justify-center font-bold">
                     L{req.level}
                   </div>
-                  <p className="font-medium text-gray-900 dark:text-white">Level {req.level}</p>
+                  <p className="font-medium text-white">Level {req.level}</p>
                 </div>
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label className="block text-sm font-medium text-white/70 mb-1">
                       Minimum Attendance
                     </label>
                     <div className="flex items-center gap-2">
@@ -175,13 +175,13 @@ export default function DiscipleshipSettingsPage() {
                         value={req.minAttendancePercent}
                         onChange={e => updateLevelReq(req.level, 'minAttendancePercent', Number(e.target.value))}
                       />
-                      <span className="w-12 text-center font-semibold text-gray-900 dark:text-white text-sm">
+                      <span className="w-12 text-center font-semibold text-white text-sm">
                         {req.minAttendancePercent}%
                       </span>
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label className="block text-sm font-medium text-white/70 mb-1">
                       Minimum Exam Score
                     </label>
                     <div className="flex items-center gap-2">
@@ -194,7 +194,7 @@ export default function DiscipleshipSettingsPage() {
                         value={req.minExamScore}
                         onChange={e => updateLevelReq(req.level, 'minExamScore', Number(e.target.value))}
                       />
-                      <span className="w-12 text-center font-semibold text-gray-900 dark:text-white text-sm">
+                      <span className="w-12 text-center font-semibold text-white text-sm">
                         {req.minExamScore}%
                       </span>
                     </div>
@@ -206,33 +206,33 @@ export default function DiscipleshipSettingsPage() {
         </div>
 
         {/* Notifications */}
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-5">
-          <h2 className="font-semibold text-gray-900 dark:text-white mb-4">Notifications</h2>
+        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-5">
+          <h2 className="font-semibold text-white mb-4">Notifications</h2>
           <div className="space-y-4">
             <label className="flex items-center justify-between gap-4 cursor-pointer">
               <div>
-                <p className="text-sm font-medium text-gray-900 dark:text-white">Automatic session reminders</p>
+                <p className="text-sm font-medium text-white">Automatic session reminders</p>
                 <p className="text-xs text-gray-500 mt-0.5">Send reminders to students before each session</p>
               </div>
               <div
                 onClick={() => setSettings(s => ({ ...s, autoRemindersEnabled: !s.autoRemindersEnabled }))}
                 className={`w-12 h-6 rounded-full transition-colors flex items-center px-1 ${
-                  settings.autoRemindersEnabled ? 'bg-[#BF0A30]' : 'bg-gray-300 dark:bg-[#2D2D2D]'
+                  settings.autoRemindersEnabled ? 'bg-[#BF0A30]' : 'bg-gray-300'
                 }`}
               >
-                <div className={`w-4 h-4 bg-white rounded-full shadow transition-transform ${settings.autoRemindersEnabled ? 'translate-x-6' : 'translate-x-0'}`} />
+                <div className={`w-4 h-4 bg-[#12151C] rounded-full shadow transition-transform ${settings.autoRemindersEnabled ? 'translate-x-6' : 'translate-x-0'}`} />
               </div>
             </label>
             {settings.autoRemindersEnabled && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-sm font-medium text-white/70 mb-1">
                   Days before session to send reminder
                 </label>
                 <input
                   type="number"
                   min={1}
                   max={7}
-                  className="w-24 px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg bg-transparent text-gray-900 dark:text-white focus:outline-none focus:border-[#BF0A30]"
+                  className="w-24 px-4 py-2.5 text-sm border border-white/10 dark:border-[#2D2D2D] rounded-lg bg-transparent text-white focus:outline-none focus:border-[#BF0A30]"
                   value={settings.reminderDaysBefore}
                   onChange={e => setSettings(s => ({ ...s, reminderDaysBefore: Number(e.target.value) }))}
                 />

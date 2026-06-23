@@ -179,11 +179,11 @@ export default function CreateUserPage() {
           <div className="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle className="w-10 h-10 text-green-600" />
           </div>
-          <h1 className="text-2xl font-black text-gray-900 dark:text-white mb-2 tracking-tight">
+          <h1 className="text-2xl font-black text-white mb-2 tracking-tight">
             Account Created!
           </h1>
           <p className="text-gray-500 mb-1">
-            <strong className="text-gray-700 dark:text-gray-300">{form.firstName} {form.lastName}</strong> has been added as a <strong className="text-[#BF0A30]">{ROLE_CONFIG[form.role].label}</strong>
+            <strong className="text-white/70">{form.firstName} {form.lastName}</strong> has been added as a <strong className="text-[#BF0A30]">{ROLE_CONFIG[form.role].label}</strong>
           </p>
           {form.sendWelcome && (
             <p className="text-sm text-gray-500 mb-8">
@@ -192,16 +192,16 @@ export default function CreateUserPage() {
           )}
 
           {/* Credentials card */}
-          <div className="bg-gray-50 dark:bg-[#1A1A1A] border border-gray-200 dark:border-[#2D2D2D] rounded-xl p-5 mb-8 text-left">
+          <div className="bg-[#0A0C10] border border-white/[0.06] rounded-xl p-5 mb-8 text-left">
             <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Login Credentials</p>
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Email</span>
-                <span className="font-medium text-gray-900 dark:text-white">{credentials.email}</span>
+                <span className="font-medium text-white">{credentials.email}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Temp. Password</span>
-                <span className="font-mono text-gray-900 dark:text-white">{credentials.password}</span>
+                <span className="font-mono text-white">{credentials.password}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Role</span>
@@ -236,16 +236,16 @@ export default function CreateUserPage() {
         <div className="space-y-6">
 
           {/* Role selection */}
-          <div className="bg-white dark:bg-[#1A1A1A] rounded-2xl border border-gray-200 dark:border-[#2D2D2D] p-6">
+          <div className="bg-[#12151C] rounded-2xl border border-white/[0.06] p-6">
             <h2 className="section-title mb-1">User Role</h2>
             <p className="text-sm text-gray-500 mb-4">Select the appropriate role — this determines what the user can access</p>
             <div className="grid grid-cols-2 gap-3">
               {(Object.entries(ROLE_CONFIG) as [UserRole, typeof ROLE_CONFIG[UserRole]][]).map(([key, cfg]) => (
                 <button key={key} onClick={() => update('role', key)}
                   className={`p-4 text-left border-2 rounded-xl transition-all ${
-                    form.role === key ? cfg.bg + ' border-current ' + cfg.color : 'border-gray-200 dark:border-[#2D2D2D] hover:border-gray-300 dark:hover:border-[#3D3D3D]'
+                    form.role === key ? cfg.bg + ' border-current ' + cfg.color : 'border-white/[0.06] hover:border-white/10 dark:hover:border-[#3D3D3D]'
                   }`}>
-                  <p className={`font-bold text-sm mb-1 ${form.role === key ? cfg.color : 'text-gray-900 dark:text-white'}`}>{cfg.label}</p>
+                  <p className={`font-bold text-sm mb-1 ${form.role === key ? cfg.color : 'text-white'}`}>{cfg.label}</p>
                   <p className="text-xs text-gray-500 leading-relaxed">{cfg.description}</p>
                 </button>
               ))}
@@ -253,7 +253,7 @@ export default function CreateUserPage() {
           </div>
 
           {/* Personal details */}
-          <div className="bg-white dark:bg-[#1A1A1A] rounded-2xl border border-gray-200 dark:border-[#2D2D2D] p-6">
+          <div className="bg-[#12151C] rounded-2xl border border-white/[0.06] p-6">
             <h2 className="section-title mb-4">Personal Details</h2>
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="form-group">
@@ -284,7 +284,7 @@ export default function CreateUserPage() {
           </div>
 
           {/* Contact details */}
-          <div className="bg-white dark:bg-[#1A1A1A] rounded-2xl border border-gray-200 dark:border-[#2D2D2D] p-6">
+          <div className="bg-[#12151C] rounded-2xl border border-white/[0.06] p-6">
             <h2 className="section-title mb-4">Contact & Login</h2>
             <p className="text-sm text-gray-500 mb-4">A secure password will be generated automatically by the server</p>
             <div className="grid sm:grid-cols-2 gap-4">
@@ -307,7 +307,7 @@ export default function CreateUserPage() {
           </div>
 
           {/* Church details */}
-          <div className="bg-white dark:bg-[#1A1A1A] rounded-2xl border border-gray-200 dark:border-[#2D2D2D] p-6">
+          <div className="bg-[#12151C] rounded-2xl border border-white/[0.06] p-6">
             <h2 className="section-title mb-4">Church Details</h2>
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="form-group">
@@ -342,10 +342,10 @@ export default function CreateUserPage() {
           </div>
 
           {/* Welcome email toggle */}
-          <div className="bg-white dark:bg-[#1A1A1A] rounded-2xl border border-gray-200 dark:border-[#2D2D2D] p-5">
+          <div className="bg-[#12151C] rounded-2xl border border-white/[0.06] p-5">
             <label className="flex items-center justify-between cursor-pointer">
               <div>
-                <p className="font-semibold text-gray-900 dark:text-white text-sm">Send Welcome Email</p>
+                <p className="font-semibold text-white text-sm">Send Welcome Email</p>
                 <p className="text-xs text-gray-500 mt-0.5">
                   Send login credentials and a welcome message to <span className="font-medium">{form.email || 'the new user'}</span>
                 </p>
@@ -354,7 +354,7 @@ export default function CreateUserPage() {
                 onClick={() => update('sendWelcome', !form.sendWelcome)}
                 className={`relative w-12 h-6 rounded-full transition-colors cursor-pointer flex-shrink-0 ${form.sendWelcome ? 'bg-[#BF0A30]' : 'bg-gray-300 dark:bg-gray-600'}`}
               >
-                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.sendWelcome ? 'translate-x-7' : 'translate-x-1'}`} />
+                <div className={`absolute top-1 w-4 h-4 bg-[#12151C] rounded-full shadow transition-transform ${form.sendWelcome ? 'translate-x-7' : 'translate-x-1'}`} />
               </div>
             </label>
           </div>

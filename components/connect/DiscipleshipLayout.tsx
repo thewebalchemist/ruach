@@ -28,21 +28,21 @@ export function DiscipleshipLayout({ children, title }: DiscipleshipLayoutProps)
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#0F0F0F]">
+    <div className="min-h-screen bg-[#0A0C10]">
       {sidebarOpen && (
         <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
       )}
 
       {/* Sidebar */}
-      <aside className={`fixed top-0 left-0 z-50 h-full w-64 bg-white dark:bg-[#1A1A1A] border-r border-gray-200 dark:border-[#2D2D2D] transform transition-transform lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <aside className={`fixed top-0 left-0 z-50 h-full w-64 bg-[#12151C] border-r border-white/[0.06] transform transition-transform lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="flex flex-col h-full">
-          <div className="p-4 border-b border-gray-200 dark:border-[#2D2D2D]">
+          <div className="p-4 border-b border-white/[0.06]">
             <Link href="/discipleship/dashboard" className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-[#BF0A30] flex items-center justify-center">
                 <GraduationCap className="w-5 h-5 text-white" />
               </div>
               <div>
-                <p className="font-bold text-gray-900 dark:text-white">Discipleship</p>
+                <p className="font-bold text-white">Discipleship</p>
                 <p className="text-xs text-gray-500">Management Portal</p>
               </div>
             </Link>
@@ -61,7 +61,7 @@ export function DiscipleshipLayout({ children, title }: DiscipleshipLayoutProps)
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                     isActive
                       ? 'bg-[#BF0A30] text-white'
-                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-[#252525]'
+                      : 'text-white/50 hover:bg-white/5 dark:hover:bg-[#252525]'
                   }`}
                 >
                   <item.icon className="w-5 h-5" />
@@ -71,8 +71,8 @@ export function DiscipleshipLayout({ children, title }: DiscipleshipLayoutProps)
             })}
           </nav>
 
-          <div className="p-4 border-t border-gray-200 dark:border-[#2D2D2D]">
-            <Link href="/discipleship" className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-[#252525] rounded-lg">
+          <div className="p-4 border-t border-white/[0.06]">
+            <Link href="/discipleship" className="flex items-center gap-2 px-3 py-2 text-sm text-white/50 hover:bg-white/5 dark:hover:bg-[#252525] rounded-lg">
               <LogOut className="w-4 h-4" />
               Logout
             </Link>
@@ -81,19 +81,19 @@ export function DiscipleshipLayout({ children, title }: DiscipleshipLayoutProps)
       </aside>
 
       <div className="lg:pl-64">
-        <header className="sticky top-0 z-30 bg-white dark:bg-[#1A1A1A] border-b border-gray-200 dark:border-[#2D2D2D]">
+        <header className="sticky top-0 z-30 bg-[#12151C] border-b border-white/[0.06]">
           <div className="flex items-center justify-between px-4 h-16">
             <div className="flex items-center gap-4">
               <button onClick={() => setSidebarOpen(true)} className="lg:hidden p-2 -ml-2">
                 <Menu className="w-5 h-5" />
               </button>
-              <h1 className="text-lg font-semibold text-gray-900 dark:text-white">{title || 'Dashboard'}</h1>
+              <h1 className="text-lg font-semibold text-white">{title || 'Dashboard'}</h1>
             </div>
             <div className="flex items-center gap-2">
-              <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-[#252525]">
+              <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} className="p-2 rounded-lg hover:bg-white/5 dark:hover:bg-[#252525]">
                 {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
               </button>
-              <button className="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-[#252525]">
+              <button className="relative p-2 rounded-lg hover:bg-white/5 dark:hover:bg-[#252525]">
                 <Bell className="w-5 h-5" />
               </button>
             </div>

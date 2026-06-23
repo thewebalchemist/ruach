@@ -84,7 +84,7 @@ export default function DepartmentRequestsPage() {
   return (
     <AdminLayout title="Join Requests">
       <div className="mb-6">
-        <Link href="/admin/departments" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 mb-4">
+        <Link href="/admin/departments" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-white/70 mb-4">
           <ArrowLeft className="w-4 h-4" />Back to Departments
         </Link>
         <PageHeader title="Department Join Requests" subtitle={`${pending.length} pending requests`} />
@@ -92,7 +92,7 @@ export default function DepartmentRequestsPage() {
 
       {pending.length > 0 ? (
         <div className="space-y-4 mb-8">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Pending Requests</h2>
+          <h2 className="text-lg font-semibold text-white">Pending Requests</h2>
           {pending.map((req) => {
             const userName = req.profiles
               ? `${req.profiles.first_name} ${req.profiles.last_name}`
@@ -104,14 +104,14 @@ export default function DepartmentRequestsPage() {
             const deptIcon = req.departments?.icon ?? '';
 
             return (
-              <div key={req.id} className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-5">
+              <div key={req.id} className="bg-[#12151C] rounded-xl border border-white/[0.06] p-5">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-full bg-[#BF0A30] flex items-center justify-center text-white font-semibold">
                       {initials}
                     </div>
                     <div>
-                      <p className="font-semibold text-gray-900 dark:text-white">{userName}</p>
+                      <p className="font-semibold text-white">{userName}</p>
                       <p className="text-sm text-gray-500">{req.user_id.slice(0, 8)}</p>
                     </div>
                   </div>
@@ -121,12 +121,12 @@ export default function DepartmentRequestsPage() {
                   </div>
                 </div>
 
-                <div className="bg-gray-50 dark:bg-[#252525] rounded-lg p-4 mb-4">
+                <div className="bg-white/[0.04] rounded-lg p-4 mb-4">
                   <p className="text-sm text-gray-500 mb-1">Requesting to join:</p>
                   <div className="flex items-center gap-2">
                     {deptIcon && <span className="text-2xl">{deptIcon}</span>}
                     <div>
-                      <p className="font-medium text-gray-900 dark:text-white">{deptName}</p>
+                      <p className="font-medium text-white">{deptName}</p>
                       {req.sub_team_id && <p className="text-sm text-gray-500">Sub-team: {req.sub_team_id}</p>}
                     </div>
                   </div>
@@ -135,7 +135,7 @@ export default function DepartmentRequestsPage() {
                 {req.message && (
                   <div className="mb-4">
                     <p className="text-sm text-gray-500 mb-1">Message:</p>
-                    <p className="text-gray-700 dark:text-gray-300">{req.message}</p>
+                    <p className="text-white/70">{req.message}</p>
                   </div>
                 )}
 
@@ -150,7 +150,7 @@ export default function DepartmentRequestsPage() {
                   <button
                     disabled={processing === req.id}
                     onClick={() => handleAction(req.id, 'declined')}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 border border-gray-300 dark:border-[#2D2D2D] text-gray-700 dark:text-gray-300 font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-[#252525] disabled:opacity-50"
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 border border-white/10 dark:border-[#2D2D2D] text-white/70 font-medium rounded-lg hover:bg-white/[0.06] disabled:opacity-50"
                   >
                     <X className="w-4 h-4" />Decline
                   </button>
@@ -160,25 +160,25 @@ export default function DepartmentRequestsPage() {
           })}
         </div>
       ) : (
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-12 text-center mb-8">
+        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-12 text-center mb-8">
           <p className="text-gray-500">No pending requests</p>
         </div>
       )}
 
       {processed.length > 0 && (
         <div>
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Recently Processed</h2>
-          <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] overflow-hidden">
+          <h2 className="text-lg font-semibold text-white mb-4">Recently Processed</h2>
+          <div className="bg-[#12151C] rounded-xl border border-white/[0.06] overflow-hidden">
             <table className="w-full">
               <thead>
-                <tr className="text-left text-xs font-semibold text-gray-500 uppercase bg-gray-50 dark:bg-[#252525]">
+                <tr className="text-left text-xs font-semibold text-gray-500 uppercase bg-white/[0.04]">
                   <th className="py-3 px-4">Member</th>
                   <th className="py-3 px-4">Department</th>
                   <th className="py-3 px-4">Date</th>
                   <th className="py-3 px-4">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100 dark:divide-[#2D2D2D]">
+              <tbody className="divide-y divide-white/[0.06]">
                 {processed.map((req) => {
                   const userName = req.profiles
                     ? `${req.profiles.first_name} ${req.profiles.last_name}`

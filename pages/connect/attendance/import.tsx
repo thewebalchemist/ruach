@@ -100,7 +100,7 @@ export default function AttendanceImportPage() {
           <div className="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-2xl flex items-center justify-center mx-auto mb-5">
             <CheckCircle className="w-10 h-10 text-green-600" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Attendance Imported!</h1>
+          <h1 className="text-2xl font-bold text-white mb-2">Attendance Imported!</h1>
           <p className="text-gray-500 mb-6">{matchedCount} students marked as present</p>
 
           {unmatchedCount > 0 && (
@@ -115,7 +115,7 @@ export default function AttendanceImportPage() {
           )}
 
           <div className="flex gap-3">
-            <Link href="/connect/dashboard" className="flex-1 py-3 border border-gray-200 dark:border-white/[0.06] rounded-xl text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5">
+            <Link href="/connect/dashboard" className="flex-1 py-3 border border-white/[0.06] rounded-xl text-sm font-medium text-white/70 hover:bg-gray-50">
               Dashboard
             </Link>
             <button
@@ -132,38 +132,38 @@ export default function AttendanceImportPage() {
 
   return (
     <ConnectLayout title="Import Attendance">
-      <Link href="/connect/dashboard" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 mb-5 transition-colors">
+      <Link href="/connect/dashboard" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-white/70 dark:hover:text-gray-300 mb-5 transition-colors">
         <ArrowLeft className="w-4 h-4" /> Back to Dashboard
       </Link>
 
       <div className="max-w-3xl">
-        <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-1">Import Attendance</h1>
+        <h1 className="text-xl font-bold text-white mb-1">Import Attendance</h1>
         <p className="text-sm text-gray-500 mb-6">Upload a Google Meet attendance CSV to mark students as present</p>
 
         <div className="space-y-4">
           {/* Step 1: Select cohort & session */}
-          <div className="bg-white dark:bg-[#141414] rounded-2xl border border-gray-200/70 dark:border-white/[0.05] p-5 shadow-sm">
+          <div className="bg-[#12151C] rounded-2xl border border-white/[0.06]/70 p-5 shadow-sm">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-7 h-7 rounded-xl bg-[#BF0A30] flex items-center justify-center text-white text-xs font-bold flex-shrink-0">1</div>
-              <h2 className="font-semibold text-gray-900 dark:text-white">Select Cohort & Session</h2>
+              <h2 className="font-semibold text-white">Select Cohort & Session</h2>
             </div>
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">Cohort</label>
+                <label className="block text-xs font-medium text-white/50 mb-1.5">Cohort</label>
                 <select
                   value={selectedCohort}
                   onChange={e => { setSelectedCohort(e.target.value); setSelectedSession(''); setParsedData([]); setFile(null); }}
-                  className="w-full px-4 py-2.5 border border-gray-200 dark:border-white/[0.06] rounded-xl bg-gray-50 dark:bg-[#1A1A1A] text-sm text-gray-900 dark:text-white focus:outline-none focus:border-[#BF0A30]"
+                  className="w-full px-4 py-2.5 border border-white/[0.06] rounded-xl bg-[#0A0C10] text-sm text-white focus:outline-none focus:border-[#BF0A30]"
                 >
                   {mockConnectCohorts.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">Session</label>
+                <label className="block text-xs font-medium text-white/50 mb-1.5">Session</label>
                 <select
                   value={selectedSession}
                   onChange={e => setSelectedSession(e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-200 dark:border-white/[0.06] rounded-xl bg-gray-50 dark:bg-[#1A1A1A] text-sm text-gray-900 dark:text-white focus:outline-none focus:border-[#BF0A30]"
+                  className="w-full px-4 py-2.5 border border-white/[0.06] rounded-xl bg-[#0A0C10] text-sm text-white focus:outline-none focus:border-[#BF0A30]"
                 >
                   <option value="">Select a session...</option>
                   {sessions.map(s => (
@@ -185,10 +185,10 @@ export default function AttendanceImportPage() {
           </div>
 
           {/* Step 2: Upload CSV */}
-          <div className="bg-white dark:bg-[#141414] rounded-2xl border border-gray-200/70 dark:border-white/[0.05] p-5 shadow-sm">
+          <div className="bg-[#12151C] rounded-2xl border border-white/[0.06]/70 p-5 shadow-sm">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-7 h-7 rounded-xl bg-[#BF0A30] flex items-center justify-center text-white text-xs font-bold flex-shrink-0">2</div>
-              <h2 className="font-semibold text-gray-900 dark:text-white">Upload Google Meet CSV</h2>
+              <h2 className="font-semibold text-white">Upload Google Meet CSV</h2>
             </div>
 
             <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/40 rounded-xl p-4 mb-4 text-sm">
@@ -210,24 +210,24 @@ export default function AttendanceImportPage() {
                 onClick={() => selectedSession && fileInputRef.current?.click()}
                 className={`w-full border-2 border-dashed rounded-2xl p-10 text-center transition-colors ${
                   selectedSession
-                    ? 'border-gray-300 dark:border-[#2D2D2D] hover:border-[#BF0A30] cursor-pointer'
-                    : 'border-gray-200 dark:border-[#1E1E1E] cursor-not-allowed opacity-50'
+                    ? 'border-white/10 dark:border-[#2D2D2D] hover:border-[#BF0A30] cursor-pointer'
+                    : 'border-white/[0.06] dark:border-[#1E1E1E] cursor-not-allowed opacity-50'
                 }`}
               >
                 <Upload className="w-10 h-10 text-gray-400 mx-auto mb-3" />
-                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                <p className="text-sm font-medium text-white/70">
                   {selectedSession ? 'Click to upload or drag & drop CSV' : 'Select a session first'}
                 </p>
                 <p className="text-xs text-gray-400 mt-1">CSV files only</p>
               </div>
             ) : (
-              <div className="border border-gray-200 dark:border-white/[0.06] rounded-2xl p-4 flex items-center justify-between">
+              <div className="border border-white/[0.06] rounded-2xl p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center">
                     <FileText className="w-5 h-5 text-green-600" />
                   </div>
                   <div>
-                    <p className="font-medium text-gray-900 dark:text-white text-sm">{file.name}</p>
+                    <p className="font-medium text-white text-sm">{file.name}</p>
                     <p className="text-xs text-gray-400">{(file.size / 1024).toFixed(1)} KB</p>
                   </div>
                 </div>
@@ -240,15 +240,15 @@ export default function AttendanceImportPage() {
 
           {/* Step 3: Review */}
           {parsedData.length > 0 && (
-            <div className="bg-white dark:bg-[#141414] rounded-2xl border border-gray-200/70 dark:border-white/[0.05] p-5 shadow-sm">
+            <div className="bg-[#12151C] rounded-2xl border border-white/[0.06]/70 p-5 shadow-sm">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-7 h-7 rounded-xl bg-[#BF0A30] flex items-center justify-center text-white text-xs font-bold flex-shrink-0">3</div>
-                <h2 className="font-semibold text-gray-900 dark:text-white">Review Matches</h2>
+                <h2 className="font-semibold text-white">Review Matches</h2>
               </div>
 
               <div className="grid grid-cols-3 gap-3 mb-5">
                 {[
-                  { label: 'Total',     val: parsedData.length, color: 'text-gray-900 dark:text-white',   bg: 'bg-gray-50 dark:bg-[#1A1A1A]' },
+                  { label: 'Total',     val: parsedData.length, color: 'text-white',   bg: 'bg-gray-50' },
                   { label: 'Matched',   val: matchedCount,      color: 'text-green-600',                   bg: 'bg-green-50 dark:bg-green-900/20' },
                   { label: 'Unmatched', val: unmatchedCount,    color: 'text-amber-600',                   bg: 'bg-amber-50 dark:bg-amber-900/20' },
                 ].map(({ label, val, color, bg }) => (
@@ -261,13 +261,13 @@ export default function AttendanceImportPage() {
 
               {matchedCount > 0 && (
                 <div className="mb-4">
-                  <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2 flex items-center gap-1.5">
+                  <p className="text-xs font-medium text-white/50 mb-2 flex items-center gap-1.5">
                     <CheckCircle className="w-3.5 h-3.5 text-green-500" /> Matched ({matchedCount})
                   </p>
-                  <div className="max-h-36 overflow-y-auto rounded-xl border border-gray-100 dark:border-white/[0.04] divide-y divide-gray-50 dark:divide-white/[0.02]">
+                  <div className="max-h-36 overflow-y-auto rounded-xl border border-white/[0.04] divide-y divide-gray-50">
                     {parsedData.filter(p => p.matched).map((a, i) => (
                       <div key={i} className="px-4 py-2.5 flex justify-between text-sm">
-                        <span className="font-medium text-gray-900 dark:text-white">{a.name}</span>
+                        <span className="font-medium text-white">{a.name}</span>
                         <span className="text-xs text-gray-400 font-mono">{a.admissionNumber}</span>
                       </div>
                     ))}

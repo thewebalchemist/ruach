@@ -36,9 +36,9 @@ export class ErrorBoundary extends Component<Props, State> {
       if (this.props.fallback) return this.props.fallback;
 
       return (
-        <div className="min-h-screen flex items-center justify-center bg-[#F0F2F5] dark:bg-[#080808] p-6">
+        <div className="min-h-screen flex items-center justify-center bg-[#0A0C10] p-6">
           <div className="max-w-md w-full">
-            <div className="bg-white dark:bg-[#1A1A1A] rounded-2xl border border-gray-200 dark:border-[#2D2D2D] p-8 text-center shadow-lg">
+            <div className="bg-[#12151C] rounded-2xl border border-white/[0.06] p-8 text-center shadow-lg">
               <div className="w-16 h-16 bg-red-50 dark:bg-red-900/20 rounded-2xl flex items-center justify-center mx-auto mb-5">
                 <svg className="w-8 h-8 text-[#BF0A30]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
@@ -46,7 +46,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 </svg>
               </div>
 
-              <h2 className="text-xl font-black text-gray-900 dark:text-white mb-2 tracking-tight">
+              <h2 className="text-xl font-black text-white mb-2 tracking-tight">
                 Something went wrong
               </h2>
               <p className="text-gray-500 text-sm mb-6 leading-relaxed">
@@ -57,7 +57,7 @@ export class ErrorBoundary extends Component<Props, State> {
               <div className="flex gap-3 justify-center">
                 <button
                   onClick={this.handleReset}
-                  className="px-4 py-2 bg-gray-100 dark:bg-[#2A2A2A] text-gray-700 dark:text-gray-300 rounded-xl text-sm font-semibold hover:bg-gray-200 dark:hover:bg-[#333] transition-colors"
+                  className="px-4 py-2 bg-white/5 dark:bg-[#2A2A2A] text-white/70 rounded-xl text-sm font-semibold hover:bg-gray-200 dark:hover:bg-[#333] transition-colors"
                 >
                   Try again
                 </button>
@@ -74,7 +74,7 @@ export class ErrorBoundary extends Component<Props, State> {
                   <summary className="text-xs text-gray-400 cursor-pointer font-medium">
                     Developer details
                   </summary>
-                  <pre className="mt-2 text-xs bg-gray-50 dark:bg-[#111] p-3 rounded-xl overflow-auto text-red-600 dark:text-red-400 border border-gray-200 dark:border-[#2D2D2D]">
+                  <pre className="mt-2 text-xs bg-white/[0.04] p-3 rounded-xl overflow-auto text-red-600 dark:text-red-400 border border-white/[0.06]">
                     {this.state.error.message}
                     {'\n\n'}
                     {this.state.error.stack?.split('\n').slice(0, 6).join('\n')}

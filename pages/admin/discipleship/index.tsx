@@ -118,9 +118,9 @@ export default function AdminDiscipleshipPage() {
     switch (status) {
       case 'active': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
       case 'registration-open': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
-      case 'completed': return 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400';
+      case 'completed': return 'bg-white/5 text-white/70 dark:bg-gray-800';
       case 'draft': return 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400';
-      default: return 'bg-gray-100 text-gray-700';
+      default: return 'bg-white/5 text-gray-700';
     }
   };
 
@@ -157,48 +157,48 @@ export default function AdminDiscipleshipPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-4">
+        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-4">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-9 h-9 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
               <BookOpen className="w-5 h-5 text-green-600" />
             </div>
             <span className="text-sm text-gray-500">Active Cohorts</span>
           </div>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{activeCohorts.length}</p>
+          <p className="text-2xl font-bold text-white">{activeCohorts.length}</p>
         </div>
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-4">
+        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-4">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-9 h-9 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
               <Users className="w-5 h-5 text-blue-600" />
             </div>
             <span className="text-sm text-gray-500">Total Students</span>
           </div>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{students.length}</p>
+          <p className="text-2xl font-bold text-white">{students.length}</p>
         </div>
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-4">
+        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-4">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-9 h-9 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
               <Layers className="w-5 h-5 text-blue-600" />
             </div>
             <span className="text-sm text-gray-500">Open for Reg.</span>
           </div>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{openCohorts.length}</p>
+          <p className="text-2xl font-bold text-white">{openCohorts.length}</p>
         </div>
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-4">
+        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-4">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-9 h-9 rounded-lg bg-[#BF0A30]/10 flex items-center justify-center">
               <CheckCircle className="w-5 h-5 text-[#BF0A30]" />
             </div>
             <span className="text-sm text-gray-500">Ready to Graduate</span>
           </div>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{readyToGraduate.length}</p>
+          <p className="text-2xl font-bold text-white">{readyToGraduate.length}</p>
         </div>
       </div>
 
       {/* Level Overview */}
       <div className="grid lg:grid-cols-3 gap-4 mb-8">
         {levelStats.map(({ level, course, cohorts: lvlCohorts, students: lvlStudents, active }) => (
-          <div key={level} className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-5">
+          <div key={level} className="bg-[#12151C] rounded-xl border border-white/[0.06] p-5">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <span className={`px-2.5 py-1 text-xs font-bold rounded-lg ${levelColors[level]}`}>
@@ -207,11 +207,11 @@ export default function AdminDiscipleshipPage() {
               </div>
               <GraduationCap className="w-5 h-5 text-gray-400" />
             </div>
-            <p className="font-semibold text-gray-900 dark:text-white mb-1">
+            <p className="font-semibold text-white mb-1">
               {course?.title ?? `KDC Level ${level}`}
             </p>
             <p className="text-sm text-gray-500 mb-3 line-clamp-2">{course?.description}</p>
-            <div className="flex items-center justify-between text-sm border-t border-gray-100 dark:border-[#2D2D2D] pt-3">
+            <div className="flex items-center justify-between text-sm border-t border-white/[0.04] pt-3">
               <span className="text-gray-500">{lvlCohorts.length} cohorts  {lvlStudents.length} students</span>
               {active > 0 && (
                 <span className="text-green-600 text-xs font-medium">{active} active</span>
@@ -225,7 +225,7 @@ export default function AdminDiscipleshipPage() {
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">All Cohorts</h2>
+            <h2 className="text-lg font-semibold text-white">All Cohorts</h2>
             <Link href="/admin/discipleship/cohorts" className="text-sm text-[#BF0A30] hover:underline">View all</Link>
           </div>
           <div className="space-y-3">
@@ -236,7 +236,7 @@ export default function AdminDiscipleshipPage() {
                 <Link
                   key={cohort.id}
                   href={`/admin/discipleship/cohorts/${cohort.id}`}
-                  className="block bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-4 hover:border-[#BF0A30]/50 transition-colors"
+                  className="block bg-[#12151C] rounded-xl border border-white/[0.06] p-4 hover:border-[#BF0A30]/50 transition-colors"
                 >
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex items-start gap-2">
@@ -244,7 +244,7 @@ export default function AdminDiscipleshipPage() {
                         L{cohort.level}
                       </span>
                       <div>
-                        <p className="font-semibold text-gray-900 dark:text-white">{cohort.name}</p>
+                        <p className="font-semibold text-white">{cohort.name}</p>
                         <p className="text-sm text-gray-500">
                           {teacher ? `${teacher.first_name} ${teacher.last_name}` : 'No teacher'} {cohortStudents.length}/{cohort.max_capacity} students
                         </p>
@@ -268,29 +268,29 @@ export default function AdminDiscipleshipPage() {
 
         {/* Quick Actions */}
         <div className="space-y-4">
-          <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-5">
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-3">Quick Actions</h3>
+          <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-5">
+            <h3 className="font-semibold text-white mb-3">Quick Actions</h3>
             <div className="space-y-1">
               {([1, 2, 3] as DiscipleshipLevel[]).map(level => (
                 <Link
                   key={level}
                   href={`/admin/discipleship/cohorts/new?level=${level}`}
-                  className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-[#252525] text-sm font-medium text-gray-700 dark:text-gray-300"
+                  className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/[0.06] text-sm font-medium text-white/70"
                 >
                   <span className={`px-1.5 py-0.5 text-xs font-bold rounded ${levelColors[level]}`}>L{level}</span>
                   New Level {level} Cohort
                 </Link>
               ))}
-              <div className="border-t border-gray-100 dark:border-[#2D2D2D] my-2" />
+              <div className="border-t border-white/[0.04] my-2" />
               <Link
                 href="/admin/discipleship/enroll"
-                className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-[#252525] text-sm font-medium text-gray-700 dark:text-gray-300"
+                className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/[0.06] text-sm font-medium text-white/70"
               >
                 <Users className="w-4 h-4 text-[#BF0A30]" />Enroll Members
               </Link>
               <Link
                 href="/admin/discipleship/graduates"
-                className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-[#252525] text-sm font-medium text-gray-700 dark:text-gray-300"
+                className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/[0.06] text-sm font-medium text-white/70"
               >
                 <CheckCircle className="w-4 h-4 text-[#BF0A30]" />
                 Graduate Students

@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { Users, Home, GraduationCap, Calendar, AlertCircle, ChevronRight, UserPlus, ArrowRight, Loader2 } from 'lucide-react';
 import { AdminLayout, StatCard, PageHeader } from '@/components/connect/AdminLayout';
+import { IntroGuide } from '@/components/connect/IntroGuide';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
 
@@ -164,6 +165,7 @@ export default function AdminDashboard() {
 
   return (
     <AdminLayout title="Dashboard">
+      <IntroGuide />
       <PageHeader title="Dashboard" subtitle="Welcome back! Here's what's happening at Ruach today." />
 
       {/* Stats */}

@@ -180,7 +180,7 @@ export default function GlobalSearchPage() {
 
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-2xl font-black text-gray-900 dark:text-white mb-1">Search</h1>
+            <h1 className="text-2xl font-black text-white mb-1">Search</h1>
             <p className="text-sm text-gray-500">Find members, students, leaders by name, phone, or member ID</p>
           </div>
 
@@ -193,13 +193,13 @@ export default function GlobalSearchPage() {
               value={query}
               onChange={e => setQuery(e.target.value)}
               placeholder="Search by name, phone, email, or member ID…"
-              className="w-full pl-12 pr-12 py-4 bg-white dark:bg-[#141414] border border-gray-200 dark:border-white/[0.07] rounded-2xl text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#BF0A30]/30 focus:border-[#BF0A30] transition-all shadow-sm text-base"
+              className="w-full pl-12 pr-12 py-4 bg-[#12151C] border border-white/[0.06] dark:border-white/[0.07] rounded-2xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-[#BF0A30]/30 focus:border-[#BF0A30] transition-all shadow-sm text-base"
             />
             <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
               {loading && <Loader2 className="w-4 h-4 text-gray-400 animate-spin" />}
               {query && !loading && (
                 <button onClick={() => { setQuery(''); setResults([]); setSearched(false); inputRef.current?.focus(); }}>
-                  <X className="w-4 h-4 text-gray-400 hover:text-gray-600 transition-colors" />
+                  <X className="w-4 h-4 text-gray-400 hover:text-white/50 transition-colors" />
                 </button>
               )}
               <button
@@ -221,7 +221,7 @@ export default function GlobalSearchPage() {
                 className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium transition-all border ${
                   category === id
                     ? 'bg-[#BF0A30] text-white border-[#BF0A30] shadow-md shadow-[#BF0A30]/20'
-                    : 'bg-white dark:bg-[#141414] text-gray-600 dark:text-gray-400 border-gray-200 dark:border-white/[0.06] hover:border-[#BF0A30]/40'
+                    : 'bg-[#12151C] text-white/50 border-white/[0.06] hover:border-[#BF0A30]/40'
                 }`}
               >
                 <Icon className="w-3.5 h-3.5" />
@@ -233,7 +233,7 @@ export default function GlobalSearchPage() {
           {/* Results */}
           {searched && !loading && results.length === 0 && (
             <div className="text-center py-16">
-              <Search className="w-12 h-12 text-gray-200 dark:text-gray-700 mx-auto mb-3" />
+              <Search className="w-12 h-12 text-gray-200 dark:text-white/70 mx-auto mb-3" />
               <p className="text-gray-500 font-medium">No results for &ldquo;{query}&rdquo;</p>
               <p className="text-sm text-gray-400 mt-1">Try a different name, phone number, or member ID</p>
             </div>
@@ -241,7 +241,7 @@ export default function GlobalSearchPage() {
 
           {!searched && !loading && (
             <div className="text-center py-16">
-              <div className="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-[#1A1A1A] flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center mx-auto mb-4">
                 <Search className="w-8 h-8 text-gray-300 dark:text-gray-600" />
               </div>
               <p className="text-gray-500 font-medium">Start typing to search</p>
@@ -260,14 +260,14 @@ export default function GlobalSearchPage() {
                   <Link
                     key={person.id}
                     href={getProfileLink(person)}
-                    className="flex items-center gap-4 p-4 bg-white dark:bg-[#141414] border border-gray-200/70 dark:border-white/[0.05] rounded-2xl hover:border-[#BF0A30]/30 hover:shadow-sm transition-all group"
+                    className="flex items-center gap-4 p-4 bg-[#12151C] border border-white/[0.06]/70 rounded-2xl hover:border-[#BF0A30]/30 hover:shadow-sm transition-all group"
                   >
                     {/* Avatar */}
                     <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200 dark:from-[#1A1A1A] dark:to-[#222] flex items-center justify-center flex-shrink-0 overflow-hidden">
                       {person.avatar_url ? (
                         <img src={person.avatar_url} alt="" className="w-full h-full object-cover" />
                       ) : (
-                        <span className="text-base font-bold text-gray-500 dark:text-gray-400">
+                        <span className="text-base font-bold text-gray-500">
                           {person.full_name.split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase()}
                         </span>
                       )}
@@ -276,15 +276,15 @@ export default function GlobalSearchPage() {
                     {/* Info */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                        <span className="font-semibold text-gray-900 dark:text-white text-sm truncate">
+                        <span className="font-semibold text-white text-sm truncate">
                           {person.full_name}
                         </span>
-                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold ${ROLE_COLORS[person.role] ?? 'bg-gray-100 text-gray-500'}`}>
+                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold ${ROLE_COLORS[person.role] ?? 'bg-white/5 text-gray-500'}`}>
                           <RoleIcon className="w-2.5 h-2.5" />
                           {person.role.charAt(0).toUpperCase() + person.role.slice(1)}
                         </span>
                         {person.member_id && (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-mono bg-gray-100 dark:bg-[#1A1A1A] text-gray-500">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-mono bg-white/5 text-gray-500">
                             <Badge className="w-2.5 h-2.5" /> {person.member_id}
                           </span>
                         )}
@@ -307,7 +307,7 @@ export default function GlobalSearchPage() {
                       <span className={`hidden sm:inline-flex px-2 py-1 rounded-lg text-[10px] font-medium ${
                         person.status === 'active'
                           ? 'bg-green-100 dark:bg-green-900/20 text-green-600'
-                          : 'bg-gray-100 dark:bg-gray-800 text-gray-500'
+                          : 'bg-white/10 text-gray-500'
                       }`}>
                         {person.status.charAt(0).toUpperCase() + person.status.slice(1)}
                       </span>
@@ -333,12 +333,12 @@ export default function GlobalSearchPage() {
                   <Link
                     key={href}
                     href={href}
-                    className="flex flex-col items-center gap-2 p-4 bg-white dark:bg-[#141414] border border-gray-200/70 dark:border-white/[0.05] rounded-2xl hover:border-[#BF0A30]/30 hover:shadow-sm transition-all text-center"
+                    className="flex flex-col items-center gap-2 p-4 bg-[#12151C] border border-white/[0.06]/70 rounded-2xl hover:border-[#BF0A30]/30 hover:shadow-sm transition-all text-center"
                   >
                     <div className="w-10 h-10 rounded-xl bg-[#BF0A30]/10 flex items-center justify-center">
                       <Icon className="w-5 h-5 text-[#BF0A30]" />
                     </div>
-                    <span className="text-xs font-medium text-gray-700 dark:text-gray-300">{label}</span>
+                    <span className="text-xs font-medium text-white/70">{label}</span>
                   </Link>
                 ))}
               </div>

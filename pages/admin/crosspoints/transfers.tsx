@@ -130,7 +130,7 @@ export default function TransfersPage() {
   return (
     <AdminLayout title="Transfer Requests">
       <div className="mb-6">
-        <Link href="/admin/crosspoints" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 mb-4">
+        <Link href="/admin/crosspoints" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-white/70 mb-4">
           <ArrowLeft className="w-4 h-4" />Back to Crosspoints
         </Link>
         <PageHeader title="Crosspoint Transfers" subtitle={`${pending.length} pending transfer requests`} />
@@ -138,21 +138,21 @@ export default function TransfersPage() {
 
       {pending.length > 0 ? (
         <div className="space-y-4 mb-8">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Pending Requests</h2>
+          <h2 className="text-lg font-semibold text-white">Pending Requests</h2>
           {pending.map((req) => {
             const user = profiles[req.user_id];
             const fromCP = crosspoints[req.from_crosspoint_id];
             const toCP = crosspoints[req.to_crosspoint_id];
 
             return (
-              <div key={req.id} className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-5">
+              <div key={req.id} className="bg-[#12151C] rounded-xl border border-white/[0.06] p-5">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-full bg-[#BF0A30] flex items-center justify-center text-white font-semibold">
                       {user?.first_name?.[0]}{user?.last_name?.[0]}
                     </div>
                     <div>
-                      <p className="font-semibold text-gray-900 dark:text-white">
+                      <p className="font-semibold text-white">
                         {user?.first_name} {user?.last_name}
                       </p>
                       <p className="text-sm text-gray-500">
@@ -166,12 +166,12 @@ export default function TransfersPage() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-[#252525] rounded-lg mb-4">
+                <div className="flex items-center gap-4 p-4 bg-white/[0.04] rounded-lg mb-4">
                   <div className="flex-1 text-center">
-                    <div className="w-12 h-12 mx-auto rounded-xl bg-gray-200 dark:bg-[#2D2D2D] flex items-center justify-center mb-2">
+                    <div className="w-12 h-12 mx-auto rounded-xl bg-gray-200 flex items-center justify-center mb-2">
                       <Home className="w-6 h-6 text-gray-500" />
                     </div>
-                    <p className="font-medium text-gray-900 dark:text-white text-sm">{fromCP?.name}</p>
+                    <p className="font-medium text-white text-sm">{fromCP?.name}</p>
                     <p className="text-xs text-gray-500">{fromCP?.area}</p>
                   </div>
                   <ArrowRight className="w-6 h-6 text-[#BF0A30] flex-shrink-0" />
@@ -179,17 +179,17 @@ export default function TransfersPage() {
                     <div className="w-12 h-12 mx-auto rounded-xl bg-[#BF0A30]/10 flex items-center justify-center mb-2">
                       <Home className="w-6 h-6 text-[#BF0A30]" />
                     </div>
-                    <p className="font-medium text-gray-900 dark:text-white text-sm">{toCP?.name}</p>
+                    <p className="font-medium text-white text-sm">{toCP?.name}</p>
                     <p className="text-xs text-gray-500">{toCP?.area}</p>
                   </div>
                 </div>
 
                 <div className="mb-4">
                   <p className="text-sm text-gray-500 mb-1">Reason for transfer:</p>
-                  <p className="text-gray-700 dark:text-gray-300">{req.reason}</p>
+                  <p className="text-white/70">{req.reason}</p>
                 </div>
 
-                <div className="flex gap-3 pt-4 border-t border-gray-100 dark:border-[#2D2D2D]">
+                <div className="flex gap-3 pt-4 border-t border-white/[0.04]">
                   <button
                     disabled={processing === req.id}
                     onClick={() => handleAction(req.id, 'approved')}
@@ -200,7 +200,7 @@ export default function TransfersPage() {
                   <button
                     disabled={processing === req.id}
                     onClick={() => handleAction(req.id, 'declined')}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 border border-gray-300 dark:border-[#2D2D2D] text-gray-700 dark:text-gray-300 font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-[#252525] disabled:opacity-50"
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 border border-white/10 dark:border-[#2D2D2D] text-white/70 font-medium rounded-lg hover:bg-white/[0.06] disabled:opacity-50"
                   >
                     <X className="w-4 h-4" />Decline
                   </button>
@@ -210,18 +210,18 @@ export default function TransfersPage() {
           })}
         </div>
       ) : (
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-12 text-center mb-8">
+        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-12 text-center mb-8">
           <p className="text-gray-500">No pending transfer requests</p>
         </div>
       )}
 
       {processed.length > 0 && (
         <div>
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Transfer History</h2>
-          <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] overflow-hidden">
+          <h2 className="text-lg font-semibold text-white mb-4">Transfer History</h2>
+          <div className="bg-[#12151C] rounded-xl border border-white/[0.06] overflow-hidden">
             <table className="w-full">
               <thead>
-                <tr className="text-left text-xs font-semibold text-gray-500 uppercase bg-gray-50 dark:bg-[#252525]">
+                <tr className="text-left text-xs font-semibold text-gray-500 uppercase bg-white/[0.04]">
                   <th className="py-3 px-4">Member</th>
                   <th className="py-3 px-4">From</th>
                   <th className="py-3 px-4">To</th>
@@ -229,7 +229,7 @@ export default function TransfersPage() {
                   <th className="py-3 px-4">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100 dark:divide-[#2D2D2D]">
+              <tbody className="divide-y divide-white/[0.06]">
                 {processed.map((req) => {
                   const user = profiles[req.user_id];
                   const fromCP = crosspoints[req.from_crosspoint_id];

@@ -98,32 +98,32 @@ export default function GuestsPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-4">
+        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-4">
           <p className="text-sm text-gray-500">Total Guests</p>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total}</p>
+          <p className="text-2xl font-bold text-white">{stats.total}</p>
         </div>
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border-l-4 border-l-amber-500 border border-gray-200 dark:border-[#2D2D2D] p-4">
+        <div className="bg-[#12151C] rounded-xl border-l-4 border-l-amber-500 border border-white/[0.06] p-4">
           <p className="text-sm text-gray-500">Pending Follow-up</p>
           <p className="text-2xl font-bold text-amber-600">{stats.pending}</p>
         </div>
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border-l-4 border-l-blue-500 border border-gray-200 dark:border-[#2D2D2D] p-4">
+        <div className="bg-[#12151C] rounded-xl border-l-4 border-l-blue-500 border border-white/[0.06] p-4">
           <p className="text-sm text-gray-500">Contacted</p>
           <p className="text-2xl font-bold text-blue-600">{stats.contacted}</p>
         </div>
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border-l-4 border-l-green-500 border border-gray-200 dark:border-[#2D2D2D] p-4">
+        <div className="bg-[#12151C] rounded-xl border-l-4 border-l-green-500 border border-white/[0.06] p-4">
           <p className="text-sm text-gray-500">Converted</p>
           <p className="text-2xl font-bold text-green-600">{stats.converted}</p>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-4 mb-6">
+      <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-4 mb-6">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input type="text" placeholder="Search guests..." className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg" value={search} onChange={(e) => setSearch(e.target.value)} />
+            <input type="text" placeholder="Search guests..." className="w-full pl-10 pr-4 py-2.5 text-sm border border-white/10 dark:border-[#2D2D2D] rounded-lg" value={search} onChange={(e) => setSearch(e.target.value)} />
           </div>
-          <select className="px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg" value={filter} onChange={(e) => setFilter(e.target.value)}>
+          <select className="px-4 py-2.5 text-sm border border-white/10 dark:border-[#2D2D2D] rounded-lg" value={filter} onChange={(e) => setFilter(e.target.value)}>
             <option value="all">All Status</option>
             <option value="pending">Pending</option>
             <option value="contacted">Contacted</option>
@@ -136,14 +136,14 @@ export default function GuestsPage() {
       {/* Guests List */}
       <div className="space-y-4">
         {filtered.map((guest) => (
-          <div key={guest.id} className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-5">
+          <div key={guest.id} className="bg-[#12151C] rounded-xl border border-white/[0.06] p-5">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-gray-200 dark:bg-[#2D2D2D] flex items-center justify-center text-gray-600 dark:text-gray-400 font-semibold">
+                <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-white/50 font-semibold">
                   {guest.first_name[0]}{guest.last_name[0]}
                 </div>
                 <div>
-                  <p className="font-semibold text-gray-900 dark:text-white">{guest.first_name} {guest.last_name}</p>
+                  <p className="font-semibold text-white">{guest.first_name} {guest.last_name}</p>
                   <div className="flex items-center gap-4 text-sm text-gray-500 mt-1">
                     <span className="flex items-center gap-1"><Phone className="w-3 h-3" />{guest.phone}</span>
                     {guest.email && <span className="flex items-center gap-1"><Mail className="w-3 h-3" />{guest.email}</span>}
@@ -154,33 +154,33 @@ export default function GuestsPage() {
                 guest.follow_up_status === 'pending' ? 'bg-amber-100 text-amber-800' :
                 guest.follow_up_status === 'contacted' ? 'bg-blue-100 text-blue-800' :
                 guest.follow_up_status === 'converted' ? 'bg-green-100 text-green-800' :
-                'bg-gray-100 text-gray-800'
+                'bg-white/5 text-gray-800'
               }`}>{guest.follow_up_status}</span>
             </div>
 
             <div className="grid sm:grid-cols-3 gap-4 mb-4 text-sm">
-              <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+              <div className="flex items-center gap-2 text-white/50">
                 <Calendar className="w-4 h-4" />
                 <span>Visited: {new Date(guest.visit_date).toLocaleDateString()}</span>
               </div>
-              <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+              <div className="flex items-center gap-2 text-white/50">
                 <UserPlus className="w-4 h-4" />
                 <span>Source: {guest.source}</span>
               </div>
               {guest.invited_by && (
-                <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                <div className="flex items-center gap-2 text-white/50">
                   <span>Invited by member</span>
                 </div>
               )}
             </div>
 
             {guest.notes && (
-              <div className="bg-gray-50 dark:bg-[#252525] rounded-lg p-3 mb-4">
-                <p className="text-sm text-gray-600 dark:text-gray-400">{guest.notes}</p>
+              <div className="bg-white/[0.04] rounded-lg p-3 mb-4">
+                <p className="text-sm text-white/50">{guest.notes}</p>
               </div>
             )}
 
-            <div className="flex gap-2 pt-4 border-t border-gray-100 dark:border-[#2D2D2D]">
+            <div className="flex gap-2 pt-4 border-t border-white/[0.04]">
               {guest.follow_up_status === 'pending' && (
                 <>
                   <button
@@ -190,7 +190,7 @@ export default function GuestsPage() {
                   >
                     <Phone className="w-4 h-4" />{actionLoading === guest.id ? 'Updating...' : 'Mark Contacted'}
                   </button>
-                  <button className="flex items-center gap-2 px-4 py-2 text-sm font-medium border border-gray-300 dark:border-[#2D2D2D] rounded-lg hover:bg-gray-50">
+                  <button className="flex items-center gap-2 px-4 py-2 text-sm font-medium border border-white/10 dark:border-[#2D2D2D] rounded-lg hover:bg-gray-50">
                     <MessageSquare className="w-4 h-4" />Add Note
                   </button>
                 </>
@@ -204,19 +204,19 @@ export default function GuestsPage() {
                   >
                     <Check className="w-4 h-4" />{actionLoading === guest.id ? 'Updating...' : 'Convert to Attendee'}
                   </button>
-                  <button className="flex items-center gap-2 px-4 py-2 text-sm font-medium border border-gray-300 rounded-lg hover:bg-gray-50">
+                  <button className="flex items-center gap-2 px-4 py-2 text-sm font-medium border border-white/10 rounded-lg hover:bg-gray-50">
                     <Clock className="w-4 h-4" />Schedule Follow-up
                   </button>
                 </>
               )}
-              <Link href={`/admin/members/guests/${guest.id}`} className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900">View Details</Link>
+              <Link href={`/admin/members/guests/${guest.id}`} className="px-4 py-2 text-sm font-medium text-white/50 hover:text-gray-900">View Details</Link>
             </div>
           </div>
         ))}
       </div>
 
       {filtered.length === 0 && (
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-12 text-center">
+        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-12 text-center">
           <UserPlus className="w-12 h-12 text-gray-300 mx-auto mb-4" />
           <p className="text-gray-500">No guests found</p>
         </div>

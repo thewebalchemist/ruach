@@ -130,10 +130,10 @@ export default function LegacyRequestsPage() {
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <Link href="/connect/dashboard" className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 mb-1">
+            <Link href="/connect/dashboard" className="flex items-center gap-2 text-sm text-gray-500 hover:text-white/70 mb-1">
               <ArrowLeft className="w-4 h-4" /> Back to Dashboard
             </Link>
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white">Legacy Member Verification</h1>
+            <h1 className="text-xl font-bold text-white">Legacy Member Verification</h1>
             <p className="text-sm text-gray-500">Review and verify existing members who need a member number</p>
           </div>
         </div>
@@ -159,8 +159,8 @@ export default function LegacyRequestsPage() {
 
         <div className="grid lg:grid-cols-5 gap-6">
           {/* Requests List */}
-          <div className="lg:col-span-2 bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D]">
-            <div className="p-4 border-b border-gray-200 dark:border-[#2D2D2D]">
+          <div className="lg:col-span-2 bg-[#12151C] rounded-xl border border-white/[0.06]">
+            <div className="p-4 border-b border-white/[0.06]">
               <div className="relative mb-3">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
@@ -168,16 +168,16 @@ export default function LegacyRequestsPage() {
                   placeholder="Search by name or email..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg bg-white dark:bg-[#252525]"
+                  className="w-full pl-10 pr-4 py-2 text-sm border border-white/10 dark:border-[#2D2D2D] rounded-lg bg-[#12151C]"
                 />
               </div>
-              <div className="flex gap-1 bg-gray-100 dark:bg-[#252525] p-1 rounded-lg">
+              <div className="flex gap-1 bg-white/5 p-1 rounded-lg">
                 {(['all', 'pending', 'verified', 'rejected'] as const).map(status => (
                   <button
                     key={status}
                     onClick={() => setFilterStatus(status)}
                     className={`flex-1 py-1.5 text-xs font-medium rounded-md capitalize ${
-                      filterStatus === status ? 'bg-white dark:bg-[#1A1A1A] shadow-sm' : 'text-gray-500'
+                      filterStatus === status ? 'bg-[#12151C] shadow-sm' : 'text-gray-500'
                     }`}
                   >
                     {status}
@@ -186,7 +186,7 @@ export default function LegacyRequestsPage() {
               </div>
             </div>
 
-            <div className="divide-y divide-gray-100 dark:divide-[#2D2D2D] max-h-[600px] overflow-y-auto">
+            <div className="divide-y divide-white/[0.06] max-h-[600px] overflow-y-auto">
               {filteredRequests.length === 0 ? (
                 <div className="p-8 text-center text-gray-500">
                   <User className="w-12 h-12 mx-auto mb-3 text-gray-300" />
@@ -197,12 +197,12 @@ export default function LegacyRequestsPage() {
                   <button
                     key={request.id}
                     onClick={() => { setSelectedRequest(request); setReviewNotes(''); }}
-                    className={`w-full p-4 text-left hover:bg-gray-50 dark:hover:bg-[#252525] transition-colors ${
+                    className={`w-full p-4 text-left hover:bg-white/[0.06] transition-colors ${
                       selectedRequest?.id === request.id ? 'bg-[#BF0A30]/5 border-l-4 border-[#BF0A30]' : ''
                     }`}
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <p className="font-medium text-gray-900 dark:text-white">{request.full_name}</p>
+                      <p className="font-medium text-white">{request.full_name}</p>
                       <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${
                         request.status === 'pending' ? 'bg-amber-100 text-amber-800' :
                         request.status === 'verified' ? 'bg-green-100 text-green-800' :
@@ -222,11 +222,11 @@ export default function LegacyRequestsPage() {
           {/* Request Details */}
           <div className="lg:col-span-3">
             {selectedRequest ? (
-              <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D]">
-                <div className="p-6 border-b border-gray-200 dark:border-[#2D2D2D]">
+              <div className="bg-[#12151C] rounded-xl border border-white/[0.06]">
+                <div className="p-6 border-b border-white/[0.06]">
                   <div className="flex items-start justify-between">
                     <div>
-                      <h2 className="text-xl font-bold text-gray-900 dark:text-white">{selectedRequest.full_name}</h2>
+                      <h2 className="text-xl font-bold text-white">{selectedRequest.full_name}</h2>
                       <p className="text-gray-500">{selectedRequest.email}</p>
                     </div>
                     <span className={`px-3 py-1 text-sm font-semibold rounded-full flex items-center gap-1 ${
@@ -247,28 +247,28 @@ export default function LegacyRequestsPage() {
                   <div>
                     <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Personal Information</h3>
                     <div className="grid sm:grid-cols-2 gap-4">
-                      <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-[#252525] rounded-lg">
+                      <div className="flex items-center gap-3 p-3 bg-white/[0.04] rounded-lg">
                         <User className="w-5 h-5 text-gray-400" />
                         <div>
                           <p className="text-xs text-gray-500">Phone</p>
                           <p className="font-medium">{selectedRequest.phone}</p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-[#252525] rounded-lg">
+                      <div className="flex items-center gap-3 p-3 bg-white/[0.04] rounded-lg">
                         <Building className="w-5 h-5 text-gray-400" />
                         <div>
                           <p className="text-xs text-gray-500">Branch</p>
                           <p className="font-medium">{branchLabels[selectedRequest.branch]}</p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-[#252525] rounded-lg">
+                      <div className="flex items-center gap-3 p-3 bg-white/[0.04] rounded-lg">
                         <MapPin className="w-5 h-5 text-gray-400" />
                         <div>
                           <p className="text-xs text-gray-500">Zone</p>
                           <p className="font-medium">{zoneLabels[selectedRequest.crosspoint_zone]}</p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-[#252525] rounded-lg">
+                      <div className="flex items-center gap-3 p-3 bg-white/[0.04] rounded-lg">
                         <Calendar className="w-5 h-5 text-gray-400" />
                         <div>
                           <p className="text-xs text-gray-500">Requested</p>
@@ -301,7 +301,7 @@ export default function LegacyRequestsPage() {
                   {selectedRequest.additional_info && (
                     <div>
                       <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Additional Information</h3>
-                      <p className="p-4 bg-gray-50 dark:bg-[#252525] rounded-lg text-gray-700 dark:text-gray-300">
+                      <p className="p-4 bg-white/[0.04] rounded-lg text-white/70">
                         {selectedRequest.additional_info}
                       </p>
                     </div>
@@ -335,15 +335,15 @@ export default function LegacyRequestsPage() {
 
                   {/* Review Actions */}
                   {selectedRequest.status === 'pending' && (
-                    <div className="space-y-4 pt-4 border-t border-gray-200 dark:border-[#2D2D2D]">
+                    <div className="space-y-4 pt-4 border-t border-white/[0.06]">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Review Notes (optional)</label>
+                        <label className="block text-sm font-medium text-white/70 mb-2">Review Notes (optional)</label>
                         <textarea
                           value={reviewNotes}
                           onChange={(e) => setReviewNotes(e.target.value)}
                           rows={3}
                           placeholder="Add any notes about this verification..."
-                          className="w-full px-4 py-3 border border-gray-300 dark:border-[#2D2D2D] rounded-lg bg-white dark:bg-[#252525]"
+                          className="w-full px-4 py-3 border border-white/10 dark:border-[#2D2D2D] rounded-lg bg-[#12151C]"
                         />
                       </div>
                       <div className="flex gap-3">
@@ -367,7 +367,7 @@ export default function LegacyRequestsPage() {
                 </div>
               </div>
             ) : (
-              <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-12 text-center">
+              <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-12 text-center">
                 <User className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                 <p className="text-gray-500">Select a request to view details</p>
               </div>

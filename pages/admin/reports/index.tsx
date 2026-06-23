@@ -87,7 +87,7 @@ export default function ReportsPage() {
         title="Reports & Analytics"
         subtitle="Church growth and engagement metrics"
         actions={
-          <button className="flex items-center gap-2 px-4 py-2 text-sm font-medium border border-gray-300 dark:border-[#2D2D2D] rounded-lg hover:bg-gray-50">
+          <button className="flex items-center gap-2 px-4 py-2 text-sm font-medium border border-white/10 dark:border-[#2D2D2D] rounded-lg hover:bg-gray-50">
             <Download className="w-4 h-4" />Export Report
           </button>
         }
@@ -102,7 +102,7 @@ export default function ReportsPage() {
             className={`px-4 py-2 text-sm font-medium rounded-lg capitalize ${
               period === p
                 ? 'bg-[#BF0A30] text-white'
-                : 'bg-white dark:bg-[#1A1A1A] border border-gray-200 dark:border-[#2D2D2D] text-gray-600'
+                : 'bg-[#12151C] border border-white/[0.06] text-gray-600'
             }`}
           >
             This {p}
@@ -112,51 +112,51 @@ export default function ReportsPage() {
 
       {/* Overview Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-6">
+        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-6">
           <div className="flex items-center justify-between mb-2">
             <Users className="w-5 h-5 text-[#BF0A30]" />
           </div>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total_members}</p>
+          <p className="text-2xl font-bold text-white">{stats.total_members}</p>
           <p className="text-sm text-gray-500">Total Members</p>
         </div>
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-6">
+        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-6">
           <div className="flex items-center justify-between mb-2">
             <Home className="w-5 h-5 text-[#BF0A30]" />
           </div>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.active_crosspoints}</p>
+          <p className="text-2xl font-bold text-white">{stats.active_crosspoints}</p>
           <p className="text-sm text-gray-500">Active Crosspoints</p>
         </div>
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-6">
+        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-6">
           <div className="flex items-center justify-between mb-2">
             <TrendingUp className="w-5 h-5 text-[#BF0A30]" />
           </div>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total_guests}</p>
+          <p className="text-2xl font-bold text-white">{stats.total_guests}</p>
           <p className="text-sm text-gray-500">Total Guests</p>
         </div>
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-6">
+        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-6">
           <div className="flex items-center justify-between mb-2">
             <Calendar className="w-5 h-5 text-[#BF0A30]" />
           </div>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.upcoming_events}</p>
+          <p className="text-2xl font-bold text-white">{stats.upcoming_events}</p>
           <p className="text-sm text-gray-500">Upcoming Events</p>
         </div>
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Department Distribution */}
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-6">
+        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-6">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="font-semibold text-gray-900 dark:text-white">Department Distribution</h2>
+            <h2 className="font-semibold text-white">Department Distribution</h2>
             <PieChart className="w-5 h-5 text-gray-400" />
           </div>
           <div className="space-y-4">
             {departmentStats.map((dept, i) => (
               <div key={i}>
                 <div className="flex items-center justify-between text-sm mb-1">
-                  <span className="text-gray-700 dark:text-gray-300">{dept.name}</span>
+                  <span className="text-white/70">{dept.name}</span>
                   <span className="font-medium">{dept.member_count}</span>
                 </div>
-                <div className="h-2 bg-gray-100 dark:bg-[#252525] rounded-full overflow-hidden">
+                <div className="h-2 bg-white/5 rounded-full overflow-hidden">
                   <div className="h-full bg-[#BF0A30] rounded-full" style={{ width: `${Math.min((dept.member_count / 100) * 100, 100)}%` }} />
                 </div>
               </div>
@@ -166,9 +166,9 @@ export default function ReportsPage() {
         </div>
 
         {/* Crosspoint Capacity */}
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-6">
+        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-6">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="font-semibold text-gray-900 dark:text-white">Crosspoint Capacity</h2>
+            <h2 className="font-semibold text-white">Crosspoint Capacity</h2>
             <Home className="w-5 h-5 text-gray-400" />
           </div>
           <div className="space-y-4">
@@ -177,10 +177,10 @@ export default function ReportsPage() {
               return (
                 <div key={i}>
                   <div className="flex items-center justify-between text-sm mb-1">
-                    <span className="text-gray-700 dark:text-gray-300">{cp.name.replace(' Crosspoint', '')}</span>
+                    <span className="text-white/70">{cp.name.replace(' Crosspoint', '')}</span>
                     <span className="font-medium">{cp.member_count}/{cp.max_members}</span>
                   </div>
-                  <div className="h-2 bg-gray-100 dark:bg-[#252525] rounded-full overflow-hidden">
+                  <div className="h-2 bg-white/5 rounded-full overflow-hidden">
                     <div className={`h-full rounded-full ${pct >= 90 ? 'bg-red-500' : pct >= 70 ? 'bg-amber-500' : 'bg-green-500'}`} style={{ width: `${pct}%` }} />
                   </div>
                 </div>
@@ -191,20 +191,20 @@ export default function ReportsPage() {
         </div>
 
         {/* Quick Stats */}
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-6 lg:col-span-2">
-          <h2 className="font-semibold text-gray-900 dark:text-white mb-6">Quick Stats</h2>
+        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-6 lg:col-span-2">
+          <h2 className="font-semibold text-white mb-6">Quick Stats</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-[#252525] rounded-lg">
-              <span className="text-gray-600 dark:text-gray-400">Prayer Requests Answered</span>
-              <span className="font-bold text-gray-900 dark:text-white">{prayerAnsweredPct}%</span>
+            <div className="flex items-center justify-between p-4 bg-white/[0.04] rounded-lg">
+              <span className="text-white/50">Prayer Requests Answered</span>
+              <span className="font-bold text-white">{prayerAnsweredPct}%</span>
             </div>
-            <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-[#252525] rounded-lg">
-              <span className="text-gray-600 dark:text-gray-400">Active Members</span>
-              <span className="font-bold text-gray-900 dark:text-white">{stats.total_members}</span>
+            <div className="flex items-center justify-between p-4 bg-white/[0.04] rounded-lg">
+              <span className="text-white/50">Active Members</span>
+              <span className="font-bold text-white">{stats.total_members}</span>
             </div>
-            <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-[#252525] rounded-lg">
-              <span className="text-gray-600 dark:text-gray-400">Active Crosspoints</span>
-              <span className="font-bold text-gray-900 dark:text-white">{stats.active_crosspoints}</span>
+            <div className="flex items-center justify-between p-4 bg-white/[0.04] rounded-lg">
+              <span className="text-white/50">Active Crosspoints</span>
+              <span className="font-bold text-white">{stats.active_crosspoints}</span>
             </div>
           </div>
         </div>

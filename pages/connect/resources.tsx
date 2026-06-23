@@ -117,8 +117,8 @@ export default function ResourcesPage() {
       {/* ── View resource modal ──────────────────────────────────────────────── */}
       {viewResource && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-white dark:bg-[#141414] rounded-2xl border border-gray-200 dark:border-white/[0.06] w-full max-w-lg shadow-2xl animate-fade-in-scale">
-            <div className="p-5 border-b border-gray-100 dark:border-white/[0.05] flex items-center justify-between">
+          <div className="bg-[#12151C] rounded-2xl border border-white/[0.06] w-full max-w-lg shadow-2xl animate-fade-in-scale">
+            <div className="p-5 border-b border-white/[0.04] flex items-center justify-between">
               <div className="flex items-center gap-3">
                 {(() => {
                   const cfg = TYPE_CONFIG[viewResource.type];
@@ -130,17 +130,17 @@ export default function ResourcesPage() {
                   );
                 })()}
                 <div>
-                  <h3 className="font-semibold text-gray-900 dark:text-white">{viewResource.title}</h3>
+                  <h3 className="font-semibold text-white">{viewResource.title}</h3>
                   <p className="text-xs text-gray-500">{TYPE_CONFIG[viewResource.type].label} · Added {viewResource.addedAt}</p>
                 </div>
               </div>
-              <button onClick={() => setViewResource(null)} className="p-1.5 rounded-xl text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5">
+              <button onClick={() => setViewResource(null)} className="p-1.5 rounded-xl text-gray-400 hover:bg-gray-100">
                 <X className="w-4 h-4" />
               </button>
             </div>
             <div className="p-5">
               {viewResource.description && (
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-5 leading-relaxed">{viewResource.description}</p>
+                <p className="text-sm text-white/50 mb-5 leading-relaxed">{viewResource.description}</p>
               )}
               <div className="grid grid-cols-3 gap-3 mb-5">
                 {[
@@ -148,8 +148,8 @@ export default function ResourcesPage() {
                   { label: 'Views', val: viewResource.views },
                   { label: 'Size', val: viewResource.size || '—' },
                 ].map(({ label, val }) => (
-                  <div key={label} className="text-center bg-gray-50 dark:bg-[#1A1A1A] rounded-xl p-3">
-                    <p className="font-bold text-gray-900 dark:text-white">{val}</p>
+                  <div key={label} className="text-center bg-[#0A0C10] rounded-xl p-3">
+                    <p className="font-bold text-white">{val}</p>
                     <p className="text-xs text-gray-500">{label}</p>
                   </div>
                 ))}
@@ -169,13 +169,13 @@ export default function ResourcesPage() {
       {/* ── Upload modal ─────────────────────────────────────────────────────── */}
       {showUploadModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-white dark:bg-[#141414] rounded-2xl border border-gray-200 dark:border-white/[0.06] w-full max-w-md shadow-2xl animate-fade-in-scale">
+          <div className="bg-[#12151C] rounded-2xl border border-white/[0.06] w-full max-w-md shadow-2xl animate-fade-in-scale">
             {uploadStep === 'success' ? (
               <div className="p-8 text-center">
                 <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
                   <CheckCircle className="w-8 h-8 text-green-600" />
                 </div>
-                <h3 className="font-bold text-gray-900 dark:text-white text-lg mb-2">Resource Added!</h3>
+                <h3 className="font-bold text-white text-lg mb-2">Resource Added!</h3>
                 <p className="text-gray-500 text-sm mb-5">{newTitle} has been shared with the cohort</p>
                 <div className="flex gap-3">
                   <button onClick={closeUploadModal} className="btn btn-secondary flex-1">Done</button>
@@ -184,9 +184,9 @@ export default function ResourcesPage() {
               </div>
             ) : (
               <>
-                <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-white/[0.05]">
-                  <h3 className="font-bold text-gray-900 dark:text-white">Add Resource</h3>
-                  <button onClick={closeUploadModal} className="p-1.5 rounded-xl text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5">
+                <div className="flex items-center justify-between p-5 border-b border-gray-100">
+                  <h3 className="font-bold text-white">Add Resource</h3>
+                  <button onClick={closeUploadModal} className="p-1.5 rounded-xl text-gray-400 hover:bg-gray-100">
                     <X className="w-4 h-4" />
                   </button>
                 </div>
@@ -207,7 +207,7 @@ export default function ResourcesPage() {
                             className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 text-xs font-medium transition-all ${
                               newType === key
                                 ? `border-[#BF0A30] ${cfg.bg}`
-                                : 'border-gray-200 dark:border-[#2D2D2D] hover:border-gray-300 dark:hover:border-[#3D3D3D]'
+                                : 'border-white/[0.06] hover:border-white/10 dark:hover:border-[#3D3D3D]'
                             }`}
                           >
                             <Icon className={`w-4 h-4 ${newType === key ? cfg.color : 'text-gray-500'}`} />
@@ -227,9 +227,9 @@ export default function ResourcesPage() {
                   ) : (
                     <div className="form-group">
                       <label className="form-label">File</label>
-                      <div className="border-2 border-dashed border-gray-300 dark:border-[#2D2D2D] rounded-xl p-6 text-center hover:border-[#BF0A30] transition-colors cursor-pointer">
+                      <div className="border-2 border-dashed border-white/10 dark:border-[#2D2D2D] rounded-xl p-6 text-center hover:border-[#BF0A30] transition-colors cursor-pointer">
                         <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                        <p className="text-sm text-gray-600 dark:text-gray-400">Click to upload or drag & drop</p>
+                        <p className="text-sm text-white/50">Click to upload or drag & drop</p>
                         <p className="text-xs text-gray-400 mt-1">PDF, PPTX, MP4, DOC (max 50MB)</p>
                       </div>
                     </div>
@@ -296,7 +296,7 @@ export default function ResourcesPage() {
                 className={`px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all capitalize ${
                   filterType === t
                     ? 'bg-[#BF0A30] text-white border-[#BF0A30]'
-                    : 'bg-white dark:bg-[#1A1A1A] text-gray-600 dark:text-gray-400 border-gray-200 dark:border-[#2D2D2D] hover:border-[#BF0A30]'
+                    : 'bg-[#12151C] text-white/50 border-white/[0.06] hover:border-[#BF0A30]'
                 }`}
               >{t}</button>
             ))}
@@ -311,7 +311,7 @@ export default function ResourcesPage() {
             { label: 'Total Views', val: cohortResources.reduce((s, r) => s + r.views, 0), color: 'text-green-500' },
             { label: 'Cohort Members', val: cohort?.enrolledCount ?? 0, color: 'text-purple-500' },
           ].map(({ label, val, color }) => (
-            <div key={label} className="bg-white dark:bg-[#141414] rounded-xl border border-gray-200/70 dark:border-white/[0.05] p-4 shadow-sm">
+            <div key={label} className="bg-[#12151C] rounded-xl border border-white/[0.06]/70 p-4 shadow-sm">
               <p className={`text-xl font-black ${color}`}>{val}</p>
               <p className="text-xs text-gray-500 mt-0.5">{label}</p>
             </div>
@@ -319,7 +319,7 @@ export default function ResourcesPage() {
         </div>
 
         {cohortResources.length === 0 ? (
-          <div className="text-center py-16 bg-white dark:bg-[#141414] rounded-2xl border border-gray-200/70 dark:border-white/[0.05]">
+          <div className="text-center py-16 bg-[#12151C] rounded-2xl border border-white/[0.06]/70">
             <FolderOpen className="w-12 h-12 text-gray-300 mx-auto mb-3" />
             <p className="text-gray-500 font-medium mb-1">No resources yet</p>
             <p className="text-gray-400 text-sm mb-5">Add slides, PDFs or videos for your students</p>
@@ -376,7 +376,7 @@ function ResourceCard({ resource, onView, onDelete }: {
       </div>
 
       <div className="flex-1 min-w-0">
-        <p className="font-semibold text-gray-900 dark:text-white text-sm truncate">{resource.title}</p>
+        <p className="font-semibold text-white text-sm truncate">{resource.title}</p>
         <div className="flex items-center gap-3 mt-0.5">
           <span className={`text-xs font-semibold ${cfg.color}`}>{cfg.label}</span>
           {resource.size && <span className="text-xs text-gray-400">{resource.size}</span>}
@@ -401,9 +401,9 @@ function ResourceCard({ resource, onView, onDelete }: {
             <MoreVertical className="w-4 h-4" />
           </button>
           {menuOpen && (
-            <div className="absolute right-0 top-full mt-1 bg-white dark:bg-[#1A1A1A] border border-gray-200 dark:border-[#2D2D2D] rounded-xl shadow-xl z-10 py-1 w-36">
+            <div className="absolute right-0 top-full mt-1 bg-[#12151C] border border-white/[0.06] rounded-xl shadow-xl z-10 py-1 w-36">
               <a href={resource.url} target="_blank" rel="noopener noreferrer"
-                className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5">
+                className="flex items-center gap-2 px-3 py-2 text-sm text-white/70 hover:bg-gray-50">
                 <Download className="w-3.5 h-3.5" /> Download
               </a>
               <button onClick={() => { onDelete(resource.id); setMenuOpen(false); }}

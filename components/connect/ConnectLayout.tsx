@@ -36,7 +36,7 @@ export function ConnectLayout({ children, title, notificationCount = 0 }: Connec
     router.pathname === href || router.pathname.startsWith(href + '/');
 
   return (
-    <div className="min-h-screen bg-[#F0F2F5] dark:bg-[#080808]">
+    <div className="min-h-screen bg-[#0A0C10]">
 
       {/* Mobile backdrop */}
       {sidebarOpen && (
@@ -52,7 +52,7 @@ export function ConnectLayout({ children, title, notificationCount = 0 }: Connec
         flex flex-col
         bg-white/95 dark:bg-[#111111]/98
         backdrop-blur-2xl
-        border border-white/80 dark:border-white/[0.06]
+        border border-white/80
         rounded-2xl
         shadow-2xl shadow-black/10 dark:shadow-black/60
         transition-transform duration-300 ease-out
@@ -67,19 +67,19 @@ export function ConnectLayout({ children, title, notificationCount = 0 }: Connec
               <img src="/images/ruaach.png" alt="Ruach" className="w-6 h-6 rounded-full opacity-90" />
             </div>
             <div>
-              <p className="text-[13px] font-black text-gray-900 dark:text-white leading-tight tracking-tight">Connect</p>
+              <p className="text-[13px] font-black text-white leading-tight tracking-tight">Connect</p>
               <p className="text-[10px] text-gray-400 leading-tight">Teacher Portal</p>
             </div>
           </Link>
           <button
             onClick={() => setSidebarOpen(false)}
-            className="lg:hidden p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-white/5"
+            className="lg:hidden p-1.5 rounded-lg text-gray-400 hover:text-white/50 hover:bg-gray-100"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        <div className="mx-4 h-px bg-gray-100 dark:bg-white/[0.05]" />
+        <div className="mx-4 h-px bg-white/5 dark:bg-white/[0.05]" />
 
         {/* Nav */}
         <nav className="flex-1 px-2.5 py-3 space-y-0.5 overflow-y-auto">
@@ -95,11 +95,11 @@ export function ConnectLayout({ children, title, notificationCount = 0 }: Connec
                   transition-all duration-150 group relative
                   ${active
                     ? 'bg-gradient-to-r from-[#BF0A30] to-[#A0021F] text-white shadow-md shadow-[#BF0A30]/25'
-                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/[0.05] hover:text-gray-900 dark:hover:text-white'
+                    : 'text-white/50 hover:bg-white/5 dark:hover:bg-white/[0.05] hover:text-white dark:hover:text-white'
                   }
                 `}
               >
-                <item.icon className={`w-4 h-4 flex-shrink-0 transition-colors ${active ? 'text-white' : 'text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300'}`} />
+                <item.icon className={`w-4 h-4 flex-shrink-0 transition-colors ${active ? 'text-white' : 'text-gray-400 group-hover:text-white/50 dark:group-hover:text-gray-300'}`} />
                 <span className="flex-1 truncate">{item.name}</span>
                 {item.name === 'Messages' && notificationCount > 0 && (
                   <span className="w-4 h-4 bg-[#BF0A30] text-white text-[9px] rounded-full flex items-center justify-center font-black flex-shrink-0">
@@ -112,13 +112,13 @@ export function ConnectLayout({ children, title, notificationCount = 0 }: Connec
           })}
         </nav>
 
-        <div className="mx-4 h-px bg-gray-100 dark:bg-white/[0.05]" />
+        <div className="mx-4 h-px bg-white/5 dark:bg-white/[0.05]" />
 
         {/* Footer */}
         <div className="px-2.5 py-3">
           <Link
             href="/connect"
-            className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-medium text-gray-500 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-white/[0.05] hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+            className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-medium text-gray-500 dark:text-gray-500 hover:bg-white/5 dark:hover:bg-white/[0.05] hover:text-white/70 dark:hover:text-gray-300 transition-colors"
           >
             <LogOut className="w-4 h-4" />
             <span>Sign out</span>
@@ -135,31 +135,31 @@ export function ConnectLayout({ children, title, notificationCount = 0 }: Connec
             flex items-center justify-between px-4 h-14
             bg-white/95 dark:bg-[#111111]/98
             backdrop-blur-2xl
-            border border-white/80 dark:border-white/[0.06]
+            border border-white/80
             rounded-2xl
             shadow-lg shadow-black/5 dark:shadow-black/40
           ">
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setSidebarOpen(true)}
-                className="lg:hidden p-2 -ml-1 rounded-xl text-gray-500 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors"
+                className="lg:hidden p-2 -ml-1 rounded-xl text-gray-500 hover:bg-white/5 transition-colors"
               >
                 <Menu className="w-5 h-5" />
               </button>
               <div className="lg:hidden h-5 w-px bg-gray-200 dark:bg-white/10" />
-              <h1 className="text-[15px] font-bold text-gray-800 dark:text-white tracking-tight">{title || 'Dashboard'}</h1>
+              <h1 className="text-[15px] font-bold text-white tracking-tight">{title || 'Dashboard'}</h1>
             </div>
 
             <div className="flex items-center gap-1">
               <button
                 onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                className="p-2.5 rounded-xl text-gray-500 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-700 dark:hover:text-white transition-colors"
+                className="p-2.5 rounded-xl text-gray-500 hover:bg-white/5 hover:text-white/70 dark:hover:text-white transition-colors"
                 title="Toggle theme"
               >
                 {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
               </button>
 
-              <Link href="/connect/messages" className="relative p-2.5 rounded-xl text-gray-500 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-700 dark:hover:text-white transition-colors">
+              <Link href="/connect/messages" className="relative p-2.5 rounded-xl text-gray-500 hover:bg-white/5 hover:text-white/70 dark:hover:text-white transition-colors">
                 <Bell className="w-4 h-4" />
                 {notificationCount > 0 && (
                   <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#BF0A30] rounded-full ring-2 ring-white dark:ring-[#111]" />

@@ -1,121 +1,128 @@
 // pages/admin/crosspoints/modules/index.tsx
 // Admin: Manage crosspoint weekly study modules — publish, draft, edit
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import {
   Plus, BookOpen, Edit, Eye, Download, ChevronDown, ChevronUp,
   CheckCircle, Clock, Globe, Users, MessageSquare, Flame,
-  Search, Filter, MoreVertical, Copy, Trash2, ArrowUpRight
+  Search, MoreVertical, Copy, Trash2, ArrowUpRight, Loader2
 } from 'lucide-react';
 import { AdminLayout, PageHeader } from '@/components/connect/AdminLayout';
-import { mockCrosspointModules } from '@/data';
+import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/context/AuthContext';
 
-const MOCK_DATA = true;
+const db = supabase as any;
 
 type ModuleStatus = 'published' | 'draft' | 'scheduled';
 
-interface EnrichedModule {
+interface ModuleRow {
   id: string;
   title: string;
   description: string;
   scripture: string;
   content: string;
-  discussionQuestions: string[];
-  prayerPoints: string[];
-  weekNumber: number;
+  discussion_questions: string[];
+  prayer_points: string[];
+  week_number: number;
   status: ModuleStatus;
-  publishedAt:  string | undefined;
-  scheduledFor?: string;
-  crosspointsReceiving: number;
-  seriesName?: string;
+  published_at: string | null;
+  scheduled_for: string | null;
+  series_name: string | null;
+  created_at: string;
 }
 
-const ENRICHED_MODULES: EnrichedModule[] = MOCK_DATA
-  ? mockCrosspointModules.map((m, i) => ({
-      ...m,
-      status: (i === 0 ? 'published' : i === 1 ? 'published' : i === 2 ? 'published' : 'draft') as ModuleStatus,
-      publishedAt: i < 3 ? ['2026-04-21', '2026-04-28', '2026-05-05'][i] : undefined,
-      crosspointsReceiving: 24,
-      seriesName: 'Foundations of Faith',
-    })).concat([
-      {
-        id: 'cpm-004',
-        title: 'The Fruit of the Spirit',
-        description: 'Living a Spirit-led life that produces godly character',
-        scripture: 'Galatians 5:22-23',
-        content: 'The fruit of the Spirit is not something we produce by human effort...',
-        discussionQuestions: [
-          'Which fruit of the Spirit do you find most difficult to walk in?',
-          'How has the Holy Spirit transformed your character over time?',
-          'What practical steps can you take to yield more to the Spirit this week?',
-        ],
-        prayerPoints: [
-          'Pray for the Holy Spirit to produce His fruit in each member',
-          'Pray for patience and kindness to mark our interactions',
-          "Pray for a greater sensitivity to the Spirit's leading",
-        ],
-        weekNumber: 4,
-        status: 'draft' as ModuleStatus,
-        publishedAt: undefined,
-        crosspointsReceiving: 0,
-        seriesName: 'Foundations of Faith',
-      },
-      {
-        id: 'cpm-005',
-        title: 'Stewardship and Generosity',
-        description: 'Understanding biblical stewardship of time, talent, and treasure',
-        scripture: 'Luke 16:10, Malachi 3:10',
-        content: 'Everything we have belongs to God — we are stewards...',
-        discussionQuestions: [
-          'What does stewardship mean to you personally?',
-          'How do you view tithing and giving?',
-          "Share a testimony of God's faithfulness in generosity.",
-        ],
-        prayerPoints: [
-          'Pray for financial breakthrough in families',
-          'Pray for a spirit of generosity to increase',
-          'Pray for wisdom in managing what God has given us',
-        ],
-        weekNumber: 5,
-        status: 'draft' as ModuleStatus,
-        publishedAt: undefined,
-        crosspointsReceiving: 0,
-        seriesName: 'Foundations of Faith',
-      },
-    ])
-  : [];
-
 const STATUS_CONFIG: Record<ModuleStatus, { label: string; color: string; bg: string; icon: typeof CheckCircle }> = {
-  published: { label: 'Published', color: 'text-green-700 dark:text-green-400', bg: 'bg-green-100 dark:bg-green-900/30', icon: CheckCircle },
-  draft:     { label: 'Draft',     color: 'text-amber-700 dark:text-amber-400', bg: 'bg-amber-100 dark:bg-amber-900/30', icon: Clock },
-  scheduled: { label: 'Scheduled', color: 'text-blue-700 dark:text-blue-400',   bg: 'bg-blue-100 dark:bg-blue-900/30',   icon: Clock },
+  published: { label: 'Published', color: 'text-green-400', bg: 'bg-green-900/30', icon: CheckCircle },
+  draft:     { label: 'Draft',     color: 'text-amber-400', bg: 'bg-amber-900/30', icon: Clock },
+  scheduled: { label: 'Scheduled', color: 'text-blue-400',  bg: 'bg-blue-900/30',  icon: Clock },
 };
 
 export default function CrosspointModulesPage() {
-  const [expandedId,   setExpandedId]   = useState<string | null>(null);
-  const [filter,       setFilter]       = useState<'all' | ModuleStatus>('all');
-  const [search,       setSearch]       = useState('');
-  const [openMenu,     setOpenMenu]     = useState<string | null>(null);
+  const router = useRouter();
+  const { profile, loading: authLoading, session } = useAuth();
 
-  const currentWeek = 3;
+  const [loading, setLoading] = useState(true);
+  const [modules, setModules] = useState<ModuleRow[]>([]);
+  const [crosspointCount, setCrosspointCount] = useState(0);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [filter, setFilter] = useState<'all' | ModuleStatus>('all');
+  const [search, setSearch] = useState('');
+  const [openMenu, setOpenMenu] = useState<string | null>(null);
 
-  const currentModule = ENRICHED_MODULES.find(m => m.weekNumber === currentWeek);
+  useEffect(() => {
+    if (authLoading) return;
+    if (!profile) { router.push('/auth/login?redirectTo=' + router.asPath); return; }
+    if (!['admin', 'pastor', 'teacher', 'leader'].includes(profile.role)) { router.push('/'); return; }
+    loadData();
+  }, [authLoading, profile]);
 
-  const filtered = ENRICHED_MODULES.filter(m => {
+  async function loadData() {
+    setLoading(true);
+
+    const [{ data: modData }, { count: cpCount }] = await Promise.all([
+      db.from('crosspoint_modules').select('*').order('created_at', { ascending: false }),
+      db.from('crosspoints').select('id', { count: 'exact', head: true }).eq('status', 'active'),
+    ]);
+
+    let rows = (modData ?? []) as ModuleRow[];
+
+    // If empty, seed a sample module
+    if (rows.length === 0 && session?.access_token) {
+      const seedModule = {
+        title: 'Test Module — Getting Started',
+        description: 'A sample module to help you get started with crosspoint study materials.',
+        scripture: 'Psalm 119:105',
+        content: 'This is a sample module. Replace it with your own content or delete it and create a new one.',
+        discussion_questions: ['What does this verse mean to you?', 'How can we apply this in our crosspoint?'],
+        prayer_points: ['Pray for wisdom as we study together', 'Pray for unity in our crosspoints'],
+        week_number: 1,
+        status: 'draft',
+        series_name: 'Sample Series',
+      };
+
+      const { data: inserted } = await db
+        .from('crosspoint_modules')
+        .insert(seedModule)
+        .select()
+        .single();
+
+      if (inserted) rows = [inserted as ModuleRow];
+    }
+
+    setModules(rows);
+    setCrosspointCount(cpCount ?? 0);
+    setLoading(false);
+  }
+
+  const currentWeek = modules.find(m => m.status === 'published')?.week_number ?? 0;
+  const currentModule = modules.find(m => m.week_number === currentWeek && m.status === 'published');
+
+  const filtered = modules.filter(m => {
     if (filter !== 'all' && m.status !== filter) return false;
     if (search && !m.title.toLowerCase().includes(search.toLowerCase()) && !m.scripture.toLowerCase().includes(search.toLowerCase())) return false;
     return true;
   });
 
-  const published = ENRICHED_MODULES.filter(m => m.status === 'published').length;
-  const drafts    = ENRICHED_MODULES.filter(m => m.status === 'draft').length;
+  const published = modules.filter(m => m.status === 'published').length;
+  const drafts = modules.filter(m => m.status === 'draft').length;
+
+  if (loading) {
+    return (
+      <AdminLayout title="Crosspoint Modules">
+        <div className="flex items-center justify-center py-24">
+          <Loader2 className="w-7 h-7 text-[#BF0A30] animate-spin" />
+        </div>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout title="Crosspoint Modules">
       <PageHeader
         title="Crosspoint Modules"
-        subtitle="Weekly study materials shared to all 24 crosspoints"
+        subtitle={`Weekly study materials shared to all ${crosspointCount} crosspoints`}
         actions={
           <Link href="/admin/crosspoints/modules/new" className="btn btn-primary gap-2">
             <Plus className="w-4 h-4" /> Create Module
@@ -126,17 +133,17 @@ export default function CrosspointModulesPage() {
       {/* Stats row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
         {[
-          { label: 'Total Modules',   value: ENRICHED_MODULES.length, icon: BookOpen,  color: 'text-[#BF0A30]',   bg: 'bg-red-50 dark:bg-red-900/20' },
-          { label: 'Published',       value: published,                icon: CheckCircle, color: 'text-green-600', bg: 'bg-green-50 dark:bg-green-900/20' },
-          { label: 'Drafts',          value: drafts,                   icon: Clock,     color: 'text-amber-600',   bg: 'bg-amber-50 dark:bg-amber-900/20' },
-          { label: 'Crosspoints',     value: 24,                       icon: Users,     color: 'text-blue-600',    bg: 'bg-blue-50 dark:bg-blue-900/20' },
+          { label: 'Total Modules',   value: modules.length,   icon: BookOpen,    color: 'text-[#BF0A30]', bg: 'bg-red-900/20' },
+          { label: 'Published',       value: published,        icon: CheckCircle, color: 'text-green-600', bg: 'bg-green-900/20' },
+          { label: 'Drafts',          value: drafts,           icon: Clock,       color: 'text-amber-600', bg: 'bg-amber-900/20' },
+          { label: 'Crosspoints',     value: crosspointCount,  icon: Users,       color: 'text-blue-600',  bg: 'bg-blue-900/20' },
         ].map(stat => (
-          <div key={stat.label} className="bg-white dark:bg-[#1A1A1A] rounded-2xl border border-gray-200 dark:border-[#2D2D2D] p-4 flex items-center gap-3">
+          <div key={stat.label} className="bg-[#12151C] rounded-2xl border border-white/[0.06] p-4 flex items-center gap-3">
             <div className={`w-10 h-10 rounded-xl ${stat.bg} flex items-center justify-center flex-shrink-0`}>
               <stat.icon className={`w-5 h-5 ${stat.color}`} />
             </div>
             <div>
-              <p className="text-xl font-black text-gray-900 dark:text-white leading-none">{stat.value}</p>
+              <p className="text-xl font-black text-white leading-none">{stat.value}</p>
               <p className="text-xs text-gray-500 mt-0.5">{stat.label}</p>
             </div>
           </div>
@@ -146,7 +153,6 @@ export default function CrosspointModulesPage() {
       {/* This Week's Module Hero */}
       {currentModule && (
         <div className="relative bg-gradient-to-r from-[#BF0A30] to-[#8B0017] rounded-2xl p-6 mb-6 text-white overflow-hidden">
-          {/* background texture */}
           <div className="absolute inset-0 opacity-[0.04]" style={{
             backgroundImage: 'repeating-linear-gradient(45deg, #fff 0, #fff 1px, transparent 0, transparent 50%)',
             backgroundSize: '12px 12px',
@@ -156,11 +162,13 @@ export default function CrosspointModulesPage() {
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-3">
                   <span className="px-2.5 py-1 bg-white/20 rounded-full text-xs font-bold tracking-wider uppercase">
-                    Week {currentModule.weekNumber} · Current
+                    Week {currentModule.week_number} · Current
                   </span>
-                  <span className="px-2.5 py-1 bg-white/20 rounded-full text-xs font-bold tracking-wider">
-                    {currentModule.seriesName}
-                  </span>
+                  {currentModule.series_name && (
+                    <span className="px-2.5 py-1 bg-white/20 rounded-full text-xs font-bold tracking-wider">
+                      {currentModule.series_name}
+                    </span>
+                  )}
                 </div>
                 <h2 className="text-2xl font-black mb-1 tracking-tight">{currentModule.title}</h2>
                 <p className="text-white/80 font-medium mb-1 italic">{currentModule.scripture}</p>
@@ -170,15 +178,15 @@ export default function CrosspointModulesPage() {
                 <button className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 border border-white/30 rounded-xl text-sm font-semibold transition-colors">
                   <Download className="w-4 h-4" /> PDF
                 </button>
-                <Link href={`/admin/crosspoints/modules/${currentModule.weekNumber}`} className="flex items-center gap-2 px-4 py-2 bg-white text-[#BF0A30] rounded-xl text-sm font-semibold hover:bg-white/90 transition-colors">
+                <Link href={`/admin/crosspoints/modules/${currentModule.week_number}`} className="flex items-center gap-2 px-4 py-2 bg-[#12151C] text-[#BF0A30] rounded-xl text-sm font-semibold hover:bg-white/90 transition-colors">
                   <Eye className="w-4 h-4" /> Preview
                 </Link>
               </div>
             </div>
             <div className="flex items-center gap-4 mt-4 pt-4 border-t border-white/20 text-sm text-white/70">
-              <span className="flex items-center gap-1.5"><Users className="w-4 h-4" /> {currentModule.crosspointsReceiving} crosspoints receiving</span>
-              <span className="flex items-center gap-1.5"><MessageSquare className="w-4 h-4" /> {currentModule.discussionQuestions.length} discussion questions</span>
-              <span className="flex items-center gap-1.5"><Flame className="w-4 h-4" /> {currentModule.prayerPoints.length} prayer points</span>
+              <span className="flex items-center gap-1.5"><Users className="w-4 h-4" /> {crosspointCount} crosspoints receiving</span>
+              <span className="flex items-center gap-1.5"><MessageSquare className="w-4 h-4" /> {currentModule.discussion_questions?.length ?? 0} discussion questions</span>
+              <span className="flex items-center gap-1.5"><Flame className="w-4 h-4" /> {currentModule.prayer_points?.length ?? 0} prayer points</span>
             </div>
           </div>
         </div>
@@ -191,7 +199,7 @@ export default function CrosspointModulesPage() {
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
-            placeholder="Search modules…"
+            placeholder="Search modules..."
             className="input pl-9"
           />
         </div>
@@ -203,17 +211,17 @@ export default function CrosspointModulesPage() {
               className={`px-4 py-2 rounded-xl text-sm font-semibold transition-colors capitalize ${
                 filter === f
                   ? 'bg-[#BF0A30] text-white'
-                  : 'bg-white dark:bg-[#1A1A1A] border border-gray-200 dark:border-[#2D2D2D] text-gray-600 dark:text-gray-400 hover:border-gray-300'
+                  : 'bg-[#12151C] border border-white/[0.06] text-white/50 hover:border-gray-300'
               }`}
             >
-              {f === 'all' ? `All (${ENRICHED_MODULES.length})` : f === 'published' ? `Published (${published})` : `Drafts (${drafts})`}
+              {f === 'all' ? `All (${modules.length})` : f === 'published' ? `Published (${published})` : `Drafts (${drafts})`}
             </button>
           ))}
         </div>
       </div>
 
       {/* Modules List */}
-      <div className="bg-white dark:bg-[#1A1A1A] rounded-2xl border border-gray-200 dark:border-[#2D2D2D] overflow-hidden">
+      <div className="bg-[#12151C] rounded-2xl border border-white/[0.06] overflow-hidden">
         {filtered.length === 0 ? (
           <div className="py-16 text-center">
             <BookOpen className="w-12 h-12 text-gray-300 mx-auto mb-3" />
@@ -221,33 +229,33 @@ export default function CrosspointModulesPage() {
             <p className="text-sm text-gray-400">Try adjusting the filter or search</p>
           </div>
         ) : (
-          <div className="divide-y divide-gray-100 dark:divide-[#2D2D2D]">
+          <div className="divide-y divide-white/[0.06]">
             {filtered.map(module => {
               const expanded = expandedId === module.id;
-              const statusCfg = STATUS_CONFIG[module.status];
+              const statusCfg = STATUS_CONFIG[module.status] ?? STATUS_CONFIG.draft;
               const StatusIcon = statusCfg.icon;
-              const isCurrent = module.weekNumber === currentWeek;
-              const isPast    = module.weekNumber < currentWeek;
+              const isCurrent = module.week_number === currentWeek;
+              const isPast = module.week_number < currentWeek;
 
               return (
-                <div key={module.id} className={`${isCurrent ? 'bg-red-50/50 dark:bg-red-900/5' : ''}`}>
+                <div key={module.id} className={`${isCurrent ? 'bg-red-900/5' : ''}`}>
                   <div
-                    className="flex items-start gap-4 p-5 hover:bg-gray-50 dark:hover:bg-[#222] cursor-pointer transition-colors"
+                    className="flex items-start gap-4 p-5 hover:bg-[#0A0C10] cursor-pointer transition-colors"
                     onClick={() => setExpandedId(expanded ? null : module.id)}
                   >
                     {/* Week badge */}
                     <div className={`w-12 h-12 rounded-xl flex flex-col items-center justify-center font-black text-sm flex-shrink-0 ${
                       isCurrent ? 'bg-[#BF0A30] text-white shadow-lg shadow-[#BF0A30]/25' :
-                      isPast    ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' :
-                                  'bg-gray-100 dark:bg-[#2A2A2A] text-gray-600 dark:text-gray-400'
+                      isPast    ? 'bg-green-900/30 text-green-400' :
+                                  'bg-[#2A2A2A] text-white/50'
                     }`}>
                       <span className="text-[10px] font-semibold opacity-70">WK</span>
-                      <span className="text-lg leading-none">{module.weekNumber}</span>
+                      <span className="text-lg leading-none">{module.week_number}</span>
                     </div>
 
                     <div className="flex-1 min-w-0">
                       <div className="flex flex-wrap items-center gap-2 mb-1">
-                        <h3 className="font-bold text-gray-900 dark:text-white">{module.title}</h3>
+                        <h3 className="font-bold text-white">{module.title}</h3>
                         <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold rounded-full ${statusCfg.bg} ${statusCfg.color}`}>
                           <StatusIcon className="w-3 h-3" />
                           {statusCfg.label}
@@ -258,25 +266,25 @@ export default function CrosspointModulesPage() {
                       </div>
                       <p className="text-sm text-[#BF0A30] font-medium mb-1">{module.scripture}</p>
                       <p className="text-sm text-gray-500 truncate">{module.description}</p>
-                      {module.publishedAt && (
+                      {module.published_at && (
                         <p className="text-xs text-gray-400 mt-1">
-                          Published {new Date(module.publishedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-                          {' · '}{module.crosspointsReceiving} crosspoints
+                          Published {new Date(module.published_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          {' · '}{crosspointCount} crosspoints
                         </p>
                       )}
                     </div>
 
                     <div className="flex items-center gap-1 flex-shrink-0" onClick={e => e.stopPropagation()}>
                       <Link
-                        href={`/admin/crosspoints/modules/${module.weekNumber}`}
-                        className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                        href={`/admin/crosspoints/modules/${module.week_number}`}
+                        className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-900/20 rounded-lg transition-colors"
                         title="Preview"
                       >
                         <Eye className="w-4 h-4" />
                       </Link>
                       <Link
-                        href={`/admin/crosspoints/modules/${module.weekNumber}/edit`}
-                        className="p-2 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-[#2D2D2D] rounded-lg transition-colors"
+                        href={`/admin/crosspoints/modules/${module.week_number}/edit`}
+                        className="p-2 text-gray-400 hover:text-gray-200 hover:bg-white/[0.08] rounded-lg transition-colors"
                         title="Edit"
                       >
                         <Edit className="w-4 h-4" />
@@ -284,25 +292,25 @@ export default function CrosspointModulesPage() {
                       <div className="relative">
                         <button
                           onClick={() => setOpenMenu(openMenu === module.id ? null : module.id)}
-                          className="p-2 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-[#2D2D2D] rounded-lg transition-colors"
+                          className="p-2 text-gray-400 hover:text-gray-200 hover:bg-white/[0.08] rounded-lg transition-colors"
                         >
                           <MoreVertical className="w-4 h-4" />
                         </button>
                         {openMenu === module.id && (
-                          <div className="absolute right-0 top-full mt-1 w-44 bg-white dark:bg-[#1E1E1E] border border-gray-200 dark:border-[#2D2D2D] rounded-xl shadow-xl z-10 py-1 overflow-hidden">
-                            <button className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#252525]">
+                          <div className="absolute right-0 top-full mt-1 w-44 bg-[#1E1E1E] border border-white/[0.06] rounded-xl shadow-xl z-10 py-1 overflow-hidden">
+                            <button className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-white/70 hover:bg-white/[0.06]">
                               <Download className="w-4 h-4" /> Download PDF
                             </button>
-                            <button className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#252525]">
+                            <button className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-white/70 hover:bg-white/[0.06]">
                               <Copy className="w-4 h-4" /> Duplicate
                             </button>
                             {module.status === 'draft' && (
-                              <button className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20">
+                              <button className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-green-600 hover:bg-green-900/20">
                                 <Globe className="w-4 h-4" /> Publish Now
                               </button>
                             )}
-                            <div className="my-1 h-px bg-gray-100 dark:bg-[#2D2D2D]" />
-                            <button className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20">
+                            <div className="my-1 h-px bg-gray-100" />
+                            <button className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-red-500 hover:bg-red-900/20">
                               <Trash2 className="w-4 h-4" /> Delete
                             </button>
                           </div>
@@ -318,30 +326,30 @@ export default function CrosspointModulesPage() {
 
                   {/* Expanded Preview */}
                   {expanded && (
-                    <div className="px-5 pb-5 border-t border-gray-100 dark:border-[#2D2D2D] bg-gray-50/50 dark:bg-[#161616]">
+                    <div className="px-5 pb-5 border-t border-white/[0.04] bg-white/[0.02]">
                       <div className="pt-4 grid md:grid-cols-3 gap-4">
-                        <div className="md:col-span-2 bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-4">
+                        <div className="md:col-span-2 bg-[#12151C] rounded-xl border border-white/[0.06] p-4">
                           <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Lesson Content</h4>
-                          <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed line-clamp-4">{module.content}</p>
+                          <p className="text-sm text-white/70 leading-relaxed line-clamp-4">{module.content}</p>
                         </div>
                         <div className="space-y-3">
-                          <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-4">
+                          <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-4">
                             <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Discussion Questions</h4>
                             <ul className="space-y-1.5">
-                              {module.discussionQuestions.slice(0, 3).map((q, i) => (
-                                <li key={i} className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-400">
+                              {(module.discussion_questions ?? []).slice(0, 3).map((q: string, i: number) => (
+                                <li key={i} className="flex items-start gap-2 text-sm text-white/50">
                                   <span className="w-4 h-4 bg-[#BF0A30] text-white text-[9px] font-black rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">{i + 1}</span>
                                   <span className="line-clamp-2">{q}</span>
                                 </li>
                               ))}
                             </ul>
                           </div>
-                          <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-4">
+                          <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-4">
                             <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Prayer Points</h4>
                             <ul className="space-y-1">
-                              {module.prayerPoints.map((p, i) => (
-                                <li key={i} className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-400">
-                                  <span className="text-[#BF0A30]">•</span>
+                              {(module.prayer_points ?? []).map((p: string, i: number) => (
+                                <li key={i} className="flex items-start gap-2 text-sm text-white/50">
+                                  <span className="text-[#BF0A30]">&#8226;</span>
                                   <span className="line-clamp-1">{p}</span>
                                 </li>
                               ))}
@@ -353,7 +361,7 @@ export default function CrosspointModulesPage() {
                         <button className="btn btn-secondary btn-sm gap-1.5">
                           <Download className="w-3.5 h-3.5" /> Download PDF
                         </button>
-                        <Link href={`/admin/crosspoints/modules/${module.weekNumber}`} className="btn btn-primary btn-sm gap-1.5">
+                        <Link href={`/admin/crosspoints/modules/${module.week_number}`} className="btn btn-primary btn-sm gap-1.5">
                           <ArrowUpRight className="w-3.5 h-3.5" /> View Full Module
                         </Link>
                         {module.status === 'draft' && (
@@ -372,12 +380,12 @@ export default function CrosspointModulesPage() {
       </div>
 
       {/* Add more prompt */}
-      <div className="mt-6 p-6 bg-white dark:bg-[#1A1A1A] rounded-2xl border-2 border-dashed border-gray-200 dark:border-[#2D2D2D] text-center hover:border-[#BF0A30]/40 transition-colors">
-        <div className="w-12 h-12 bg-red-50 dark:bg-red-900/20 rounded-2xl flex items-center justify-center mx-auto mb-3">
+      <div className="mt-6 p-6 bg-[#12151C] rounded-2xl border-2 border-dashed border-white/[0.06] text-center hover:border-[#BF0A30]/40 transition-colors">
+        <div className="w-12 h-12 bg-red-900/20 rounded-2xl flex items-center justify-center mx-auto mb-3">
           <Plus className="w-6 h-6 text-[#BF0A30]" />
         </div>
-        <h3 className="font-bold text-gray-900 dark:text-white mb-1">Add More Modules</h3>
-        <p className="text-sm text-gray-500 mb-4">Create weekly study materials and publish them to all 24 crosspoints at once</p>
+        <h3 className="font-bold text-white mb-1">Add More Modules</h3>
+        <p className="text-sm text-gray-500 mb-4">Create weekly study materials and publish them to all {crosspointCount} crosspoints at once</p>
         <Link href="/admin/crosspoints/modules/new" className="btn btn-primary gap-2">
           <Plus className="w-4 h-4" /> Create New Module
         </Link>

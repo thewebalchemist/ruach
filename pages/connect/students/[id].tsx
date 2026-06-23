@@ -123,10 +123,10 @@ export default function StudentDetailPage() {
       {/* ── Warn modal ── */}
       {showWarnModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/50 backdrop-blur-sm">
-          <div className="w-full max-w-md bg-white dark:bg-[#161616] rounded-2xl border border-gray-200 dark:border-white/[0.06] p-6 shadow-2xl">
+          <div className="w-full max-w-md bg-[#12151C] rounded-2xl border border-white/[0.06] p-6 shadow-2xl">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-gray-900 dark:text-white">Send Warning</h3>
-              <button onClick={() => setShowWarnModal(false)} className="p-1.5 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 text-gray-400">
+              <h3 className="font-semibold text-white">Send Warning</h3>
+              <button onClick={() => setShowWarnModal(false)} className="p-1.5 rounded-xl hover:bg-white/5 text-gray-400">
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -136,10 +136,10 @@ export default function StudentDetailPage() {
               onChange={e => setWarnMessage(e.target.value)}
               rows={4}
               placeholder="Type your warning message..."
-              className="w-full px-4 py-3 border border-gray-200 dark:border-white/[0.06] rounded-xl bg-gray-50 dark:bg-[#1A1A1A] text-sm text-gray-900 dark:text-white resize-none focus:outline-none focus:border-[#BF0A30] placeholder:text-gray-400 mb-4"
+              className="w-full px-4 py-3 border border-white/[0.06] rounded-xl bg-[#0A0C10] text-sm text-white resize-none focus:outline-none focus:border-[#BF0A30] placeholder:text-gray-400 mb-4"
             />
             <div className="flex gap-3">
-              <button onClick={() => setShowWarnModal(false)} className="flex-1 py-2.5 border border-gray-200 dark:border-white/[0.06] rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400">
+              <button onClick={() => setShowWarnModal(false)} className="flex-1 py-2.5 border border-white/[0.06] rounded-xl text-sm font-medium text-white/50">
                 Cancel
               </button>
               <button
@@ -157,13 +157,13 @@ export default function StudentDetailPage() {
       {/* ── Back ── */}
       <Link
         href={`/connect/cohorts/${cohort.id}`}
-        className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 mb-5 transition-colors"
+        className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-white/70 dark:hover:text-gray-300 mb-5 transition-colors"
       >
         <ArrowLeft className="w-4 h-4" /> Back to {cohort.name}
       </Link>
 
       {/* ── Profile header ── */}
-      <div className="bg-white dark:bg-[#141414] rounded-2xl border border-gray-200/70 dark:border-white/[0.05] p-6 mb-5 shadow-sm">
+      <div className="bg-[#12151C] rounded-2xl border border-white/[0.06]/70 p-6 mb-5 shadow-sm">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#BF0A30] to-[#8B0000] flex items-center justify-center text-white text-xl font-bold shadow-lg shadow-[#BF0A30]/25">
@@ -171,7 +171,7 @@ export default function StudentDetailPage() {
             </div>
             <div>
               <div className="flex items-center gap-2 mb-0.5">
-                <h1 className="text-xl font-bold text-gray-900 dark:text-white">{student.profiles?.full_name ?? '—'}</h1>
+                <h1 className="text-xl font-bold text-white">{student.profiles?.full_name ?? '—'}</h1>
                 {isAtRisk && <AlertTriangle className="w-4 h-4 text-amber-500" />}
               </div>
               <p className="text-sm text-gray-500">{student.admission_number} · {cohort.name}</p>
@@ -199,10 +199,10 @@ export default function StudentDetailPage() {
 
           {/* Actions */}
           <div className="flex flex-wrap gap-2">
-            <a href={`mailto:${student.profiles?.email ?? ''}`} className="flex items-center gap-1.5 px-3 py-2 border border-gray-200 dark:border-white/[0.06] rounded-xl text-sm text-gray-600 dark:text-gray-400 hover:border-blue-400 hover:text-blue-600 transition-colors">
+            <a href={`mailto:${student.profiles?.email ?? ''}`} className="flex items-center gap-1.5 px-3 py-2 border border-white/[0.06] rounded-xl text-sm text-white/50 hover:border-blue-400 hover:text-blue-600 transition-colors">
               <Mail className="w-4 h-4" /> Email
             </a>
-            <a href={`tel:${student.profiles?.phone ?? ''}`} className="flex items-center gap-1.5 px-3 py-2 border border-gray-200 dark:border-white/[0.06] rounded-xl text-sm text-gray-600 dark:text-gray-400 hover:border-green-400 hover:text-green-600 transition-colors">
+            <a href={`tel:${student.profiles?.phone ?? ''}`} className="flex items-center gap-1.5 px-3 py-2 border border-white/[0.06] rounded-xl text-sm text-white/50 hover:border-green-400 hover:text-green-600 transition-colors">
               <Phone className="w-4 h-4" /> Call
             </a>
             <button
@@ -239,10 +239,10 @@ export default function StudentDetailPage() {
               icon: AlertTriangle, label: 'Warnings',
               value: warnings.length,
               color: warnings.length > 0 ? 'text-amber-600' : 'text-gray-500',
-              bg:    warnings.length > 0 ? 'bg-amber-100 dark:bg-amber-900/30' : 'bg-gray-100 dark:bg-[#1A1A1A]',
+              bg:    warnings.length > 0 ? 'bg-amber-100 dark:bg-amber-900/30' : 'bg-gray-100',
             },
           ].map(({ icon: Icon, label, value, color, bg }) => (
-            <div key={label} className="bg-gray-50 dark:bg-[#1A1A1A] rounded-xl p-3 text-center">
+            <div key={label} className="bg-[#0A0C10] rounded-xl p-3 text-center">
               <div className={`w-8 h-8 rounded-xl ${bg} flex items-center justify-center mx-auto mb-1.5`}>
                 <Icon className={`w-4 h-4 ${color}`} />
               </div>
@@ -257,24 +257,24 @@ export default function StudentDetailPage() {
       <div className={`rounded-2xl border p-4 mb-5 ${
         student.can_graduate
           ? 'bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800/40'
-          : 'bg-white dark:bg-[#141414] border-gray-200/70 dark:border-white/[0.05]'
+          : 'bg-[#12151C] border-white/[0.06]/70'
       } shadow-sm`}>
         <div className="flex items-center gap-3 mb-2">
           <GraduationCap className={`w-5 h-5 ${student.can_graduate ? 'text-green-600' : 'text-gray-400'}`} />
-          <p className={`font-semibold ${student.can_graduate ? 'text-green-800 dark:text-green-200' : 'text-gray-700 dark:text-gray-300'}`}>
+          <p className={`font-semibold ${student.can_graduate ? 'text-green-800 dark:text-green-200' : 'text-white/70'}`}>
             {student.can_graduate ? 'Eligible to Graduate' : 'Graduation Requirements'}
           </p>
         </div>
         <div className="flex flex-wrap gap-4 text-sm">
           <div className="flex items-center gap-1.5">
             {attendanceOk ? <CheckCircle className="w-4 h-4 text-green-500" /> : <XCircle className="w-4 h-4 text-red-500" />}
-            <span className="text-gray-600 dark:text-gray-400">
+            <span className="text-white/50">
               Attendance {student.total_attendance_percent}% / {cohort.min_attendance_percent ?? 0}% required
             </span>
           </div>
           <div className="flex items-center gap-1.5">
             {examOk ? <CheckCircle className="w-4 h-4 text-green-500" /> : <XCircle className="w-4 h-4 text-gray-400" />}
-            <span className="text-gray-600 dark:text-gray-400">
+            <span className="text-white/50">
               Exam score {student.average_exam_score}% / {cohort.min_exam_score ?? 0}% required
             </span>
           </div>
@@ -282,7 +282,7 @@ export default function StudentDetailPage() {
       </div>
 
       {/* ── Tabs ── */}
-      <div className="flex gap-1 bg-white dark:bg-[#141414] border border-gray-200/70 dark:border-white/[0.05] p-1 rounded-2xl mb-5 shadow-sm">
+      <div className="flex gap-1 bg-[#12151C] border border-white/[0.06]/70 p-1 rounded-2xl mb-5 shadow-sm">
         {([
           { id: 'attendance', label: 'Attendance' },
           { id: 'exams',      label: 'Exams' },
@@ -294,7 +294,7 @@ export default function StudentDetailPage() {
             className={`flex-1 py-2 text-sm font-medium rounded-xl transition-colors ${
               activeTab === tab.id
                 ? 'bg-[#BF0A30] text-white shadow-sm'
-                : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                : 'text-gray-500 hover:text-white/70 dark:hover:text-gray-300'
             }`}
           >
             {tab.label}
@@ -304,11 +304,11 @@ export default function StudentDetailPage() {
 
       {/* ── Attendance tab ── */}
       {activeTab === 'attendance' && (
-        <div className="bg-white dark:bg-[#141414] rounded-2xl border border-gray-200/70 dark:border-white/[0.05] shadow-sm overflow-hidden">
-          <div className="px-5 py-4 border-b border-gray-100 dark:border-white/[0.04]">
-            <p className="font-semibold text-gray-900 dark:text-white">Session Attendance</p>
+        <div className="bg-[#12151C] rounded-2xl border border-white/[0.06]/70 shadow-sm overflow-hidden">
+          <div className="px-5 py-4 border-b border-gray-100">
+            <p className="font-semibold text-white">Session Attendance</p>
           </div>
-          <div className="divide-y divide-gray-50 dark:divide-white/[0.02]">
+          <div className="divide-y divide-gray-50">
             {sessions.map((session: any) => {
               const record = attendance.find((a: any) => a.session_id === session.id);
               const present = record?.present;
@@ -316,7 +316,7 @@ export default function StudentDetailPage() {
               return (
                 <div key={session.id} className="flex items-center gap-4 px-5 py-4">
                   <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                    isUpcoming ? 'bg-gray-100 dark:bg-[#1A1A1A]' :
+                    isUpcoming ? 'bg-gray-100' :
                     present    ? 'bg-green-100 dark:bg-green-900/30' :
                                  'bg-red-100 dark:bg-red-900/30'
                   }`}>
@@ -327,11 +327,11 @@ export default function StudentDetailPage() {
                         : <XCircle className="w-4 h-4 text-red-500" />}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm text-gray-900 dark:text-white">{session.title}</p>
+                    <p className="font-medium text-sm text-white">{session.title}</p>
                     <p className="text-xs text-gray-500">{new Date(session.date).toLocaleDateString('en-KE', { weekday: 'short', day: 'numeric', month: 'short' })}</p>
                   </div>
                   <span className={`text-xs font-semibold px-2.5 py-1 rounded-full flex-shrink-0 ${
-                    isUpcoming ? 'bg-gray-100 dark:bg-[#1A1A1A] text-gray-500' :
+                    isUpcoming ? 'bg-white/5 text-gray-500' :
                     present    ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' :
                                  'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
                   }`}>
@@ -346,9 +346,9 @@ export default function StudentDetailPage() {
 
       {/* ── Exams tab ── */}
       {activeTab === 'exams' && (
-        <div className="bg-white dark:bg-[#141414] rounded-2xl border border-gray-200/70 dark:border-white/[0.05] shadow-sm overflow-hidden">
-          <div className="px-5 py-4 border-b border-gray-100 dark:border-white/[0.04]">
-            <p className="font-semibold text-gray-900 dark:text-white">Exam Results</p>
+        <div className="bg-[#12151C] rounded-2xl border border-white/[0.06]/70 shadow-sm overflow-hidden">
+          <div className="px-5 py-4 border-b border-gray-100">
+            <p className="font-semibold text-white">Exam Results</p>
           </div>
           {exams.length === 0 ? (
             <div className="p-12 text-center">
@@ -356,14 +356,14 @@ export default function StudentDetailPage() {
               <p className="text-gray-500">No exams for this cohort yet.</p>
             </div>
           ) : (
-            <div className="divide-y divide-gray-50 dark:divide-white/[0.02]">
+            <div className="divide-y divide-gray-50">
               {exams.map((exam: any) => {
                 const result = examResults.find((r: any) => r.exam_id === exam.id);
                 return (
                   <div key={exam.id} className="px-5 py-4">
                     <div className="flex items-start justify-between gap-4">
                       <div>
-                        <p className="font-medium text-gray-900 dark:text-white">{exam.title}</p>
+                        <p className="font-medium text-white">{exam.title}</p>
                         <p className="text-xs text-gray-500 mt-0.5">{exam.questions?.length ?? 0} questions · Pass: {exam.passing_marks}/{exam.total_marks}</p>
                       </div>
                       {result ? (
@@ -376,12 +376,12 @@ export default function StudentDetailPage() {
                           </p>
                         </div>
                       ) : (
-                        <span className="flex-shrink-0 text-xs text-gray-400 bg-gray-100 dark:bg-[#1A1A1A] px-2.5 py-1 rounded-full">Not taken</span>
+                        <span className="flex-shrink-0 text-xs text-gray-400 bg-white/5 px-2.5 py-1 rounded-full">Not taken</span>
                       )}
                     </div>
                     {result && (
                       <div className="mt-3">
-                        <div className="h-2 bg-gray-100 dark:bg-[#1A1A1A] rounded-full overflow-hidden">
+                        <div className="h-2 bg-white/5 rounded-full overflow-hidden">
                           <div
                             className={`h-full rounded-full ${result.passed ? 'bg-green-500' : 'bg-red-500'}`}
                             style={{ width: `${result.percentage}%` }}
@@ -410,7 +410,7 @@ export default function StudentDetailPage() {
             </button>
           </div>
           {warnings.length === 0 ? (
-            <div className="bg-white dark:bg-[#141414] rounded-2xl border border-gray-200/70 dark:border-white/[0.05] p-12 text-center shadow-sm">
+            <div className="bg-[#12151C] rounded-2xl border border-white/[0.06]/70 p-12 text-center shadow-sm">
               <MessageSquare className="w-12 h-12 text-gray-300 mx-auto mb-3" />
               <p className="text-gray-500">No warnings sent yet</p>
             </div>

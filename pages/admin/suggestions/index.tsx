@@ -105,7 +105,7 @@ export default function SuggestionsPage() {
       case 'suggestion': return 'bg-blue-100 text-blue-800';
       case 'complaint': return 'bg-red-100 text-red-800';
       case 'feedback': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
+      default: return 'bg-white/5 text-gray-800';
     }
   };
 
@@ -125,21 +125,21 @@ export default function SuggestionsPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-        <button onClick={() => setFilter('all')} className={`bg-white dark:bg-[#1A1A1A] rounded-xl border p-4 text-left transition-colors ${filter === 'all' ? 'border-[#BF0A30] ring-2 ring-[#BF0A30]/20' : 'border-gray-200 dark:border-[#2D2D2D]'}`}>
+        <button onClick={() => setFilter('all')} className={`bg-[#12151C] rounded-xl border p-4 text-left transition-colors ${filter === 'all' ? 'border-[#BF0A30] ring-2 ring-[#BF0A30]/20' : 'border-white/[0.06]'}`}>
           <p className="text-sm text-gray-500">Total</p>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total}</p>
+          <p className="text-2xl font-bold text-white">{stats.total}</p>
         </button>
-        <button onClick={() => setFilter('pending')} className={`bg-white dark:bg-[#1A1A1A] rounded-xl border-l-4 border-l-amber-500 border p-4 text-left transition-colors ${filter === 'pending' ? 'border-[#BF0A30] ring-2 ring-[#BF0A30]/20' : 'border-gray-200 dark:border-[#2D2D2D]'}`}>
+        <button onClick={() => setFilter('pending')} className={`bg-[#12151C] rounded-xl border-l-4 border-l-amber-500 border p-4 text-left transition-colors ${filter === 'pending' ? 'border-[#BF0A30] ring-2 ring-[#BF0A30]/20' : 'border-white/[0.06]'}`}>
           <p className="text-sm text-gray-500">Pending</p>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.pending}</p>
+          <p className="text-2xl font-bold text-white">{stats.pending}</p>
         </button>
-        <button onClick={() => setFilter('reviewing')} className={`bg-white dark:bg-[#1A1A1A] rounded-xl border-l-4 border-l-blue-500 border p-4 text-left transition-colors ${filter === 'reviewing' ? 'border-[#BF0A30] ring-2 ring-[#BF0A30]/20' : 'border-gray-200 dark:border-[#2D2D2D]'}`}>
+        <button onClick={() => setFilter('reviewing')} className={`bg-[#12151C] rounded-xl border-l-4 border-l-blue-500 border p-4 text-left transition-colors ${filter === 'reviewing' ? 'border-[#BF0A30] ring-2 ring-[#BF0A30]/20' : 'border-white/[0.06]'}`}>
           <p className="text-sm text-gray-500">Reviewing</p>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.reviewing}</p>
+          <p className="text-2xl font-bold text-white">{stats.reviewing}</p>
         </button>
-        <button onClick={() => setFilter('resolved')} className={`bg-white dark:bg-[#1A1A1A] rounded-xl border-l-4 border-l-green-500 border p-4 text-left transition-colors ${filter === 'resolved' ? 'border-[#BF0A30] ring-2 ring-[#BF0A30]/20' : 'border-gray-200 dark:border-[#2D2D2D]'}`}>
+        <button onClick={() => setFilter('resolved')} className={`bg-[#12151C] rounded-xl border-l-4 border-l-green-500 border p-4 text-left transition-colors ${filter === 'resolved' ? 'border-[#BF0A30] ring-2 ring-[#BF0A30]/20' : 'border-white/[0.06]'}`}>
           <p className="text-sm text-gray-500">Resolved</p>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.resolved}</p>
+          <p className="text-2xl font-bold text-white">{stats.resolved}</p>
         </button>
       </div>
 
@@ -152,7 +152,7 @@ export default function SuggestionsPage() {
             className={`px-4 py-2 text-sm font-medium rounded-lg capitalize ${
               typeFilter === type
                 ? 'bg-[#BF0A30] text-white'
-                : 'bg-white dark:bg-[#1A1A1A] border border-gray-200 dark:border-[#2D2D2D] text-gray-600'
+                : 'bg-[#12151C] border border-white/[0.06] text-gray-600'
             }`}
           >
             {type === 'all' ? 'All Types' : type}
@@ -163,12 +163,12 @@ export default function SuggestionsPage() {
       {/* Suggestions List */}
       <div className="space-y-4">
         {filtered.map((item) => (
-          <div key={item.id} className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-5">
+          <div key={item.id} className="bg-[#12151C] rounded-xl border border-white/[0.06] p-5">
             <div className="flex items-start justify-between mb-3">
               <div className="flex items-center gap-3">
                 {getTypeIcon(item.type)}
                 <div>
-                  <h3 className="font-semibold text-gray-900 dark:text-white">{item.subject}</h3>
+                  <h3 className="font-semibold text-white">{item.subject}</h3>
                   <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
                     <span>{item.is_anonymous ? 'Anonymous' : 'Member'}</span>
                     <span>-</span>
@@ -188,12 +188,12 @@ export default function SuggestionsPage() {
               </div>
             </div>
 
-            <p className="text-gray-700 dark:text-gray-300 mb-4">{item.message}</p>
+            <p className="text-white/70 mb-4">{item.message}</p>
 
             {item.admin_response && (
-              <div className="bg-gray-50 dark:bg-[#252525] rounded-lg p-3 mb-4">
+              <div className="bg-white/[0.04] rounded-lg p-3 mb-4">
                 <p className="text-xs font-medium text-gray-500 mb-1">Admin Response</p>
-                <p className="text-sm text-gray-700 dark:text-gray-300">{item.admin_response}</p>
+                <p className="text-sm text-white/70">{item.admin_response}</p>
               </div>
             )}
 
@@ -204,10 +204,10 @@ export default function SuggestionsPage() {
                   onChange={(e) => setResponseText(e.target.value)}
                   placeholder="Write your response..."
                   rows={3}
-                  className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg resize-none mb-2"
+                  className="w-full px-4 py-2.5 text-sm border border-white/10 dark:border-[#2D2D2D] rounded-lg resize-none mb-2"
                 />
                 <div className="flex gap-2 justify-end">
-                  <button onClick={() => { setRespondingTo(null); setResponseText(''); }} className="px-3 py-1.5 text-sm text-gray-600 border border-gray-300 rounded-lg">Cancel</button>
+                  <button onClick={() => { setRespondingTo(null); setResponseText(''); }} className="px-3 py-1.5 text-sm text-white/50 border border-white/10 rounded-lg">Cancel</button>
                   <button onClick={() => submitResponse(item.id)} disabled={updating === item.id} className="px-3 py-1.5 text-sm bg-[#BF0A30] text-white rounded-lg disabled:opacity-50">
                     {updating === item.id ? 'Saving...' : 'Submit Response'}
                   </button>
@@ -215,7 +215,7 @@ export default function SuggestionsPage() {
               </div>
             )}
 
-            <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-[#2D2D2D]">
+            <div className="flex items-center justify-between pt-4 border-t border-white/[0.04]">
               <div className="flex items-center gap-2 text-sm text-gray-500">
                 {item.status === 'pending' && <Clock className="w-4 h-4" />}
                 {item.status === 'reviewing' && <Eye className="w-4 h-4" />}
@@ -243,7 +243,7 @@ export default function SuggestionsPage() {
                 )}
                 <button
                   onClick={() => { setRespondingTo(item.id); setResponseText(item.admin_response || ''); }}
-                  className="px-4 py-2 text-sm font-medium border border-gray-300 dark:border-[#2D2D2D] rounded-lg hover:bg-gray-50"
+                  className="px-4 py-2 text-sm font-medium border border-white/10 dark:border-[#2D2D2D] rounded-lg hover:bg-gray-50"
                 >
                   Add Note
                 </button>
@@ -254,7 +254,7 @@ export default function SuggestionsPage() {
       </div>
 
       {filtered.length === 0 && (
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-12 text-center">
+        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-12 text-center">
           <MessageSquare className="w-12 h-12 text-gray-300 mx-auto mb-4" />
           <p className="text-gray-500">No suggestions found</p>
         </div>

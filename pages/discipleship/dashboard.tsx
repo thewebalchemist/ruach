@@ -150,28 +150,28 @@ export default function DiscipleshipDashboardPage() {
     <DiscipleshipLayout title="Dashboard">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Discipleship Management</h1>
+        <h1 className="text-2xl font-bold text-white">Discipleship Management</h1>
         <p className="text-gray-500">Track spiritual growth and course progress</p>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-4">
+        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-4">
           <Users className="w-5 h-5 text-[#BF0A30] mb-2" />
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{activeCohorts.length}</p>
+          <p className="text-2xl font-bold text-white">{activeCohorts.length}</p>
           <p className="text-sm text-gray-500">Active Cohorts</p>
         </div>
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-4">
+        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-4">
           <GraduationCap className="w-5 h-5 text-[#BF0A30] mb-2" />
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{totalEnrolled}</p>
+          <p className="text-2xl font-bold text-white">{totalEnrolled}</p>
           <p className="text-sm text-gray-500">Enrolled</p>
         </div>
-        <div className={`bg-white dark:bg-[#1A1A1A] rounded-xl border p-4 ${atRiskCount > 0 ? 'border-amber-300 dark:border-amber-800' : 'border-gray-200 dark:border-[#2D2D2D]'}`}>
+        <div className={`bg-[#12151C] rounded-xl border p-4 ${atRiskCount > 0 ? 'border-amber-300 dark:border-amber-800' : 'border-white/[0.06]'}`}>
           <AlertTriangle className={`w-5 h-5 mb-2 ${atRiskCount > 0 ? 'text-amber-500' : 'text-gray-400'}`} />
-          <p className={`text-2xl font-bold ${atRiskCount > 0 ? 'text-amber-600' : 'text-gray-900 dark:text-white'}`}>{atRiskCount}</p>
+          <p className={`text-2xl font-bold ${atRiskCount > 0 ? 'text-amber-600' : 'text-white'}`}>{atRiskCount}</p>
           <p className="text-sm text-gray-500">At Risk</p>
         </div>
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-4">
+        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-4">
           <Award className="w-5 h-5 text-green-500 mb-2" />
           <p className="text-2xl font-bold text-green-600">{graduatesCount}</p>
           <p className="text-sm text-gray-500">Graduates</p>
@@ -187,11 +187,11 @@ export default function DiscipleshipDashboardPage() {
           { href: '/discipleship/graduates',   icon: Award,  bg: 'bg-amber-100 dark:bg-amber-900/30',  ic: 'text-amber-600', label: 'Graduates' },
         ].map(({ href, icon: Icon, bg, ic, label }) => (
           <Link key={href} href={href}
-            className="flex flex-col items-center gap-2 p-4 bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] hover:border-[#BF0A30] transition-colors text-center">
+            className="flex flex-col items-center gap-2 p-4 bg-[#12151C] rounded-xl border border-white/[0.06] hover:border-[#BF0A30] transition-colors text-center">
             <div className={`w-10 h-10 rounded-lg ${bg} flex items-center justify-center`}>
               <Icon className={`w-5 h-5 ${ic}`} />
             </div>
-            <span className="text-xs font-medium text-gray-700 dark:text-gray-300">{label}</span>
+            <span className="text-xs font-medium text-white/70">{label}</span>
           </Link>
         ))}
       </div>
@@ -199,24 +199,24 @@ export default function DiscipleshipDashboardPage() {
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Levels Overview */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D]">
-            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-[#2D2D2D]">
-              <h2 className="font-semibold text-gray-900 dark:text-white">Discipleship Levels</h2>
+          <div className="bg-[#12151C] rounded-xl border border-white/[0.06]">
+            <div className="flex items-center justify-between p-4 border-b border-white/[0.06]">
+              <h2 className="font-semibold text-white">Discipleship Levels</h2>
               <Link href="/discipleship/cohorts" className="text-sm text-[#BF0A30] hover:underline">View Cohorts</Link>
             </div>
-            <div className="divide-y divide-gray-100 dark:divide-[#2D2D2D]">
+            <div className="divide-y divide-white/[0.06]">
               {levelGroups.map(({ level, label, activeCohorts: ac, enrolled }) => (
                 <Link key={level} href={`/discipleship/cohorts?level=${level}`}
-                  className="flex items-center gap-4 p-4 hover:bg-gray-50 dark:hover:bg-[#252525] transition-colors">
+                  className="flex items-center gap-4 p-4 hover:bg-white/[0.06] transition-colors">
                   <div className="w-14 h-14 rounded-xl bg-[#BF0A30] text-white flex items-center justify-center text-xl font-bold flex-shrink-0">
                     L{level}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-gray-900 dark:text-white">{label}</p>
+                    <p className="font-medium text-white">{label}</p>
                     <p className="text-sm text-gray-500">{ac} active cohort{ac !== 1 ? 's' : ''}</p>
                   </div>
                   <div className="text-right flex-shrink-0">
-                    <p className="font-bold text-gray-900 dark:text-white">{enrolled}</p>
+                    <p className="font-bold text-white">{enrolled}</p>
                     <p className="text-xs text-gray-500">enrolled</p>
                   </div>
                   <ChevronRight className="w-5 h-5 text-gray-400" />
@@ -249,17 +249,17 @@ export default function DiscipleshipDashboardPage() {
         {/* Sidebar */}
         <div className="space-y-6">
           {/* Active Cohorts */}
-          <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-4">
-            <h2 className="font-semibold text-gray-900 dark:text-white mb-4">Active Cohorts</h2>
+          <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-4">
+            <h2 className="font-semibold text-white mb-4">Active Cohorts</h2>
             {activeCohorts.length === 0 ? (
               <p className="text-sm text-gray-400 text-center py-4">No active cohorts</p>
             ) : (
               <div className="space-y-3">
                 {activeCohorts.slice(0, 5).map(cohort => (
                   <Link key={cohort.id} href={`/discipleship/cohorts/${cohort.id}`}
-                    className="block p-3 bg-gray-50 dark:bg-[#252525] rounded-lg hover:bg-gray-100 dark:hover:bg-[#2D2D2D] transition-colors">
+                    className="block p-3 bg-white/[0.04] rounded-lg hover:bg-white/[0.08] transition-colors">
                     <div className="flex items-center justify-between mb-1">
-                      <p className="font-medium text-gray-900 dark:text-white text-sm truncate">{cohort.name}</p>
+                      <p className="font-medium text-white text-sm truncate">{cohort.name}</p>
                       <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-green-100 text-green-800 flex-shrink-0 ml-2">Active</span>
                     </div>
                     <p className="text-xs text-gray-500">KDC {cohort.level} • {cohort.enrolled_count ?? 0} students</p>
@@ -273,8 +273,8 @@ export default function DiscipleshipDashboardPage() {
           </div>
 
           {/* Recent Enrollments */}
-          <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-4">
-            <h2 className="font-semibold text-gray-900 dark:text-white mb-4">Recent Enrollments</h2>
+          <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-4">
+            <h2 className="font-semibold text-white mb-4">Recent Enrollments</h2>
             {recentActivity.length === 0 ? (
               <p className="text-sm text-gray-400 text-center py-4">No enrollments yet</p>
             ) : (
@@ -286,7 +286,7 @@ export default function DiscipleshipDashboardPage() {
                       row.status === 'in-progress' ? 'bg-blue-500' : 'bg-amber-500'
                     }`} />
                     <div className="flex-1 min-w-0">
-                      <p className="text-gray-900 dark:text-white truncate">
+                      <p className="text-white truncate">
                         {row.profiles?.full_name ?? 'Unknown student'}
                       </p>
                       <p className="text-xs text-gray-500">

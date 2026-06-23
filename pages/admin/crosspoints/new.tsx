@@ -118,7 +118,7 @@ export default function NewCrosspointPage() {
   return (
     <AdminLayout title="Create Crosspoint">
       <div className="max-w-3xl">
-        <Link href="/admin/crosspoints" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 mb-4">
+        <Link href="/admin/crosspoints" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-white/70 mb-4">
           <ArrowLeft className="w-4 h-4" />Back to Crosspoints
         </Link>
 
@@ -126,49 +126,49 @@ export default function NewCrosspointPage() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Basic Info */}
-          <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-6">
-            <h2 className="font-semibold text-gray-900 dark:text-white mb-4">Crosspoint Details</h2>
+          <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-6">
+            <h2 className="font-semibold text-white mb-4">Crosspoint Details</h2>
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="sm:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Crosspoint Name *</label>
-                <input type="text" name="name" value={formData.name} onChange={handleChange} required placeholder="e.g., Kilimani Crosspoint" className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg" />
+                <label className="block text-sm font-medium text-white/70 mb-1">Crosspoint Name *</label>
+                <input type="text" name="name" value={formData.name} onChange={handleChange} required placeholder="e.g., Kilimani Crosspoint" className="w-full px-4 py-2.5 text-sm border border-white/10 dark:border-[#2D2D2D] rounded-lg" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Area *</label>
-                <input type="text" name="area" value={formData.area} onChange={handleChange} required placeholder="e.g., Kilimani" className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg" />
+                <label className="block text-sm font-medium text-white/70 mb-1">Area *</label>
+                <input type="text" name="area" value={formData.area} onChange={handleChange} required placeholder="e.g., Kilimani" className="w-full px-4 py-2.5 text-sm border border-white/10 dark:border-[#2D2D2D] rounded-lg" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Location</label>
-                <input type="text" name="location" value={formData.location} onChange={handleChange} placeholder="e.g., Kilimani, Nairobi" className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg" />
+                <label className="block text-sm font-medium text-white/70 mb-1">Location</label>
+                <input type="text" name="location" value={formData.location} onChange={handleChange} placeholder="e.g., Kilimani, Nairobi" className="w-full px-4 py-2.5 text-sm border border-white/10 dark:border-[#2D2D2D] rounded-lg" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Max Members</label>
-                <input type="number" name="max_members" value={formData.max_members} onChange={handleChange} className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg" />
+                <label className="block text-sm font-medium text-white/70 mb-1">Max Members</label>
+                <input type="number" name="max_members" value={formData.max_members} onChange={handleChange} className="w-full px-4 py-2.5 text-sm border border-white/10 dark:border-[#2D2D2D] rounded-lg" />
               </div>
             </div>
           </div>
 
           {/* Leadership */}
-          <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-6">
-            <h2 className="font-semibold text-gray-900 dark:text-white mb-4">Leadership</h2>
+          <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-6">
+            <h2 className="font-semibold text-white mb-4">Leadership</h2>
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Leader *</label>
-                <select name="leader_id" value={formData.leader_id} onChange={handleChange} required className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg">
+                <label className="block text-sm font-medium text-white/70 mb-1">Leader *</label>
+                <select name="leader_id" value={formData.leader_id} onChange={handleChange} required className="w-full px-4 py-2.5 text-sm border border-white/10 dark:border-[#2D2D2D] rounded-lg">
                   <option value="">Select leader...</option>
                   {leaders.map(l => <option key={l.id} value={l.id}>{l.first_name} {l.last_name}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Assistant Leader</label>
-                <select name="assistant_id" value={formData.assistant_id} onChange={handleChange} className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg">
+                <label className="block text-sm font-medium text-white/70 mb-1">Assistant Leader</label>
+                <select name="assistant_id" value={formData.assistant_id} onChange={handleChange} className="w-full px-4 py-2.5 text-sm border border-white/10 dark:border-[#2D2D2D] rounded-lg">
                   <option value="">Select assistant...</option>
                   {allMembers.map(m => <option key={m.id} value={m.id}>{m.first_name} {m.last_name}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Treasurer</label>
-                <select name="treasurer_id" value={formData.treasurer_id} onChange={handleChange} className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg">
+                <label className="block text-sm font-medium text-white/70 mb-1">Treasurer</label>
+                <select name="treasurer_id" value={formData.treasurer_id} onChange={handleChange} className="w-full px-4 py-2.5 text-sm border border-white/10 dark:border-[#2D2D2D] rounded-lg">
                   <option value="">Select treasurer...</option>
                   {allMembers.map(m => <option key={m.id} value={m.id}>{m.first_name} {m.last_name}</option>)}
                 </select>
@@ -177,30 +177,30 @@ export default function NewCrosspointPage() {
           </div>
 
           {/* Meeting Schedule */}
-          <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-6">
-            <h2 className="font-semibold text-gray-900 dark:text-white mb-4">Meeting Schedule</h2>
+          <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-6">
+            <h2 className="font-semibold text-white mb-4">Meeting Schedule</h2>
             <div className="grid sm:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Meeting Day *</label>
-                <select name="meeting_day" value={formData.meeting_day} onChange={handleChange} required className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg">
+                <label className="block text-sm font-medium text-white/70 mb-1">Meeting Day *</label>
+                <select name="meeting_day" value={formData.meeting_day} onChange={handleChange} required className="w-full px-4 py-2.5 text-sm border border-white/10 dark:border-[#2D2D2D] rounded-lg">
                   <option value="">Select day...</option>
                   {days.map(d => <option key={d} value={d}>{d}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Meeting Time *</label>
-                <input type="text" name="meeting_time" value={formData.meeting_time} onChange={handleChange} required placeholder="e.g., 7:00 PM" className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg" />
+                <label className="block text-sm font-medium text-white/70 mb-1">Meeting Time *</label>
+                <input type="text" name="meeting_time" value={formData.meeting_time} onChange={handleChange} required placeholder="e.g., 7:00 PM" className="w-full px-4 py-2.5 text-sm border border-white/10 dark:border-[#2D2D2D] rounded-lg" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Venue</label>
-                <input type="text" name="venue" value={formData.venue} onChange={handleChange} placeholder="e.g., Host's residence" className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg" />
+                <label className="block text-sm font-medium text-white/70 mb-1">Venue</label>
+                <input type="text" name="venue" value={formData.venue} onChange={handleChange} placeholder="e.g., Host's residence" className="w-full px-4 py-2.5 text-sm border border-white/10 dark:border-[#2D2D2D] rounded-lg" />
               </div>
             </div>
           </div>
 
           {/* Actions */}
           <div className="flex items-center justify-end gap-3">
-            <Link href="/admin/crosspoints" className="px-4 py-2.5 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50">Cancel</Link>
+            <Link href="/admin/crosspoints" className="px-4 py-2.5 text-sm font-medium text-white/70 border border-white/10 rounded-lg hover:bg-gray-50">Cancel</Link>
             <button type="submit" disabled={submitting} className="flex items-center gap-2 px-6 py-2.5 text-sm font-medium bg-[#BF0A30] text-white rounded-lg hover:bg-[#B00325] disabled:opacity-50">
               <Save className="w-4 h-4" />{submitting ? 'Creating...' : 'Create Crosspoint'}
             </button>

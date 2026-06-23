@@ -89,17 +89,17 @@ export default function AdminConnectCohortPage() {
     switch (status) {
       case 'completed': return 'bg-green-100 text-green-800';
       case 'in-progress': return 'bg-blue-100 text-blue-800';
-      case 'enrolled': return 'bg-gray-100 text-gray-700';
+      case 'enrolled': return 'bg-white/5 text-gray-700';
       case 'failed': return 'bg-red-100 text-red-800';
-      case 'dropped': return 'bg-gray-100 text-gray-400';
-      default: return 'bg-gray-100 text-gray-700';
+      case 'dropped': return 'bg-white/5 text-gray-400';
+      default: return 'bg-white/5 text-gray-700';
     }
   };
 
   return (
     <AdminLayout title={cohort.name}>
       <div className="mb-6">
-        <Link href="/admin/connect" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 mb-4">
+        <Link href="/admin/connect" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-white/70 mb-4">
           <ArrowLeft className="w-4 h-4" />Back to Connect
         </Link>
         <div className="flex items-start justify-between">
@@ -107,7 +107,7 @@ export default function AdminConnectCohortPage() {
           <div className="flex items-center gap-2">
             <Link
               href={`/connect/dashboard?cohort=${cohort.id}`}
-              className="flex items-center gap-2 px-3 py-2 border border-gray-300 dark:border-[#2D2D2D] text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-[#252525]"
+              className="flex items-center gap-2 px-3 py-2 border border-white/10 dark:border-[#2D2D2D] text-white/70 text-sm font-medium rounded-lg hover:bg-white/[0.06]"
             >
               Teacher View
             </Link>
@@ -125,19 +125,19 @@ export default function AdminConnectCohortPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-4 text-center">
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{students.length}</p>
+        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-4 text-center">
+          <p className="text-2xl font-bold text-white">{students.length}</p>
           <p className="text-sm text-gray-500">Total Students</p>
         </div>
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-4 text-center">
+        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-4 text-center">
           <p className="text-2xl font-bold text-green-600">{passing.length}</p>
           <p className="text-sm text-gray-500">Can Graduate</p>
         </div>
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-4 text-center">
+        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-4 text-center">
           <p className="text-2xl font-bold text-amber-500">{atRisk.length}</p>
           <p className="text-sm text-gray-500">At Risk</p>
         </div>
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-4 text-center">
+        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-4 text-center">
           <p className="text-2xl font-bold text-blue-600">{sessions.length}</p>
           <p className="text-sm text-gray-500">Sessions</p>
         </div>
@@ -145,29 +145,29 @@ export default function AdminConnectCohortPage() {
 
       {/* Quick links */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
-        <Link href={`/admin/connect/cohorts/${id}/attendance`} className="flex items-center gap-2 p-3 bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] hover:border-[#BF0A30]/50 text-sm font-medium text-gray-700 dark:text-gray-300">
+        <Link href={`/admin/connect/cohorts/${id}/attendance`} className="flex items-center gap-2 p-3 bg-[#12151C] rounded-xl border border-white/[0.06] hover:border-[#BF0A30]/50 text-sm font-medium text-white/70">
           <Download className="w-4 h-4 text-[#BF0A30]" />Import Attendance
         </Link>
-        <Link href={`/admin/connect/cohorts/${id}/exams/new`} className="flex items-center gap-2 p-3 bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] hover:border-[#BF0A30]/50 text-sm font-medium text-gray-700 dark:text-gray-300">
+        <Link href={`/admin/connect/cohorts/${id}/exams/new`} className="flex items-center gap-2 p-3 bg-[#12151C] rounded-xl border border-white/[0.06] hover:border-[#BF0A30]/50 text-sm font-medium text-white/70">
           <Plus className="w-4 h-4 text-[#BF0A30]" />New Exam
         </Link>
-        <Link href={`/admin/connect/cohorts/${id}/students`} className="flex items-center gap-2 p-3 bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] hover:border-[#BF0A30]/50 text-sm font-medium text-gray-700 dark:text-gray-300">
+        <Link href={`/admin/connect/cohorts/${id}/students`} className="flex items-center gap-2 p-3 bg-[#12151C] rounded-xl border border-white/[0.06] hover:border-[#BF0A30]/50 text-sm font-medium text-white/70">
           <Users className="w-4 h-4 text-[#BF0A30]" />All Students
         </Link>
-        <Link href={`/admin/connect/legacy`} className="flex items-center gap-2 p-3 bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] hover:border-[#BF0A30]/50 text-sm font-medium text-gray-700 dark:text-gray-300">
+        <Link href={`/admin/connect/legacy`} className="flex items-center gap-2 p-3 bg-[#12151C] rounded-xl border border-white/[0.06] hover:border-[#BF0A30]/50 text-sm font-medium text-white/70">
           <ClipboardList className="w-4 h-4 text-[#BF0A30]" />Legacy Requests
         </Link>
       </div>
 
       {/* Students Table */}
-      <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] overflow-hidden">
-        <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-[#2D2D2D]">
-          <h2 className="font-semibold text-gray-900 dark:text-white">Students</h2>
+      <div className="bg-[#12151C] rounded-xl border border-white/[0.06] overflow-hidden">
+        <div className="flex items-center justify-between p-4 border-b border-white/[0.04]">
+          <h2 className="font-semibold text-white">Students</h2>
         </div>
         {students.length > 0 ? (
           <table className="w-full">
             <thead>
-              <tr className="text-left text-xs font-semibold text-gray-500 uppercase bg-gray-50 dark:bg-[#252525]">
+              <tr className="text-left text-xs font-semibold text-gray-500 uppercase bg-white/[0.04]">
                 <th className="py-3 px-4">Student</th>
                 <th className="py-3 px-4">Admission #</th>
                 <th className="py-3 px-4">Attendance</th>
@@ -176,33 +176,33 @@ export default function AdminConnectCohortPage() {
                 <th className="py-3 px-4">Graduate?</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100 dark:divide-[#2D2D2D]">
+            <tbody className="divide-y divide-white/[0.06]">
               {students.map((student) => {
                 return (
-                  <tr key={student.id} className="hover:bg-gray-50 dark:hover:bg-[#252525]">
+                  <tr key={student.id} className="hover:bg-white/[0.06]">
                     <td className="py-3 px-4">
                       <Link href={`/admin/connect/students/${student.id}`} className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-[#BF0A30] flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
                           {student.profiles?.first_name?.[0]}{student.profiles?.last_name?.[0]}
                         </div>
                         <div>
-                          <p className="font-medium text-gray-900 dark:text-white text-sm">
+                          <p className="font-medium text-white text-sm">
                             {student.profiles?.first_name} {student.profiles?.last_name}
                           </p>
                           <p className="text-xs text-gray-400">{student.profiles?.phone}</p>
                         </div>
                       </Link>
                     </td>
-                    <td className="py-3 px-4 text-sm font-mono text-gray-600 dark:text-gray-400">{student.admission_number}</td>
+                    <td className="py-3 px-4 text-sm font-mono text-white/50">{student.admission_number}</td>
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-2">
-                        <div className="flex-1 h-1.5 bg-gray-100 dark:bg-[#2D2D2D] rounded-full overflow-hidden w-16">
+                        <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden w-16">
                           <div
                             className={`h-full rounded-full ${student.total_attendance_percent >= cohort.min_attendance_percent ? 'bg-green-500' : 'bg-amber-500'}`}
                             style={{ width: `${student.total_attendance_percent}%` }}
                           />
                         </div>
-                        <span className="text-sm text-gray-600 dark:text-gray-400">{student.total_attendance_percent}%</span>
+                        <span className="text-sm text-white/50">{student.total_attendance_percent}%</span>
                       </div>
                     </td>
                     <td className="py-3 px-4">

@@ -114,25 +114,25 @@ export default function DepartmentsPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-4">
+        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-4">
           <p className="text-sm text-gray-500">Total Departments</p>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{departments.length}</p>
+          <p className="text-2xl font-bold text-white">{departments.length}</p>
         </div>
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-4">
+        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-4">
           <p className="text-sm text-gray-500">Total Serving</p>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{totalServing}</p>
+          <p className="text-2xl font-bold text-white">{totalServing}</p>
         </div>
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-4">
+        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-4">
           <p className="text-sm text-gray-500">Pending Requests</p>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{pendingCount}</p>
+          <p className="text-2xl font-bold text-white">{pendingCount}</p>
         </div>
       </div>
 
       {/* Search */}
-      <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-4 mb-6">
+      <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-4 mb-6">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input type="text" placeholder="Search departments..." className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg bg-white dark:bg-[#1A1A1A]" value={search} onChange={(e) => setSearch(e.target.value)} />
+          <input type="text" placeholder="Search departments..." className="w-full pl-10 pr-4 py-2.5 text-sm border border-white/10 dark:border-[#2D2D2D] rounded-lg bg-[#12151C]" value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
       </div>
 
@@ -150,7 +150,7 @@ export default function DepartmentsPage() {
 
             return (
               <Link key={dept.id} href={`/admin/departments/${dept.id}`}>
-                <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-5 h-full hover:shadow-md transition-shadow cursor-pointer">
+                <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-5 h-full hover:shadow-md transition-shadow cursor-pointer">
                   <div className="flex items-start justify-between mb-3">
                     <div className="text-3xl">{dept.icon}</div>
                     {deptRequests > 0 && (
@@ -158,10 +158,10 @@ export default function DepartmentsPage() {
                     )}
                   </div>
 
-                  <h3 className="font-semibold text-gray-900 dark:text-white mb-1">{dept.name}</h3>
+                  <h3 className="font-semibold text-white mb-1">{dept.name}</h3>
                   <p className="text-sm text-gray-500 mb-4 line-clamp-2">{dept.description}</p>
 
-                  <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 mb-3">
+                  <div className="flex items-center gap-2 text-sm text-white/50 mb-3">
                     <Users className="w-4 h-4" />
                     <span>{dept.member_count || 0} members</span>
                   </div>
@@ -171,21 +171,21 @@ export default function DepartmentsPage() {
                       <p className="text-xs text-gray-500 mb-2">Sub-teams:</p>
                       <div className="flex flex-wrap gap-1">
                         {subTeams.slice(0, 3).map((team: { id: string; name: string }) => (
-                          <span key={team.id} className="px-2 py-0.5 text-xs bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full">{team.name}</span>
+                          <span key={team.id} className="px-2 py-0.5 text-xs bg-white/10 text-white/70 rounded-full">{team.name}</span>
                         ))}
                         {subTeams.length > 3 && (
-                          <span className="px-2 py-0.5 text-xs bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full">+{subTeams.length - 3}</span>
+                          <span className="px-2 py-0.5 text-xs bg-white/10 text-white/70 rounded-full">+{subTeams.length - 3}</span>
                         )}
                       </div>
                     </div>
                   )}
 
                   {leader && (
-                    <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-[#2D2D2D]">
+                    <div className="flex items-center justify-between pt-3 border-t border-white/[0.04]">
                       <div className="flex items-center gap-2">
                         <div className="w-7 h-7 rounded-full bg-[#BF0A30] flex items-center justify-center text-white text-xs font-semibold">{leader.first_name[0]}{leader.last_name[0]}</div>
                         <div>
-                          <p className="text-sm font-medium text-gray-900 dark:text-white">{leader.first_name} {leader.last_name}</p>
+                          <p className="text-sm font-medium text-white">{leader.first_name} {leader.last_name}</p>
                           <p className="text-xs text-gray-500">HOD</p>
                         </div>
                       </div>

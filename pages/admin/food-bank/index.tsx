@@ -124,25 +124,25 @@ export default function FoodBankPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-6">
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-4">
+        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-4">
           <p className="text-sm text-gray-500">Total Requests</p>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total}</p>
+          <p className="text-2xl font-bold text-white">{stats.total}</p>
         </div>
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border-l-4 border-l-amber-500 border border-gray-200 dark:border-[#2D2D2D] p-4">
+        <div className="bg-[#12151C] rounded-xl border-l-4 border-l-amber-500 border border-white/[0.06] p-4">
           <p className="text-sm text-gray-500">Pending</p>
           <p className="text-2xl font-bold text-amber-600">{stats.pending}</p>
         </div>
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border-l-4 border-l-blue-500 border border-gray-200 dark:border-[#2D2D2D] p-4">
+        <div className="bg-[#12151C] rounded-xl border-l-4 border-l-blue-500 border border-white/[0.06] p-4">
           <p className="text-sm text-gray-500">Approved</p>
           <p className="text-2xl font-bold text-blue-600">{stats.approved}</p>
         </div>
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border-l-4 border-l-green-500 border border-gray-200 dark:border-[#2D2D2D] p-4">
+        <div className="bg-[#12151C] rounded-xl border-l-4 border-l-green-500 border border-white/[0.06] p-4">
           <p className="text-sm text-gray-500">Fulfilled</p>
           <p className="text-2xl font-bold text-green-600">{stats.fulfilled}</p>
         </div>
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-4">
+        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-4">
           <p className="text-sm text-gray-500">Beneficiaries</p>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.totalBeneficiaries}</p>
+          <p className="text-2xl font-bold text-white">{stats.totalBeneficiaries}</p>
         </div>
       </div>
 
@@ -155,7 +155,7 @@ export default function FoodBankPage() {
             className={`px-4 py-2 text-sm font-medium rounded-lg capitalize ${
               filter === status
                 ? 'bg-[#BF0A30] text-white'
-                : 'bg-white dark:bg-[#1A1A1A] border border-gray-200 dark:border-[#2D2D2D] text-gray-600'
+                : 'bg-[#12151C] border border-white/[0.06] text-gray-600'
             }`}
           >
             {status}
@@ -177,7 +177,7 @@ export default function FoodBankPage() {
               const beneficiaries = request.beneficiaries ?? [];
 
               return (
-                <div key={request.id} className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-5">
+                <div key={request.id} className="bg-[#12151C] rounded-xl border border-white/[0.06] p-5">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-12 rounded-xl bg-[#BF0A30]/10 flex items-center justify-center">
@@ -186,7 +186,7 @@ export default function FoodBankPage() {
                       <div>
                         <div className="flex items-center gap-2">
                           <Home className="w-4 h-4 text-gray-400" />
-                          <p className="font-semibold text-gray-900 dark:text-white">{crosspoint?.name ?? 'Unknown Crosspoint'}</p>
+                          <p className="font-semibold text-white">{crosspoint?.name ?? 'Unknown Crosspoint'}</p>
                         </div>
                         <p className="text-sm text-gray-500">Requested by {requestedBy ? `${requestedBy.first_name} ${requestedBy.last_name}` : 'Unknown'}</p>
                       </div>
@@ -200,30 +200,30 @@ export default function FoodBankPage() {
                   </div>
 
                   <div className="grid sm:grid-cols-2 gap-4 mb-4">
-                    <div className="p-4 bg-gray-50 dark:bg-[#252525] rounded-lg">
+                    <div className="p-4 bg-white/[0.04] rounded-lg">
                       <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
                         <Users className="w-4 h-4" />
                         <span>Beneficiaries ({beneficiaries.length})</span>
                       </div>
                       <div className="space-y-1">
                         {beneficiaries.map((b: BeneficiaryRow, i: number) => (
-                          <p key={i} className="text-sm font-medium text-gray-900 dark:text-white">{b.name}</p>
+                          <p key={i} className="text-sm font-medium text-white">{b.name}</p>
                         ))}
                       </div>
                     </div>
-                    <div className="p-4 bg-gray-50 dark:bg-[#252525] rounded-lg">
+                    <div className="p-4 bg-white/[0.04] rounded-lg">
                       <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
                         <Calendar className="w-4 h-4" />
                         <span>Request Date</span>
                       </div>
-                      <p className="text-sm font-medium text-gray-900 dark:text-white">{new Date(request.request_date).toLocaleDateString()}</p>
+                      <p className="text-sm font-medium text-white">{new Date(request.request_date).toLocaleDateString()}</p>
                       {request.notes && (
                         <p className="text-sm text-gray-500 mt-2">{request.notes}</p>
                       )}
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-[#2D2D2D]">
+                  <div className="flex items-center justify-between pt-4 border-t border-white/[0.04]">
                     <div className="flex items-center gap-2 text-sm text-gray-500">
                       {request.status === 'pending' && <Clock className="w-4 h-4" />}
                       {request.status === 'fulfilled' && <Check className="w-4 h-4 text-green-500" />}
@@ -235,7 +235,7 @@ export default function FoodBankPage() {
                           <button className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-green-600 text-white rounded-lg hover:bg-green-700">
                             <Check className="w-4 h-4" />Approve
                           </button>
-                          <button className="flex items-center gap-2 px-4 py-2 text-sm font-medium border border-gray-300 rounded-lg hover:bg-gray-50">
+                          <button className="flex items-center gap-2 px-4 py-2 text-sm font-medium border border-white/10 rounded-lg hover:bg-gray-50">
                             <X className="w-4 h-4" />Decline
                           </button>
                         </>
@@ -245,7 +245,7 @@ export default function FoodBankPage() {
                           <Package className="w-4 h-4" />Mark Fulfilled
                         </button>
                       )}
-                      <button className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900">View Details</button>
+                      <button className="px-4 py-2 text-sm font-medium text-white/50 hover:text-gray-900">View Details</button>
                     </div>
                   </div>
                 </div>
@@ -254,7 +254,7 @@ export default function FoodBankPage() {
           </div>
 
           {filtered.length === 0 && (
-            <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-12 text-center">
+            <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-12 text-center">
               <Package className="w-12 h-12 text-gray-300 mx-auto mb-4" />
               <p className="text-gray-500">No food bank requests found</p>
             </div>

@@ -73,9 +73,9 @@ export default function AdminConnectPage() {
     switch (status) {
       case 'active': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
       case 'registration-open': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
-      case 'completed': return 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400';
+      case 'completed': return 'bg-white/5 text-white/70 dark:bg-gray-800';
       case 'draft': return 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400';
-      default: return 'bg-gray-100 text-gray-700';
+      default: return 'bg-white/5 text-gray-700';
     }
   };
 
@@ -96,41 +96,41 @@ export default function AdminConnectPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-4">
+        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-4">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-9 h-9 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
               <BookOpen className="w-5 h-5 text-green-600" />
             </div>
             <span className="text-sm text-gray-500">Active Cohorts</span>
           </div>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{activeCohorts.length}</p>
+          <p className="text-2xl font-bold text-white">{activeCohorts.length}</p>
         </div>
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-4">
+        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-4">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-9 h-9 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
               <Users className="w-5 h-5 text-blue-600" />
             </div>
             <span className="text-sm text-gray-500">Total Students</span>
           </div>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{totalStudents}</p>
+          <p className="text-2xl font-bold text-white">{totalStudents}</p>
         </div>
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-4">
+        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-4">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-9 h-9 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
               <AlertCircle className="w-5 h-5 text-amber-600" />
             </div>
             <span className="text-sm text-gray-500">Legacy Pending</span>
           </div>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{pendingLegacy.length}</p>
+          <p className="text-2xl font-bold text-white">{pendingLegacy.length}</p>
         </div>
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-4">
+        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-4">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-9 h-9 rounded-lg bg-[#BF0A30]/10 flex items-center justify-center">
               <CheckCircle className="w-5 h-5 text-[#BF0A30]" />
             </div>
             <span className="text-sm text-gray-500">Ready to Graduate</span>
           </div>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{readyToGraduateCount}</p>
+          <p className="text-2xl font-bold text-white">{readyToGraduateCount}</p>
         </div>
       </div>
 
@@ -138,7 +138,7 @@ export default function AdminConnectPage() {
         {/* All Cohorts */}
         <div className="lg:col-span-2">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">All Cohorts</h2>
+            <h2 className="text-lg font-semibold text-white">All Cohorts</h2>
             <Link href="/admin/connect/cohorts" className="text-sm text-[#BF0A30] hover:underline">View all</Link>
           </div>
           <div className="space-y-3">
@@ -147,11 +147,11 @@ export default function AdminConnectPage() {
                 <Link
                   key={cohort.id}
                   href={`/admin/connect/cohorts/${cohort.id}`}
-                  className="block bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-4 hover:border-[#BF0A30]/50 transition-colors"
+                  className="block bg-[#12151C] rounded-xl border border-white/[0.06] p-4 hover:border-[#BF0A30]/50 transition-colors"
                 >
                   <div className="flex items-start justify-between mb-2">
                     <div>
-                      <p className="font-semibold text-gray-900 dark:text-white">{cohort.name}</p>
+                      <p className="font-semibold text-white">{cohort.name}</p>
                       <p className="text-sm text-gray-500">
                         {cohort.profiles?.first_name} {cohort.profiles?.last_name} • {cohort.enrolled_count ?? 0}/{cohort.max_capacity} students
                       </p>
@@ -175,13 +175,13 @@ export default function AdminConnectPage() {
         {/* Right column: quick actions + pending legacy */}
         <div className="space-y-6">
           {/* Quick Actions */}
-          <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-5">
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-3">Quick Actions</h3>
+          <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-5">
+            <h3 className="font-semibold text-white mb-3">Quick Actions</h3>
             <div className="space-y-2">
-              <Link href="/admin/connect/cohorts/new" className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-[#252525] text-sm font-medium text-gray-700 dark:text-gray-300">
+              <Link href="/admin/connect/cohorts/new" className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/[0.06] text-sm font-medium text-white/70">
                 <Plus className="w-4 h-4 text-[#BF0A30]" />Create New Cohort
               </Link>
-              <Link href="/admin/connect/legacy" className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-[#252525] text-sm font-medium text-gray-700 dark:text-gray-300">
+              <Link href="/admin/connect/legacy" className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/[0.06] text-sm font-medium text-white/70">
                 <UserCheck className="w-4 h-4 text-[#BF0A30]" />
                 Verify Legacy Members
                 {pendingLegacy.length > 0 && (
@@ -190,7 +190,7 @@ export default function AdminConnectPage() {
                   </span>
                 )}
               </Link>
-              <Link href="/admin/connect/graduates" className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-[#252525] text-sm font-medium text-gray-700 dark:text-gray-300">
+              <Link href="/admin/connect/graduates" className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/[0.06] text-sm font-medium text-white/70">
                 <CheckCircle className="w-4 h-4 text-[#BF0A30]" />Graduate Students
                 {readyToGraduateCount > 0 && (
                   <span className="ml-auto bg-[#BF0A30] text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
@@ -203,8 +203,8 @@ export default function AdminConnectPage() {
 
           {/* Pending Legacy */}
           {pendingLegacy.length > 0 && (
-            <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-amber-200 dark:border-amber-900/50 p-5">
-              <h3 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+            <div className="bg-[#12151C] rounded-xl border border-amber-200 dark:border-amber-900/50 p-5">
+              <h3 className="font-semibold text-white mb-3 flex items-center gap-2">
                 <AlertCircle className="w-4 h-4 text-amber-500" />
                 Legacy Requests
               </h3>
@@ -212,7 +212,7 @@ export default function AdminConnectPage() {
                 {pendingLegacy.slice(0, 3).map((req) => (
                   <div key={req.id} className="flex items-center justify-between text-sm">
                     <div>
-                      <p className="font-medium text-gray-900 dark:text-white">{req.full_name}</p>
+                      <p className="font-medium text-white">{req.full_name}</p>
                       <p className="text-xs text-gray-500">Joined {req.year_joined}</p>
                     </div>
                     <Link

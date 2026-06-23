@@ -116,7 +116,7 @@ export default function NewEventPage() {
   return (
     <AdminLayout title="Create Event">
       <div className="max-w-3xl">
-        <Link href="/admin/events" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 mb-4">
+        <Link href="/admin/events" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-white/70 mb-4">
           <ArrowLeft className="w-4 h-4" />Back to Events
         </Link>
 
@@ -124,21 +124,21 @@ export default function NewEventPage() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Basic Info */}
-          <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-6">
-            <h2 className="font-semibold text-gray-900 dark:text-white mb-4">Event Details</h2>
+          <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-6">
+            <h2 className="font-semibold text-white mb-4">Event Details</h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Event Title *</label>
-                <input type="text" name="title" value={formData.title} onChange={handleChange} required className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg bg-white dark:bg-[#1A1A1A] text-gray-900 dark:text-white" />
+                <label className="block text-sm font-medium text-white/70 mb-1">Event Title *</label>
+                <input type="text" name="title" value={formData.title} onChange={handleChange} required className="w-full px-4 py-2.5 text-sm border border-white/10 dark:border-[#2D2D2D] rounded-lg bg-[#12151C] text-white" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
-                <textarea name="description" value={formData.description} onChange={handleChange} rows={3} className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg bg-white dark:bg-[#1A1A1A] text-gray-900 dark:text-white" />
+                <label className="block text-sm font-medium text-white/70 mb-1">Description</label>
+                <textarea name="description" value={formData.description} onChange={handleChange} rows={3} className="w-full px-4 py-2.5 text-sm border border-white/10 dark:border-[#2D2D2D] rounded-lg bg-[#12151C] text-white" />
               </div>
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category *</label>
-                  <select name="category" value={formData.category} onChange={handleChange} className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg bg-white dark:bg-[#1A1A1A] text-gray-900 dark:text-white">
+                  <label className="block text-sm font-medium text-white/70 mb-1">Category *</label>
+                  <select name="category" value={formData.category} onChange={handleChange} className="w-full px-4 py-2.5 text-sm border border-white/10 dark:border-[#2D2D2D] rounded-lg bg-[#12151C] text-white">
                     <option value="church-wide">Church-wide</option>
                     <option value="department">Department</option>
                     <option value="crosspoint">Crosspoint</option>
@@ -149,8 +149,8 @@ export default function NewEventPage() {
           </div>
 
           {/* Image Upload */}
-          <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-6">
-            <h2 className="font-semibold text-gray-900 dark:text-white mb-4">Event Image</h2>
+          <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-6">
+            <h2 className="font-semibold text-white mb-4">Event Image</h2>
             <div className="space-y-4">
               {imagePreview ? (
                 <div className="relative">
@@ -164,7 +164,7 @@ export default function NewEventPage() {
                   </button>
                 </div>
               ) : (
-                <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-gray-300 dark:border-[#2D2D2D] rounded-lg cursor-pointer hover:border-[#BF0A30]/50 transition-colors">
+                <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-white/10 dark:border-[#2D2D2D] rounded-lg cursor-pointer hover:border-[#BF0A30]/50 transition-colors">
                   <Upload className="w-8 h-8 text-gray-400 mb-2" />
                   <span className="text-sm text-gray-500">{uploading ? 'Uploading...' : 'Click to upload event image'}</span>
                   <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" disabled={uploading} />
@@ -174,40 +174,40 @@ export default function NewEventPage() {
           </div>
 
           {/* Date & Time */}
-          <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-6">
-            <h2 className="font-semibold text-gray-900 dark:text-white mb-4">Date & Time</h2>
+          <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-6">
+            <h2 className="font-semibold text-white mb-4">Date & Time</h2>
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Start Date *</label>
-                <input type="date" name="event_date" value={formData.event_date} onChange={handleChange} required className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg bg-white dark:bg-[#1A1A1A] text-gray-900 dark:text-white" />
+                <label className="block text-sm font-medium text-white/70 mb-1">Start Date *</label>
+                <input type="date" name="event_date" value={formData.event_date} onChange={handleChange} required className="w-full px-4 py-2.5 text-sm border border-white/10 dark:border-[#2D2D2D] rounded-lg bg-[#12151C] text-white" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">End Date</label>
-                <input type="date" name="end_date" value={formData.end_date} onChange={handleChange} className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg bg-white dark:bg-[#1A1A1A] text-gray-900 dark:text-white" />
+                <label className="block text-sm font-medium text-white/70 mb-1">End Date</label>
+                <input type="date" name="end_date" value={formData.end_date} onChange={handleChange} className="w-full px-4 py-2.5 text-sm border border-white/10 dark:border-[#2D2D2D] rounded-lg bg-[#12151C] text-white" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Start Time</label>
-                <input type="time" name="start_time" value={formData.start_time} onChange={handleChange} className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg bg-white dark:bg-[#1A1A1A] text-gray-900 dark:text-white" />
+                <label className="block text-sm font-medium text-white/70 mb-1">Start Time</label>
+                <input type="time" name="start_time" value={formData.start_time} onChange={handleChange} className="w-full px-4 py-2.5 text-sm border border-white/10 dark:border-[#2D2D2D] rounded-lg bg-[#12151C] text-white" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">End Time</label>
-                <input type="time" name="end_time" value={formData.end_time} onChange={handleChange} className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg bg-white dark:bg-[#1A1A1A] text-gray-900 dark:text-white" />
+                <label className="block text-sm font-medium text-white/70 mb-1">End Time</label>
+                <input type="time" name="end_time" value={formData.end_time} onChange={handleChange} className="w-full px-4 py-2.5 text-sm border border-white/10 dark:border-[#2D2D2D] rounded-lg bg-[#12151C] text-white" />
               </div>
             </div>
           </div>
 
           {/* Location */}
-          <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-6">
-            <h2 className="font-semibold text-gray-900 dark:text-white mb-4">Location</h2>
+          <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-6">
+            <h2 className="font-semibold text-white mb-4">Location</h2>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Venue</label>
-              <input type="text" name="location" value={formData.location} onChange={handleChange} className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg bg-white dark:bg-[#1A1A1A] text-gray-900 dark:text-white" />
+              <label className="block text-sm font-medium text-white/70 mb-1">Venue</label>
+              <input type="text" name="location" value={formData.location} onChange={handleChange} className="w-full px-4 py-2.5 text-sm border border-white/10 dark:border-[#2D2D2D] rounded-lg bg-[#12151C] text-white" />
             </div>
           </div>
 
           {/* Actions */}
           <div className="flex items-center justify-end gap-3">
-            <Link href="/admin/events" className="px-4 py-2.5 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50">Cancel</Link>
+            <Link href="/admin/events" className="px-4 py-2.5 text-sm font-medium text-white/70 border border-white/10 rounded-lg hover:bg-gray-50">Cancel</Link>
             <button type="submit" disabled={loading} className="flex items-center gap-2 px-6 py-2.5 text-sm font-medium bg-[#BF0A30] text-white rounded-lg hover:bg-[#B00325] disabled:opacity-50">
               <Save className="w-4 h-4" />{loading ? 'Creating...' : 'Create Event'}
             </button>

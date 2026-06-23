@@ -6,7 +6,7 @@ import Layout from '@/components/shared/Layout';
 import { supabase } from '@/lib/supabase';
 import type { Sermon } from '@/types';
 
-const CATEGORIES = ['faith', 'prayer', 'family', 'leadership', 'kingdom', 'worship', 'evangelism', 'other'] as const;
+// Series + preacher filtering only — no categories
 
 const H = { fontFamily: 'Montserrat, sans-serif', fontWeight: 900 } as const;
 const serif = { fontFamily: '"Playfair Display", Georgia, serif', fontStyle: 'italic' as const };
@@ -188,22 +188,26 @@ function DbSermonCard({ sermon }: { sermon: Sermon }) {
   );
 }
 
-/* ─── Series card (bigger landscape) ───────────────────────────── */
+/* ─── Series card (glassmorphic) ───────────────────────────────── */
 function SeriesCard({ title, sermons, onOpen }: { title: string; sermons: Sermon[]; onOpen: () => void }) {
   const thumb = sermons[0] ? getThumb(sermons[0]) : '/church-photos/IMG_1716.jpg';
   return (
-    <button onClick={onOpen} className="group flex-shrink-0 w-[260px] sm:w-[320px] text-left">
-      <div className="relative aspect-[16/10] rounded-2xl overflow-hidden group-hover:scale-[1.03] transition-transform duration-300">
+    <button onClick={onOpen} className="group flex-shrink-0 w-[280px] sm:w-[340px] text-left">
+      <div className="relative aspect-[16/9] rounded-2xl overflow-hidden group-hover:scale-[1.02] transition-transform duration-300">
         <img src={thumb} alt={title} className="w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-          <div className="w-14 h-14 rounded-full bg-[#BF0A30]/90 flex items-center justify-center shadow-2xl">
-            <Layers className="w-6 h-6 text-white" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10" />
+        {/* Glassmorphic title bar */}
+        <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-5"
+          style={{ background: 'rgba(10,12,16,0.55)', backdropFilter: 'blur(16px) saturate(150%)', WebkitBackdropFilter: 'blur(16px) saturate(150%)' }}>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-white font-black text-base sm:text-lg leading-tight" style={H}>{title}</p>
+              <p className="text-white/50 text-xs mt-0.5">{sermons.length} episode{sermons.length !== 1 ? 's' : ''}</p>
+            </div>
+            <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-[#BF0A30]/80 transition-colors">
+              <Layers className="w-5 h-5 text-white" />
+            </div>
           </div>
-        </div>
-        <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-5">
-          <p className="text-white font-black text-base sm:text-lg leading-tight mb-1" style={H}>{title}</p>
-          <p className="text-white/60 text-xs">{sermons.length} episode{sermons.length !== 1 ? 's' : ''}</p>
         </div>
       </div>
     </button>
@@ -306,7 +310,6 @@ interface SermonsPageProps {
 
 export default function SermonsPage({ sermons, featuredSermon, seriesList, preachers }: SermonsPageProps) {
   const [search, setSearch] = useState('');
-  const [activeCategory, setActiveCategory] = useState('all');
   const [filterPreacher, setFilterPreacher] = useState('all');
   const [openSeries, setOpenSeries] = useState<{ title: string; sermons: Sermon[] } | null>(null);
 
@@ -319,11 +322,9 @@ export default function SermonsPage({ sermons, featuredSermon, seriesList, preac
     sermons: sermons.filter(s => (s.series as any)?.id === sr.id || s.series_id === sr.id),
   })).filter(g => g.sermons.length > 0);
 
-  const categorySermons = sermons.filter(s => {
-    if (activeCategory !== 'all' && s.category !== activeCategory) return false;
-    if (filterPreacher !== 'all' && s.preacher !== filterPreacher) return false;
-    return true;
-  });
+  const displaySermons = filterPreacher !== 'all'
+    ? sermons.filter(s => s.preacher === filterPreacher)
+    : sermons;
 
   return (
     <Layout title="Sermons — Ruach Tabernacle" description="Watch powerful messages from Ruach Tabernacle. Kingdom-focused sermons that will transform your life.">
@@ -361,32 +362,38 @@ export default function SermonsPage({ sermons, featuredSermon, seriesList, preac
         {!search && (
           <div className="pt-8 pb-16">
 
-            {/* Filters */}
-            {sermons.length > 0 && (
-              <div className="flex gap-2 overflow-x-auto px-4 sm:px-6 md:px-12 pb-2 mb-4" style={{ scrollbarWidth: 'none' }}>
-                <button onClick={() => setActiveCategory('all')}
-                  className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-colors ${activeCategory === 'all' ? 'bg-[#BF0A30] text-white' : 'bg-white/[0.06] text-white/50 hover:bg-white/[0.10]'}`} style={H}>All</button>
-                {CATEGORIES.map(cat => (
-                  <button key={cat} onClick={() => setActiveCategory(cat)}
-                    className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-colors ${activeCategory === cat ? 'bg-[#BF0A30] text-white' : 'bg-white/[0.06] text-white/50 hover:bg-white/[0.10]'}`} style={H}>{cat}</button>
-                ))}
-              </div>
-            )}
-
+            {/* Preacher filter — glassmorphic pills */}
             {preachers.length > 1 && (
-              <div className="flex gap-2 overflow-x-auto px-4 sm:px-6 md:px-12 pb-2 mb-8" style={{ scrollbarWidth: 'none' }}>
-                <button onClick={() => setFilterPreacher('all')}
-                  className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-colors ${filterPreacher === 'all' ? 'bg-white/20 text-white' : 'bg-white/[0.06] text-white/50 hover:bg-white/[0.10]'}`} style={H}>All Preachers</button>
-                {preachers.map(p => (
-                  <button key={p} onClick={() => setFilterPreacher(p)}
-                    className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-colors ${filterPreacher === p ? 'bg-white/20 text-white' : 'bg-white/[0.06] text-white/50 hover:bg-white/[0.10]'}`} style={H}>{p}</button>
-                ))}
+              <div className="px-4 sm:px-6 md:px-12 mb-8">
+                <p className="text-[#8B95A8] text-[10px] font-black uppercase tracking-widest mb-3" style={H}>Filter by Preacher</p>
+                <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+                  <button onClick={() => setFilterPreacher('all')}
+                    className={`flex-shrink-0 px-5 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all ${
+                      filterPreacher === 'all'
+                        ? 'bg-[#BF0A30] text-white shadow-lg shadow-[#BF0A30]/30'
+                        : 'text-white/60 hover:text-white border border-white/10 hover:border-white/20'
+                    }`}
+                    style={{ ...H, ...(filterPreacher !== 'all' ? { background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' } : {}) }}>
+                    All
+                  </button>
+                  {preachers.map(p => (
+                    <button key={p} onClick={() => setFilterPreacher(p)}
+                      className={`flex-shrink-0 px-5 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all ${
+                        filterPreacher === p
+                          ? 'bg-[#BF0A30] text-white shadow-lg shadow-[#BF0A30]/30'
+                          : 'text-white/60 hover:text-white border border-white/10 hover:border-white/20'
+                      }`}
+                      style={{ ...H, ...(filterPreacher !== p ? { background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' } : {}) }}>
+                      {p}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
 
-            {sermons.length > 0 && activeCategory === 'all' && filterPreacher === 'all' ? (
+            {displaySermons.length > 0 && filterPreacher === 'all' ? (
               <>
-                {/* Series row — bigger landscape cards */}
+                {/* Series row — glassmorphic landscape cards */}
                 {bySeries.length > 0 && (
                   <div className="mb-12">
                     <h2 className="text-white text-lg font-black mb-4 px-4 sm:px-6 md:px-12" style={H}>Sermon Series</h2>
@@ -410,11 +417,11 @@ export default function SermonsPage({ sermons, featuredSermon, seriesList, preac
                   </SermonRow>
                 ))}
               </>
-            ) : sermons.length > 0 ? (
-              <SermonRow title={activeCategory !== 'all' ? `${activeCategory.charAt(0).toUpperCase() + activeCategory.slice(1)} Messages` : 'Messages'}>
-                {categorySermons.map(s => <DbSermonCard key={s.id} sermon={s} />)}
+            ) : displaySermons.length > 0 ? (
+              <SermonRow title={`${filterPreacher}`}>
+                {displaySermons.map(s => <DbSermonCard key={s.id} sermon={s} />)}
               </SermonRow>
-            ) : (
+            ) : sermons.length === 0 ? (
               <>
                 <SermonRow title="Featured Messages">
                   {FEATURED_VIDEOS.map(v => <VideoCard key={v.id} thumb={ytThumb(v.id)} title={v.title} sub={v.preacher} href={`https://www.youtube.com/watch?v=${v.id}`} external />)}
@@ -423,6 +430,10 @@ export default function SermonsPage({ sermons, featuredSermon, seriesList, preac
                   {[...FEATURED_VIDEOS].reverse().map(v => <VideoCard key={`more-${v.id}`} thumb={ytThumb(v.id)} title={v.title} sub={v.preacher} href={`https://www.youtube.com/watch?v=${v.id}`} external />)}
                 </SermonRow>
               </>
+            ) : (
+              <div className="text-center py-16 px-4">
+                <p className="text-[#8B95A8] text-sm">No sermons found for this preacher.</p>
+              </div>
             )}
           </div>
         )}

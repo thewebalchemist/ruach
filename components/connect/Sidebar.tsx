@@ -4,7 +4,7 @@ import { useRouter } from 'next/router';
 import {
   LayoutDashboard, Users, Home, GraduationCap, Building2, Calendar,
   MessageSquare, Bell, Settings, ChevronDown, LogOut, X, Search, Radio,
-  BookOpen, Heart, Utensils,
+  BookOpen, Heart, Utensils, ShoppingCart,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
@@ -38,6 +38,7 @@ const navigation = [
   },
   { name: 'Departments', href: '/admin/departments', icon: Building2 },
   { name: 'Events', href: '/admin/events', icon: Calendar },
+  { name: 'Procurement', href: '/admin/procurement', icon: ShoppingCart },
   { name: 'Food Bank', href: '/admin/food-bank', icon: Utensils },
   { name: 'Prayer', href: '/admin/prayer', icon: Heart },
   { name: 'Suggestions', href: '/admin/suggestions', icon: MessageSquare },

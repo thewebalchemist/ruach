@@ -57,7 +57,7 @@ export default function DiscipleshipGraduatesPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white">Graduates</h1>
+          <h1 className="text-xl font-bold text-white">Graduates</h1>
           <p className="text-gray-500">Students who have completed KDC levels</p>
         </div>
       </div>
@@ -88,14 +88,14 @@ export default function DiscipleshipGraduatesPage() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-4 mb-6">
+      <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-4 mb-6">
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
               placeholder="Search graduates..."
-              className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg bg-transparent text-gray-900 dark:text-white"
+              className="w-full pl-10 pr-4 py-2.5 text-sm border border-white/10 dark:border-[#2D2D2D] rounded-lg bg-transparent text-white"
               value={search}
               onChange={e => setSearch(e.target.value)}
             />
@@ -108,7 +108,7 @@ export default function DiscipleshipGraduatesPage() {
                 className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
                   filterLevel === l
                     ? 'bg-[#BF0A30] text-white'
-                    : 'border border-gray-300 dark:border-[#2D2D2D] text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#252525]'
+                    : 'border border-white/10 dark:border-[#2D2D2D] text-white/70 hover:bg-white/[0.06]'
                 }`}
               >
                 {l === 'all' ? 'All Levels' : `Level ${l}`}
@@ -119,14 +119,14 @@ export default function DiscipleshipGraduatesPage() {
       </div>
 
       {/* Graduates List */}
-      <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D]">
-        <div className="divide-y divide-gray-100 dark:divide-[#2D2D2D]">
+      <div className="bg-[#12151C] rounded-xl border border-white/[0.06]">
+        <div className="divide-y divide-white/[0.06]">
           {filtered.map(student => {
             const hasCertificate = student.certificateIssued || issued.has(student.id);
             const isIssuing = issuingId === student.id;
 
             return (
-              <div key={student.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 sm:p-5 hover:bg-gray-50 dark:hover:bg-[#252525]">
+              <div key={student.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 sm:p-5 hover:bg-white/[0.06]">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#BF0A30] to-[#8B0000] flex items-center justify-center text-white font-semibold flex-shrink-0">
                     {student.member
@@ -135,7 +135,7 @@ export default function DiscipleshipGraduatesPage() {
                   </div>
                   <div>
                     <div className="flex items-center gap-2 flex-wrap">
-                      <p className="font-semibold text-gray-900 dark:text-white">
+                      <p className="font-semibold text-white">
                         {student.member ? `${student.member.firstName} ${student.member.lastName}` : 'Unknown Member'}
                       </p>
                       <span className="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-green-100 text-green-800">Level {student.level} Graduate</span>
@@ -156,7 +156,7 @@ export default function DiscipleshipGraduatesPage() {
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
                   {hasCertificate ? (
-                    <button className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium border border-gray-300 dark:border-[#2D2D2D] rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-[#252525]">
+                    <button className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium border border-white/10 dark:border-[#2D2D2D] rounded-lg text-white/50 hover:bg-white/[0.06]">
                       <Download className="w-3.5 h-3.5" />Download Certificate
                     </button>
                   ) : (
