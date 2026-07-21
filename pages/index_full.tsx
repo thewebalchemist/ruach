@@ -620,11 +620,11 @@ export default function HomePage({ recentSermons, isLive, upcomingEvents }: Page
               <Link href="/r-events" className="text-[#BF0A30] text-xs font-bold uppercase tracking-widest hover:underline" style={H}>View Past Events →</Link>
             </div>
           ) : (
-            <div className={`grid gap-6 ${upcomingEvents.length === 1 ? 'lg:grid-cols-2' : 'sm:grid-cols-2'}`}>
-              {upcomingEvents.map((ev, i) => {
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {upcomingEvents.map((ev) => {
                 const dateLabel = new Date(ev.event_date).toLocaleDateString('en-KE', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' });
                 return (
-                  <div key={ev.id} className={`rounded-2xl overflow-hidden flex flex-col ${i === 0 && upcomingEvents.length === 1 ? 'lg:col-span-1' : ''}`}
+                  <div key={ev.id} className="rounded-2xl overflow-hidden flex flex-col"
                     style={{ background: 'rgba(18,21,28,0.9)', border: '1px solid rgba(255,255,255,0.08)' }}>
                     {ev.image_url && (
                       <div className="aspect-square overflow-hidden">
