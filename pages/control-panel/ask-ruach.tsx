@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
 import { Sparkles, Save, Plus, Trash2, Loader2, AlertCircle, CheckCircle, ChevronDown, ChevronUp, RefreshCw } from 'lucide-react';
 import CPLayout from '@/components/control-panel/CPLayout';
 import { supabase } from '@/lib/supabase';
@@ -33,7 +32,6 @@ const inp = "w-full px-3 py-2.5 bg-gray-50 dark:bg-[#111] border border-gray-200
 const lbl = "block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide mb-1.5";
 
 export default function AskRuachConfig() {
-  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [faqs, setFaqs] = useState<FAQ[]>([]);
   const [saving, setSaving] = useState(false);
@@ -45,17 +43,8 @@ export default function AskRuachConfig() {
   const [cacheFlushing, setCacheFlushing] = useState(false);
   const [cacheFlushed, setCacheFlushed] = useState(false);
 
-  useEffect(() => {
-    checkAuth();
-  }, []);
-
-  async function checkAuth() {
-    const { data } = await supabase.auth.getSession();
-    if (!data.session) { router.push('/auth/login?redirectTo=/control-panel/ask-ruach'); return; }
-    const { data: profile } = await supabase.from('profiles').select('role').eq('id', data.session.user.id).single() as any;
-    if (!profile || !['admin', 'pastor'].includes(profile.role) || profile.status === 'suspended') { router.push('/'); return; }
-    loadFAQs();
-  }
+  // Auth + role gating handled centrally by CPLayout (allow=admin,pastor).
+  useEffect(() => { loadFAQs(); }, []);
 
   async function loadFAQs() {
     const { data } = await (supabase.from('faqs') as any).select('*').order('order_index', { ascending: true });
@@ -114,6 +103,7 @@ export default function AskRuachConfig() {
     <CPLayout
       title="Ask Ruach Configuration"
       subtitle="Configure what the AI knows about your church"
+      allow={['admin', 'pastor']}
       actions={
         <button
           onClick={flushCache}

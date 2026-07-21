@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getKnowledgeBase } from '@/lib/knowledge';
+import { retrieveSermons, buildRetrievedSermonsBlock, findRelevantSermonsFromChunks } from '@/lib/sermon-rag';
 import { supabase } from '@/lib/supabase';
 import { Groq } from 'groq-sdk';
 
@@ -37,8 +38,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   const knowledge  = await getKnowledgeBase();
+  const chunks     = await retrieveSermons(message);
   const { buildSystemPrompt } = await import('@/lib/knowledge');
-  const systemPrompt = buildSystemPrompt(knowledge);
+  // RAG: replace the old "stuff every sermon summary into the prompt" (CAG)
+  // approach with only the retrieved passages that actually match the question.
+  knowledge.sermons = [];
+  const systemPrompt = buildSystemPrompt(knowledge) + buildRetrievedSermonsBlock(chunks);
 
   const messages = [
     { role: 'system' as const, content: systemPrompt },
@@ -80,8 +85,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Clean final content
     fullContent = fullContent.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
 
-    // Find sermons mentioned in the response or relevant to the query
-    const relevantSermons = findRelevantSermons(message, fullContent, knowledge.sermons || []);
+    // Sermon cards from the retrieved passages (RAG)
+    const relevantSermons = await findRelevantSermonsFromChunks(chunks);
 
     // Update rate limit
     if (!user_id) await incrementRateLimit(clientIp, browserSessionId);

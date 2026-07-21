@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
 import { Radio, Save, ExternalLink, AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
 import CPLayout from '@/components/control-panel/CPLayout';
 import { supabase } from '@/lib/supabase';
@@ -12,7 +11,6 @@ interface StreamSettings {
 }
 
 export default function LiveControlPage() {
-  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [toggling, setToggling] = useState(false);
@@ -20,17 +18,8 @@ export default function LiveControlPage() {
   const [settings, setSettings] = useState<StreamSettings>({ is_live: false, stream_url: '', default_youtube_url: '' });
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    checkAuth();
-  }, []);
-
-  async function checkAuth() {
-    const { data } = await supabase.auth.getSession();
-    if (!data.session) { router.push('/auth/login?redirectTo=/control-panel/live'); return; }
-    const { data: profile } = await supabase.from('profiles').select('role').eq('id', data.session.user.id).single() as any;
-    if (!profile || !['admin', 'pastor', 'media'].includes(profile.role) || profile.status === 'suspended') { router.push('/'); return; }
-    loadSettings();
-  }
+  // Auth + role gating handled centrally by CPLayout.
+  useEffect(() => { loadSettings(); }, []);
 
   async function loadSettings() {
     const { data } = await supabase.from('stream_settings').select('*').single() as any;

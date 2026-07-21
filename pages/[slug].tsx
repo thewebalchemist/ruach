@@ -109,7 +109,8 @@ export default function SermonPage({ sermon, relatedSermons, seriesSermons }: Se
 
   const ytId = getYtId(sermon.youtube_url);
   const thumbnailUrl = sermon.thumbnail_url || (ytId ? `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg` : '/church-photos/IMG_1716.jpg');
-  const sermonNotes = sermon.notes;
+  // Prefer the regenerated JK-style article; fall back to the original notes.
+  const sermonNotes = (sermon as { article?: string | null }).article || sermon.notes;
   const spotifyUrl = sermon.spotify_url;
   const pageUrl = `https://ruachtabernacle.org/${sermon.slug}`;
   const cleanDesc = sermon.description?.replace(/[#*_`]/g, '').substring(0, 160) || `Watch "${sermon.title}" by ${sermon.preacher} at Ruach Tabernacle Assembly.`;
