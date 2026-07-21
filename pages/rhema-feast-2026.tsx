@@ -27,12 +27,12 @@ const PILLARS = [
 
 interface Speaker { name: string; title: string; initials: string; photo?: string; }
 const SPEAKERS: Speaker[] = [
-  { name: 'Rev. Julian Kyula',     title: 'Convener, Rhema Feast',                     initials: 'JK', photo: '/rhema-feast/speakers/julian-kyula.jpg' },
-  { name: 'Apostle Joshua Selman', title: 'Senior Pastor, Koinonia Global',            initials: 'JS', photo: '/rhema-feast/speakers/joshua-selman.jpg' },
-  { name: 'Pst. Poju Oyemade',     title: 'Senior Pastor, The Covenant Nation',        initials: 'PO', photo: '/rhema-feast/speakers/poju-oyemade.jpg' },
-  { name: 'Bishop JB Masinde',     title: 'Senior Pastor, Deliverance Church — Umoja', initials: 'JB', photo: '/rhema-feast/speakers/jb-masinde.jpg' },
-  { name: 'Bishop Kathy Kiuna',    title: 'Senior Pastor, Jubilee Christian Center',   initials: 'KK', photo: '/rhema-feast/speakers/kathy-kiuna.jpg' },
-  { name: 'Funke Felix-Adejumo',   title: 'President, Funke Felix-Adejumo Foundation',  initials: 'FA', photo: '/rhema-feast/speakers/funke-felix-adejumo.jpg' },
+  { name: 'Rev. Julian Kyula',     title: 'Convener, Rhema Feast',                     initials: 'JK', photo: '/rhema-feast/speakers/julian-kyula.png' },
+  { name: 'Apostle Joshua Selman', title: 'Senior Pastor, Koinonia Global',            initials: 'JS', photo: '/rhema-feast/speakers/joshua-selman.png' },
+  { name: 'Pst. Poju Oyemade',     title: 'Senior Pastor, The Covenant Nation',        initials: 'PO', photo: '/rhema-feast/speakers/poju-oyemade.png' },
+  { name: 'Bishop JB Masinde',     title: 'Senior Pastor, Deliverance Church — Umoja', initials: 'JB', photo: '/rhema-feast/speakers/jb-masinde.png' },
+  { name: 'Bishop Kathy Kiuna',    title: 'Senior Pastor, Jubilee Christian Center',   initials: 'KK', photo: '/rhema-feast/speakers/kathy-kiuna.png' },
+  { name: 'Funke Felix-Adejumo',   title: 'President, Funke Felix-Adejumo Foundation',  initials: 'FA', photo: '/rhema-feast/speakers/funke-felix-adejumo.png' },
 ];
 
 const GALLERY = [
