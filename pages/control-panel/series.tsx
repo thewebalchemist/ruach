@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
 import { Plus, Layers, Edit, Trash2, Save, X, Loader2, AlertCircle, CheckCircle, Search } from 'lucide-react';
 import CPLayout from '@/components/control-panel/CPLayout';
 import { supabase } from '@/lib/supabase';
@@ -12,7 +11,6 @@ const inp = "w-full px-3 py-2.5 bg-gray-50 dark:bg-[#111] border border-gray-200
 const lbl = "block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide mb-1.5";
 
 export default function SeriesCP() {
-  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [series, setSeries] = useState<Series[]>([]);
   const [search, setSearch] = useState('');
@@ -23,17 +21,8 @@ export default function SeriesCP() {
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    checkAuth();
-  }, []);
-
-  async function checkAuth() {
-    const { data } = await supabase.auth.getSession();
-    if (!data.session) { router.push('/auth/login?redirectTo=/control-panel/series'); return; }
-    const { data: profile } = await supabase.from('profiles').select('role').eq('id', data.session.user.id).single() as any;
-    if (!profile || !['admin', 'pastor', 'media'].includes(profile.role) || profile.status === 'suspended') { router.push('/'); return; }
-    loadData();
-  }
+  // Auth + role gating handled centrally by CPLayout.
+  useEffect(() => { loadData(); }, []);
 
   async function loadData() {
     const { data } = await supabase.from('series').select('*').order('created_at', { ascending: false });

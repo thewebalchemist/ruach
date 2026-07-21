@@ -1,7 +1,13 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-const ADMIN_ROUTES  = ['/admin', '/control-panel'];
+// NOTE: /admin and /control-panel are intentionally NOT gated here.
+// Supabase v2 keeps the session in localStorage, which middleware cannot read,
+// so a cookie "sentinel" was used — but it drifts from the real session and
+// caused redirect/refresh loops on those pages. Those areas are now gated
+// client-side by a single reliable guard (AuthContext + CPLayout). Member
+// routes keep the lightweight sentinel gate below.
+const ADMIN_ROUTES  = ['/admin'];
 const MEMBER_ROUTES = ['/member', '/connect/dashboard', '/discipleship/dashboard', '/notifications'];
 
 // These pages ARE under /member but must never be gated
@@ -34,7 +40,6 @@ export function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     '/admin/:path*',
-    '/control-panel/:path*',
     '/member/:path*',
     '/connect/dashboard/:path*',
     '/discipleship/dashboard/:path*',

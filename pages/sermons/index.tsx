@@ -5,6 +5,7 @@ import { GetServerSideProps } from 'next';
 import Layout from '@/components/shared/Layout';
 import { supabase } from '@/lib/supabase';
 import type { Sermon } from '@/types';
+import ThemeHero from '@/components/streaming/ThemeHero';
 
 // Series + preacher filtering only — no categories
 
@@ -330,7 +331,7 @@ export default function SermonsPage({ sermons, featuredSermon, seriesList, preac
     <Layout title="Sermons — Ruach Tabernacle" description="Watch powerful messages from Ruach Tabernacle. Kingdom-focused sermons that will transform your life.">
       <div className="min-h-screen bg-[#0A0C10] pt-16 sm:pt-24">
 
-        <HeroSlider sermons={sermons} fallback={FEATURED_VIDEOS} />
+        <ThemeHero sermons={sermons} fallback={FEATURED_VIDEOS} />
 
         {/* Search */}
         <div className="max-w-5xl mx-auto px-4 sm:px-6 md:px-12 pt-8 pb-2">

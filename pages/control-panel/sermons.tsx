@@ -16,7 +16,7 @@ function formatDate(d: string) {
 const EMPTY_FORM = {
   title: '', preacher: '', youtube_url: '', series_id: '', service_date: '',
   scripture_ref: '', description: '', tags: '', slug: '',
-  spotify_url: '', category: '', notes: '', transcript: '',
+  spotify_url: '', category: '', article: '', transcript: '',
 };
 
 export default function SermonsCP() {
@@ -32,36 +32,33 @@ export default function SermonsCP() {
   const [saved, setSaved] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [error, setError] = useState('');
-  const [generatingNotes, setGeneratingNotes] = useState(false);
+  const [generatingArticle, setGeneratingArticle] = useState(false);
   const [showNewSeries, setShowNewSeries] = useState(false);
   const [newSeriesTitle, setNewSeriesTitle] = useState('');
   const [creatingSeries, setCreatingSeries] = useState(false);
   const [preachers, setPreachers] = useState<string[]>([]);
   const [showNewPreacher, setShowNewPreacher] = useState(false);
   const [newPreacherName, setNewPreacherName] = useState('');
+  const [creatingPreacher, setCreatingPreacher] = useState(false);
 
+  // Auth is enforced centrally by CPLayout — this page just loads data.
   useEffect(() => {
-    checkAuth();
+    loadData();
     if (router.query.action === 'new') setShowForm(true);
   }, [router.query]);
 
-  async function checkAuth() {
-    const { data } = await supabase.auth.getSession();
-    if (!data.session) { router.push('/auth/login?redirectTo=/control-panel/sermons'); return; }
-    const { data: profile } = await supabase.from('profiles').select('role').eq('id', data.session.user.id).single() as any;
-    if (!profile || !['admin', 'pastor', 'media'].includes(profile.role) || profile.status === 'suspended') { router.push('/'); return; }
-    loadData();
-  }
-
   async function loadData() {
-    const [{ data: s }, { data: sr }] = await Promise.all([
+    const [{ data: s }, { data: sr }, { data: pr }] = await Promise.all([
       supabase.from('sermons').select('*, series(title)').order('service_date', { ascending: false }),
       supabase.from('series').select('id, title').order('title'),
+      supabase.from('preachers').select('name').order('sort_order'),
     ]);
     setSermons((s || []) as any);
     setSeries((sr || []) as any);
-    const uniquePreachers = [...new Set((s || []).map((sm: any) => sm.preacher).filter(Boolean))] as string[];
-    setPreachers(uniquePreachers.sort());
+    // Managed preachers first (table), then any names still only on sermons.
+    const fromTable = ((pr || []) as { name: string }[]).map(p => p.name).filter(Boolean);
+    const fromSermons = ((s || []) as any[]).map(sm => sm.preacher).filter(Boolean);
+    setPreachers([...new Set([...fromTable, ...fromSermons])].sort());
     setLoading(false);
   }
 
@@ -86,32 +83,38 @@ export default function SermonsCP() {
       slug:         sermon.slug,
       spotify_url:  sermon.spotify_url || '',
       category:     sermon.category || '',
-      notes:        sermon.notes || '',
+      article:      (sermon as { article?: string | null }).article || sermon.notes || '',
       transcript:   sermon.transcript || '',
     });
     setError('');
     setShowForm(true);
   }
 
-  async function generateNotes() {
+  async function generateArticle() {
     if (!form.title || !form.preacher) return;
-    setGeneratingNotes(true);
+    setGeneratingArticle(true);
+    setError('');
     try {
-      const res = await fetch('/api/sermons/generate-notes', {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch('/api/sermons/generate-article', {
         method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ title: form.title, preacher: form.preacher, scripture: form.scripture_ref, summary: form.description, transcript: form.transcript }),
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
+        body:    JSON.stringify({
+          title: form.title, preacher: form.preacher, scripture: form.scripture_ref,
+          summary: form.description, transcript: form.transcript, notes: form.article,
+        }),
       });
       const data = await res.json();
-      if (data.notes) {
-        const updates: Partial<typeof EMPTY_FORM> = { notes: data.notes };
+      if (!res.ok) { setError(data.error || 'Failed to generate article'); return; }
+      if (data.article) {
+        const updates: Partial<typeof EMPTY_FORM> = { article: data.article };
         if (data.description && !form.description) updates.description = data.description;
         setForm(f => ({ ...f, ...updates }));
       }
     } catch {
-      // silent
+      setError('Failed to generate article');
     } finally {
-      setGeneratingNotes(false);
+      setGeneratingArticle(false);
     }
   }
 
@@ -135,6 +138,31 @@ export default function SermonsCP() {
       setError('Failed to create series');
     }
     setCreatingSeries(false);
+  }
+
+  async function handleAddPreacher() {
+    const name = newPreacherName.trim();
+    if (!name || creatingPreacher) return;
+    setCreatingPreacher(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch('/api/control-panel/create-preacher', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
+        body: JSON.stringify({ name }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setError(data.error || 'Failed to add preacher'); return; }
+      const finalName = data.name || name;
+      if (!preachers.includes(finalName)) setPreachers(prev => [...prev, finalName].sort());
+      set('preacher', finalName);
+      setShowNewPreacher(false);
+      setNewPreacherName('');
+    } catch {
+      setError('Failed to add preacher');
+    } finally {
+      setCreatingPreacher(false);
+    }
   }
 
   function set(k: keyof typeof EMPTY_FORM, v: string) {
@@ -167,7 +195,7 @@ export default function SermonsCP() {
         slug:           form.slug || generateSlug(form.title),
         spotify_url:    form.spotify_url || null,
         category:       form.category || null,
-        notes:          form.notes || null,
+        article:        form.article || null,
         transcript:     form.transcript || null,
       };
 
@@ -180,6 +208,16 @@ export default function SermonsCP() {
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error || 'Failed to save sermon'); setSaving(false); return; }
+
+      // Best-effort: (re)index this sermon for "Ask Ruach". Non-blocking — a
+      // slow/failed embed must never hold up the save.
+      if (data?.id) {
+        fetch('/api/control-panel/embed-sermon', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
+          body: JSON.stringify({ id: data.id }),
+        }).catch(() => {});
+      }
 
       setSaving(false);
       setSaved(true);
@@ -250,7 +288,7 @@ export default function SermonsCP() {
                     <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Sermon</th>
                     <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide hidden sm:table-cell">Preacher</th>
                     <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide hidden md:table-cell">Date</th>
-                    <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide hidden lg:table-cell">Series</th>
+                    <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide hidden lg:table-cell">Theme</th>
                     <th className="px-4 py-3"></th>
                   </tr>
                 </thead>
@@ -329,32 +367,11 @@ export default function SermonsCP() {
                       <input value={newPreacherName} onChange={e => setNewPreacherName(e.target.value)}
                         placeholder="e.g. Rev. Julian Kyula"
                         className={`${inp} flex-1`}
-                        onKeyDown={e => {
-                          if (e.key === 'Enter') {
-                            e.preventDefault();
-                            if (newPreacherName.trim()) {
-                              set('preacher', newPreacherName.trim());
-                              if (!preachers.includes(newPreacherName.trim())) {
-                                setPreachers(prev => [...prev, newPreacherName.trim()].sort());
-                              }
-                              setShowNewPreacher(false);
-                              setNewPreacherName('');
-                            }
-                          }
-                        }}
+                        onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddPreacher(); } }}
                         autoFocus />
-                      <button type="button" onClick={() => {
-                        if (newPreacherName.trim()) {
-                          set('preacher', newPreacherName.trim());
-                          if (!preachers.includes(newPreacherName.trim())) {
-                            setPreachers(prev => [...prev, newPreacherName.trim()].sort());
-                          }
-                          setShowNewPreacher(false);
-                          setNewPreacherName('');
-                        }
-                      }} disabled={!newPreacherName.trim()}
-                        className="px-3 py-2 bg-[#BF0A30] hover:bg-[#A00828] disabled:opacity-50 text-white text-xs font-semibold rounded-xl transition-colors">
-                        Add
+                      <button type="button" onClick={handleAddPreacher} disabled={creatingPreacher || !newPreacherName.trim()}
+                        className="px-3 py-2 bg-[#BF0A30] hover:bg-[#A00828] disabled:opacity-50 text-white text-xs font-semibold rounded-xl transition-colors flex items-center gap-1">
+                        {creatingPreacher ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Add'}
                       </button>
                       <button type="button" onClick={() => { setShowNewPreacher(false); setNewPreacherName(''); }}
                         className="px-3 py-2 border border-gray-200 dark:border-[#333] rounded-xl text-xs text-gray-500 hover:bg-gray-50 dark:hover:bg-[#222] transition-colors">
@@ -375,11 +392,11 @@ export default function SermonsCP() {
                   )}
                 </div>
                 <div>
-                  <label className={lbl}>Series</label>
+                  <label className={lbl}>Theme</label>
                   {!showNewSeries ? (
                     <div className="flex gap-2">
                       <select value={form.series_id} onChange={e => set('series_id', e.target.value)} className={`${inp} flex-1`}>
-                        <option value="">No series</option>
+                        <option value="">No theme</option>
                         {series.map(sr => <option key={sr.id} value={sr.id}>{sr.title}</option>)}
                       </select>
                       <button type="button" onClick={() => setShowNewSeries(true)}
@@ -390,7 +407,7 @@ export default function SermonsCP() {
                   ) : (
                     <div className="flex gap-2">
                       <input value={newSeriesTitle} onChange={e => setNewSeriesTitle(e.target.value)}
-                        placeholder="Series name e.g. Walking in Glory"
+                        placeholder="Theme name e.g. Walking in Glory"
                         className={`${inp} flex-1`}
                         onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleCreateSeries(); } }}
                         autoFocus />
@@ -431,26 +448,26 @@ export default function SermonsCP() {
                   </select>
                 </div>
                 <div className="sm:col-span-2">
-                  <label className={lbl}>Sermon Transcript (paste to generate context-aware notes)</label>
+                  <label className={lbl}>Sermon Transcript (paste to write a grounded article)</label>
                   <textarea value={form.transcript} onChange={e => set('transcript', e.target.value)}
-                    rows={5} placeholder="Paste the sermon transcript here. The AI will generate notes grounded in the actual sermon content rather than generic points…"
+                    rows={5} placeholder="Paste the sermon transcript here. The AI writes the article from the actual message rather than generic points…"
                     className={`${inp} resize-y font-mono text-xs`} />
-                  <p className="text-xs text-gray-400 mt-1">Optional — greatly improves AI note quality and verse accuracy.</p>
+                  <p className="text-xs text-gray-400 mt-1">Optional — greatly improves article quality and verse accuracy, and is indexed for “Ask Ruach”.</p>
                 </div>
                 <div className="sm:col-span-2">
                   <div className="flex items-center justify-between mb-1.5">
-                    <label className={lbl + ' mb-0'}>Sermon Notes (Markdown)</label>
-                    <button type="button" onClick={generateNotes}
-                      disabled={!form.title || !form.preacher || generatingNotes}
+                    <label className={lbl + ' mb-0'}>Sermon Article (Markdown)</label>
+                    <button type="button" onClick={generateArticle}
+                      disabled={!form.title || !form.preacher || generatingArticle}
                       className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white text-xs font-semibold rounded-lg transition-colors">
-                      {generatingNotes ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
-                      {generatingNotes ? 'Generating…' : 'Generate with AI'}
+                      {generatingArticle ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+                      {generatingArticle ? 'Writing…' : 'Generate with AI'}
                     </button>
                   </div>
-                  <textarea value={form.notes} onChange={e => set('notes', e.target.value)}
-                    rows={8} placeholder="# Sermon Notes&#10;&#10;Notes in Markdown format…"
+                  <textarea value={form.article} onChange={e => set('article', e.target.value)}
+                    rows={8} placeholder="The editorial article shown on the sermon page. Paste a transcript above and hit Generate, or write it in Markdown here…"
                     className={`${inp} resize-y font-mono text-xs`} />
-                  <p className="text-xs text-gray-400 mt-1">Markdown — rendered on the sermon page under the Notes tab.</p>
+                  <p className="text-xs text-gray-400 mt-1">Markdown — the main read on the sermon page, and the source for AI answers.</p>
                 </div>
                 <div className="sm:col-span-2">
                   <label className={lbl}>Summary / Description</label>

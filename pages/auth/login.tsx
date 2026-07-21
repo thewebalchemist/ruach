@@ -41,6 +41,18 @@ export default function AdminLogin() {
     }
   }, [router.isReady, router.query.redirectTo]);
 
+  // Already signed in? Don't strand the user on the login form — forward them
+  // by role. This is what fixes the "bounced to login while still logged in"
+  // loop after cookies are cleared or a tab wakes up.
+  useEffect(() => {
+    let active = true;
+    supabase.auth.getSession().then(({ data }) => {
+      if (active && data.session?.user?.id) redirectByRole(data.session.user.id);
+    });
+    return () => { active = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   function startCountdown(secs = 60) {
     setCountdown(secs);
     if (cdRef.current) clearInterval(cdRef.current);

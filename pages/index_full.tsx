@@ -1,8 +1,9 @@
 import Link from 'next/link';
 import { useState, useRef } from 'react';
-import { ArrowRight, ChevronDown, Play, Volume2, VolumeX, CalendarDays } from 'lucide-react';
+import { ArrowRight, ChevronDown, Volume2, VolumeX, CalendarDays } from 'lucide-react';
 import Layout from '@/components/shared/Layout';
 import ExpectGallery from '@/components/shared/ExpectGallery';
+import ThemeHero from '@/components/streaming/ThemeHero';
 import { supabase } from '@/lib/supabase';
 import type { GetStaticProps } from 'next';
 
@@ -63,12 +64,6 @@ function FaqItem({ q, a }: { q: string; a: string }) {
       )}
     </div>
   );
-}
-
-function getSermonThumb(s: HomeSermon) {
-  if (s.thumbnail_url) return s.thumbnail_url;
-  const id = s.youtube_url?.match(/(?:v=|youtu\.be\/)([^&?/]+)/)?.[1];
-  return id ? `https://img.youtube.com/vi/${id}/maxresdefault.jpg` : '/church-photos/IMG_1716.jpg';
 }
 
 export default function HomePage({ recentSermons, isLive, upcomingEvents }: PageProps) {
@@ -660,25 +655,11 @@ export default function HomePage({ recentSermons, isLive, upcomingEvents }: Page
                 View All →
               </Link>
             </div>
-            <div className="flex gap-3 sm:gap-4 overflow-x-auto pb-4 px-4 sm:px-6 lg:px-12" style={{ scrollbarWidth: 'none' }}>
-              {recentSermons.map(s => (
-                <Link key={s.id} href={`/${s.slug}`} className="group flex-shrink-0 w-[200px] sm:w-[240px]">
-                  <div className="relative aspect-video rounded-xl overflow-hidden group-hover:scale-[1.04] transition-transform duration-300">
-                    <img src={getSermonThumb(s)} alt={s.title} className="w-full h-full object-cover"
-                      onError={e => { (e.target as HTMLImageElement).src = '/church-photos/IMG_1716.jpg'; }} />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/5 to-transparent" />
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                      <div className="w-11 h-11 rounded-full bg-[#BF0A30]/90 flex items-center justify-center shadow-xl">
-                        <Play className="w-5 h-5 text-white fill-white ml-0.5" />
-                      </div>
-                    </div>
-                  </div>
-                  <div className="mt-2.5 px-0.5">
-                    <p className="text-white font-bold text-sm leading-snug line-clamp-2 group-hover:text-[#BF0A30] transition-colors" style={H}>{s.title}</p>
-                    <p className="text-white/50 text-xs mt-0.5">{s.preacher}</p>
-                  </div>
-                </Link>
-              ))}
+            {/* Moving themes — hover / auto-rotating featured hero */}
+            <div className="px-4 sm:px-6 lg:px-12">
+              <div className="rounded-3xl overflow-hidden border border-white/10">
+                <ThemeHero sermons={recentSermons} />
+              </div>
             </div>
           </div>
         </section>

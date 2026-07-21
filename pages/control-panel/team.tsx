@@ -2,7 +2,6 @@
 // Team member management — admin/pastor only.
 // Create accounts for media team, teachers, leaders, pastors.
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
 import {
   UserPlus, Loader2, X, CheckCircle, AlertCircle,
   Eye, EyeOff, Copy, Check, Shield, Users, ChevronDown,
@@ -43,7 +42,6 @@ const lbl = "block text-xs font-semibold text-gray-600 dark:text-gray-400 upperc
 interface Credentials { email: string; password: string; loginUrl: string; }
 
 export default function TeamPage() {
-  const router = useRouter();
   const [loading,  setLoading]  = useState(true);
   const [members,  setMembers]  = useState<TeamMember[]>([]);
   const [filter,   setFilter]   = useState<StaffRole | 'all'>('all');
@@ -62,19 +60,8 @@ export default function TeamPage() {
   const [showPwd, setShowPwd] = useState(false);
   const [copied,  setCopied]  = useState<'email' | 'password' | null>(null);
 
-  useEffect(() => {
-    checkAuth();
-  }, []);
-
-  async function checkAuth() {
-    const { data } = await supabase.auth.getSession();
-    if (!data.session) { router.push('/auth/login?redirectTo=/control-panel/team'); return; }
-    const { data: profile } = await supabase.from('profiles').select('role, status').eq('id', data.session.user.id).single() as any;
-    if (!profile || !['admin', 'pastor'].includes(profile.role) || profile.status === 'suspended') {
-      router.push('/control-panel'); return;
-    }
-    loadMembers();
-  }
+  // Auth + role gating handled centrally by CPLayout (allow=admin,pastor).
+  useEffect(() => { loadMembers(); }, []);
 
   async function loadMembers() {
     const { data } = await (supabase as any)
@@ -148,6 +135,7 @@ export default function TeamPage() {
     <CPLayout
       title="Team Members"
       subtitle="Manage who has access to the control panel and church admin"
+      allow={['admin', 'pastor']}
       actions={
         <button
           onClick={() => setShowForm(true)}

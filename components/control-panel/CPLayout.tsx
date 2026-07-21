@@ -1,4 +1,4 @@
-import { useState, ReactNode } from 'react';
+import { useState, useEffect, ReactNode } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -14,6 +14,10 @@ interface CPLayoutProps {
   title: string;
   subtitle?: string;
   actions?: ReactNode;
+  /** Restrict this page to specific staff roles. Defaults to any content
+   *  manager (admin/pastor/media). Checked off the AuthContext profile — no
+   *  per-page getSession race. */
+  allow?: Array<'admin' | 'pastor' | 'media'>;
 }
 
 const NAV = [
@@ -30,12 +34,51 @@ const NAV = [
 const ADMIN_LINK = { label: 'Church Admin', href: '/admin', icon: Users };
 const TEAM_LINK  = { label: 'Team Members', href: '/control-panel/team', icon: UserPlus };
 
-export default function CPLayout({ children, title, subtitle, actions }: CPLayoutProps) {
+export default function CPLayout({ children, title, subtitle, actions, allow }: CPLayoutProps) {
   const router = useRouter();
-  const { profile, signOut, isAdmin } = useAuth();
+  const { profile, session, loading, signOut, isAdmin, canManageContent } = useAuth();
   const [open, setOpen] = useState(false);
+  const [timedOut, setTimedOut] = useState(false);
   const userEmail = profile?.email ?? '';
   const isMedia   = profile?.role === 'media';
+
+  // ── Single, reliable auth gate for the whole control panel ─────────────
+  // Uses the one AuthContext source of truth (no per-page getSession races).
+  // `allow` optionally narrows to specific roles (e.g. admin/pastor only).
+  const loginHref = `/auth/login?redirectTo=${encodeURIComponent(router.asPath)}`;
+  const roleOk = allow ? !!profile && allow.includes(profile.role as 'admin' | 'pastor' | 'media') : canManageContent;
+  const permitted = roleOk && profile?.status !== 'suspended';
+
+  useEffect(() => {
+    if (loading) return;
+    if (!session) { router.replace(loginHref); return; }
+    if (profile && !permitted) router.replace('/'); // signed in but not permitted here
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, session, profile, permitted]);
+
+  // Safety net: if auth never resolves (e.g. a hung token refresh after the
+  // tab was asleep), stop the infinite spinner and send them to re-auth.
+  useEffect(() => {
+    if (!loading) { setTimedOut(false); return; }
+    const t = setTimeout(() => setTimedOut(true), 8000);
+    return () => clearTimeout(t);
+  }, [loading]);
+  useEffect(() => { if (timedOut) router.replace(loginHref); /* eslint-disable-next-line */ }, [timedOut]);
+
+  const ready = !loading && !!session && permitted;
+
+  if (!ready) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-gray-50 dark:bg-[#0F0F0F]">
+        <div className="w-8 h-8 border-2 border-[#BF0A30] border-t-transparent rounded-full animate-spin" />
+        {timedOut && (
+          <button onClick={() => router.replace(loginHref)} className="text-sm text-[#BF0A30] hover:underline">
+            Taking too long — sign in again
+          </button>
+        )}
+      </div>
+    );
+  }
 
   const isActive = (href: string) =>
     href === '/control-panel'

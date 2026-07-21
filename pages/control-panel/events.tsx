@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import {
   Plus, Calendar, Edit, Trash2, Save, X, Loader2,
-  AlertCircle, CheckCircle, Search, MapPin, Clock, LayoutList, Link as LinkIcon, Image,
+  AlertCircle, CheckCircle, Search, MapPin, Clock, LayoutList, Link as LinkIcon, Image, Upload,
 } from 'lucide-react';
 import CPLayout from '@/components/control-panel/CPLayout';
 import { supabase } from '@/lib/supabase';
@@ -124,26 +124,49 @@ export default function EventsCP() {
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
   const [filter, setFilter] = useState<'all' | 'upcoming' | 'past'>('upcoming');
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
-    checkAuth();
+    loadData();
     if (router.query.action === 'new') setShowForm(true);
   }, [router.query]);
 
-  async function checkAuth() {
-    const { data } = await supabase.auth.getSession();
-    if (!data.session) { router.push('/auth/login?redirectTo=/control-panel/events'); return; }
-    const { data: profile } = await supabase.from('profiles').select('role').eq('id', data.session.user.id).single() as any;
-    if (!profile || !['admin', 'pastor', 'media'].includes(profile.role) || profile.status === 'suspended') { router.push('/'); return; }
-    loadData();
+  // Auth is enforced centrally by CPLayout — no per-page getSession needed.
+  async function loadData() {
+    try {
+      const { data } = await (supabase.from('events') as any)
+        .select('id, title, event_date, end_date, start_time, end_time, location, description, image_url, link_url, link_label, is_public, chatbot_enabled, category')
+        .order('event_date', { ascending: false });
+      setEvents(data || []);
+    } finally {
+      setLoading(false);
+    }
   }
 
-  async function loadData() {
-    const { data } = await (supabase.from('events') as any)
-      .select('id, title, event_date, end_date, start_time, end_time, location, description, image_url, link_url, link_label, is_public, chatbot_enabled, category')
-      .order('event_date', { ascending: false });
-    setEvents(data || []);
-    setLoading(false);
+  // Pick a picture from the device → upload → the URL fills in and previews.
+  async function uploadImage(file: File) {
+    setUploading(true); setError('');
+    try {
+      const b64 = await new Promise<string>((resolve, reject) => {
+        const r = new FileReader();
+        r.onload = () => resolve((r.result as string).split(',')[1]);
+        r.onerror = () => reject(new Error('Could not read the file'));
+        r.readAsDataURL(file);
+      });
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch('/api/admin/upload-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
+        body: JSON.stringify({ file_base64: b64, file_name: file.name, content_type: file.type }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Upload failed');
+      set('image_url', data.url);
+    } catch (e: any) {
+      setError(e?.message || 'Image upload failed');
+    } finally {
+      setUploading(false);
+    }
   }
 
   function openNew(date?: string) {
@@ -379,14 +402,24 @@ export default function EventsCP() {
                 <textarea value={form.description} onChange={e => set('description', e.target.value)} rows={4} placeholder="Describe the event…" className={`${inp} resize-none`} />
               </div>
 
-              {/* Image URL */}
+              {/* Image — upload from device */}
               <div>
-                <label className={lbl}><Image className="inline w-3.5 h-3.5 mr-1" />Event Image URL</label>
-                <input value={form.image_url} onChange={e => set('image_url', e.target.value)} placeholder="/events/the-charge-2026.jpg or https://..." className={inp} />
+                <label className={lbl}><Image className="inline w-3.5 h-3.5 mr-1" />Event Image</label>
                 {form.image_url && (
-                  <img src={form.image_url} alt="preview" className="mt-2 h-24 w-full object-cover rounded-xl" onError={(el) => { (el.target as HTMLImageElement).style.display = 'none'; }} />
+                  <img src={form.image_url} alt="preview" className="mb-2 h-32 w-full object-cover rounded-xl" onError={(el) => { (el.target as HTMLImageElement).style.display = 'none'; }} />
                 )}
-                <p className="text-[11px] text-gray-400 mt-1">Save your image to <code className="bg-gray-100 dark:bg-[#222] px-1 rounded">/public/events/</code> then use <code className="bg-gray-100 dark:bg-[#222] px-1 rounded">/events/filename.jpg</code></p>
+                <div className="flex items-center gap-3">
+                  <label className={`flex items-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-xl cursor-pointer transition-colors ${uploading ? 'bg-gray-300 text-gray-600 cursor-wait' : 'bg-[#BF0A30] text-white hover:bg-[#A00828]'}`}>
+                    {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                    {uploading ? 'Uploading…' : form.image_url ? 'Replace image' : 'Upload image'}
+                    <input type="file" accept="image/*" className="hidden" disabled={uploading}
+                      onChange={e => { const f = e.target.files?.[0]; if (f) uploadImage(f); e.currentTarget.value = ''; }} />
+                  </label>
+                  {form.image_url && (
+                    <button type="button" onClick={() => set('image_url', '')} className="text-xs text-gray-400 hover:text-red-500">Remove</button>
+                  )}
+                </div>
+                <p className="text-[11px] text-gray-400 mt-1">Pick a picture from your device — it uploads and appears here automatically.</p>
               </div>
 
               {/* CTA Link */}
