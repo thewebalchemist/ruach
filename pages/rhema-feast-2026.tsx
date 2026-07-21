@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ArrowRight, MapPin, CalendarDays, BookOpen, Music, HandHeart, Sparkles } from 'lucide-react';
+import { ArrowRight, MapPin, CalendarDays, BookOpen, Music, HandHeart, Sparkles, ExternalLink } from 'lucide-react';
 import Layout from '@/components/shared/Layout';
 import Countdown from '@/components/rhema/Countdown';
 import { RHEMA_FEAST_2026 as RF } from '@/lib/rhema-feast';
@@ -113,11 +113,13 @@ export default function RhemaFeast2026() {
       <section className="bg-[#F5F0E8] py-24">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-12 text-center">
           <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-[0.3em] mb-6" style={H}>Our Mission</p>
-          <p className="text-2xl md:text-4xl text-[#111827] leading-[1.35]" style={{ ...serif, fontStyle: 'normal' }}>
-            Rhema Feast is an Apostolic movement whose mission is to share the
-            <span className="text-[#BF0A30]"> unadulterated and authentic word of God </span>
-            to the nations and to all generations — releasing consistent value through in-person meetings, social media, and broadcasting media, for the Glory of Yahweh and the advancement of His Kingdom.
-          </p>
+          <h2 className="text-3xl md:text-5xl text-[#111827] leading-tight mb-8" style={H}>
+            An Apostolic movement<br /><span style={serif}>for the nations.</span>
+          </h2>
+          <a href="https://rhemafeast.org/" target="_blank" rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 bg-[#BF0A30] hover:bg-[#9A0826] text-white font-bold text-sm uppercase tracking-widest px-8 py-4 rounded-2xl transition-all hover:-translate-y-0.5 shadow-xl shadow-[rgba(191,10,48,0.3)]" style={H}>
+            Learn More <ExternalLink className="w-4 h-4" />
+          </a>
         </div>
       </section>
 
