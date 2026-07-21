@@ -1,14 +1,16 @@
 import Link from 'next/link';
 import { useState, useRef } from 'react';
-import { ArrowRight, ChevronDown, Volume2, VolumeX, CalendarDays } from 'lucide-react';
+import { ArrowRight, ChevronDown, Volume2, VolumeX, CalendarDays, MapPin } from 'lucide-react';
 import Layout from '@/components/shared/Layout';
 import ExpectGallery from '@/components/shared/ExpectGallery';
 import ThemeHero from '@/components/streaming/ThemeHero';
+import Countdown from '@/components/rhema/Countdown';
+import { RHEMA_FEAST_2026 as RF } from '@/lib/rhema-feast';
 import { supabase } from '@/lib/supabase';
 import type { GetStaticProps } from 'next';
 
 interface HomeSermon { id: string; title: string; slug: string; preacher: string; service_date: string; youtube_url: string; thumbnail_url: string | null; description: string | null; }
-interface UpcomingEvent { id: string; title: string; description: string | null; event_date: string; end_date: string | null; start_time: string | null; location: string | null; image_url: string | null; }
+interface UpcomingEvent { id: string; title: string; description: string | null; event_date: string; end_date: string | null; start_time: string | null; location: string | null; map_url: string | null; image_url: string | null; }
 interface PageProps { recentSermons: HomeSermon[]; isLive: boolean; upcomingEvents: UpcomingEvent[]; }
 
 // Font styles
@@ -174,6 +176,15 @@ export default function HomePage({ recentSermons, isLive, upcomingEvents }: Page
 
         {/* Content */}
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-24 sm:py-32 w-full">
+          {/* Rhema Feast 2026 — countdown banner linking to the dedicated page */}
+          <Link href={RF.href}
+            className="group inline-flex items-center gap-3 mb-6 rounded-full border border-[#D4AF37]/40 bg-black/40 backdrop-blur px-4 py-2 hover:border-[#D4AF37] transition-colors">
+            <span className="text-[#D4AF37] text-[10px] font-black uppercase tracking-widest whitespace-nowrap" style={H}>Rhema Feast 2026</span>
+            <span className="hidden sm:inline text-white/20">·</span>
+            <span className="hidden sm:inline"><Countdown target={RF.target} variant="compact" /></span>
+            <ArrowRight className="w-3.5 h-3.5 text-white/60 group-hover:translate-x-0.5 transition-transform" />
+          </Link>
+
           {/* Mixed typography headline — Montserrat + Playfair Display italic */}
           <h1 className="text-white leading-[0.95] tracking-tight mb-6 sm:mb-8">
             <span className="block text-[50px] sm:text-6xl md:text-7xl lg:text-[96px]" style={H}>Raising</span>
@@ -615,7 +626,7 @@ export default function HomePage({ recentSermons, isLive, upcomingEvents }: Page
                   <div key={ev.id} className={`rounded-2xl overflow-hidden flex flex-col ${i === 0 && upcomingEvents.length === 1 ? 'lg:col-span-1' : ''}`}
                     style={{ background: 'rgba(18,21,28,0.9)', border: '1px solid rgba(255,255,255,0.08)' }}>
                     {ev.image_url && (
-                      <div className="aspect-video overflow-hidden">
+                      <div className="aspect-square overflow-hidden">
                         <img src={ev.image_url} alt={ev.title} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
                           onError={(e) => { (e.target as HTMLImageElement).src = '/church-photos/aug-2025-a.jpg'; }} />
                       </div>
@@ -625,9 +636,15 @@ export default function HomePage({ recentSermons, isLive, upcomingEvents }: Page
                       <h3 className="text-white text-xl font-black mb-3 flex-1" style={H}>{ev.title}</h3>
                       {ev.description && <p className="text-white/40 text-sm leading-relaxed mb-4 line-clamp-2">{ev.description}</p>}
                       {ev.location && (
-                        <p className="flex items-start gap-2 text-white/30 text-xs mb-4">
-                          <CalendarDays className="w-3.5 h-3.5 flex-shrink-0 text-[#BF0A30] mt-0.5" /> {ev.location}
-                        </p>
+                        ev.map_url ? (
+                          <a href={ev.map_url} target="_blank" rel="noopener noreferrer" className="flex items-start gap-2 text-white/40 hover:text-white text-xs mb-4 transition-colors">
+                            <MapPin className="w-3.5 h-3.5 flex-shrink-0 text-[#BF0A30] mt-0.5" /> {ev.location} <span className="text-[#BF0A30] font-bold">· Directions</span>
+                          </a>
+                        ) : (
+                          <p className="flex items-start gap-2 text-white/30 text-xs mb-4">
+                            <MapPin className="w-3.5 h-3.5 flex-shrink-0 text-[#BF0A30] mt-0.5" /> {ev.location}
+                          </p>
+                        )
                       )}
                       <Link href="/r-events" className="flex items-center gap-1.5 text-[#BF0A30] text-xs font-bold uppercase tracking-widest mt-auto" style={H}>
                         More Details <ArrowRight className="w-3 h-3" />
@@ -706,12 +723,16 @@ export default function HomePage({ recentSermons, isLive, upcomingEvents }: Page
 export const getStaticProps: GetStaticProps = async () => {
   try {
     const today = new Date().toISOString().split('T')[0];
-    const [{ data: sermons }, { data: stream }, { data: events }] = await Promise.all([
+    const eventsQuery = (cols: string) => supabase.from('events').select(cols)
+      .gte('event_date', today).neq('status', 'cancelled').order('event_date', { ascending: true }).limit(2);
+    const EVENTS_BASE = 'id,title,description,event_date,end_date,start_time,location,image_url';
+    const [{ data: sermons }, { data: stream }, eventsRes] = await Promise.all([
       supabase.from('sermons').select('id,title,slug,preacher,service_date,youtube_url,thumbnail_url,description').order('service_date', { ascending: false }).limit(12),
       supabase.from('stream_settings').select('is_live').limit(1).single(),
-      supabase.from('events').select('id,title,description,event_date,end_date,start_time,location,image_url')
-        .gte('event_date', today).neq('status', 'cancelled').order('event_date', { ascending: true }).limit(2),
+      eventsQuery(`${EVENTS_BASE},map_url`),
     ]);
+    // Fall back to base columns if map_url isn't migrated yet (error → data null).
+    const events = eventsRes.data ?? (eventsRes.error ? (await eventsQuery(EVENTS_BASE)).data : []);
     return {
       props: {
         recentSermons:  sermons ?? [],

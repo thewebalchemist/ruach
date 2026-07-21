@@ -17,6 +17,7 @@ interface Event {
   start_time:  string | null;
   end_time:    string | null;
   location:    string | null;
+  map_url:     string | null;
   image_url:   string | null;
   category:    string | null;
   link_url:    string | null;
@@ -44,7 +45,7 @@ function EventCard({ ev }: { ev: Event }) {
   return (
     <div className="rounded-2xl overflow-hidden flex flex-col" style={{ background: 'rgba(18,21,28,0.9)', border: '1px solid rgba(255,255,255,0.08)' }}>
       {ev.image_url && (
-        <div className="aspect-[16/7] overflow-hidden">
+        <div className="aspect-square overflow-hidden">
           <img src={ev.image_url} alt={ev.title} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
             onError={(e) => { (e.target as HTMLImageElement).src = '/church-photos/aug-2025-a.jpg'; }} />
         </div>
@@ -68,7 +69,11 @@ function EventCard({ ev }: { ev: Event }) {
           {ev.location && (
             <div className="flex items-start gap-3 text-sm text-[#8B95A8]">
               <MapPin className="w-4 h-4 text-[#BF0A30] flex-shrink-0 mt-0.5" />
-              <span>{ev.location}</span>
+              {ev.map_url ? (
+                <a href={ev.map_url} target="_blank" rel="noopener noreferrer" className="hover:text-white underline decoration-white/20 hover:decoration-white transition-colors">{ev.location}</a>
+              ) : (
+                <span>{ev.location}</span>
+              )}
             </div>
           )}
         </div>
@@ -78,6 +83,12 @@ function EventCard({ ev }: { ev: Event }) {
             <a href={ev.link_url} target="_blank" rel="noopener noreferrer"
               className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#BF0A30] hover:bg-[#9A0826] text-white text-xs font-bold uppercase tracking-wider transition-colors shadow-lg shadow-[rgba(191,10,48,0.3)]">
               {ev.link_label || 'Register Now'} →
+            </a>
+          )}
+          {ev.map_url && (
+            <a href={ev.map_url} target="_blank" rel="noopener noreferrer"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-[#BF0A30] text-[#BF0A30] hover:bg-[#BF0A30] hover:text-white text-xs font-bold uppercase tracking-wider transition-colors">
+              <MapPin className="w-3.5 h-3.5" /> Get Directions
             </a>
           )}
           <a href={googleCalUrl(ev)} target="_blank" rel="noopener noreferrer"
@@ -298,14 +309,19 @@ export default function REventsPage({ events }: Props) {
 }
 
 export const getServerSideProps: GetServerSideProps = async () => {
+  const today = new Date().toISOString().split('T')[0];
+  const BASE = 'id, title, description, event_date, end_date, start_time, end_time, location, image_url, category';
+  const run = (cols: string) => supabase
+    .from('events')
+    .select(cols)
+    .gte('event_date', today)
+    .neq('status', 'cancelled')
+    .order('event_date', { ascending: true });
   try {
-    const today = new Date().toISOString().split('T')[0];
-    const { data } = await supabase
-      .from('events')
-      .select('id, title, description, event_date, end_date, start_time, end_time, location, image_url, category, link_url, link_label')
-      .gte('event_date', today)
-      .neq('status', 'cancelled')
-      .order('event_date', { ascending: true });
+    // Prefer the full set; if the CTA/maps columns aren't migrated yet, fall
+    // back to the base columns so the page still lists events (never 0).
+    let { data, error } = await run(`${BASE}, link_url, link_label, map_url`);
+    if (error) ({ data } = await run(BASE));
     return { props: { events: data ?? [] } };
   } catch {
     return { props: { events: [] } };

@@ -15,6 +15,7 @@ interface DBEvent {
   start_time: string | null;
   end_time: string | null;
   location: string | null;
+  map_url: string | null;
   description: string | null;
   image_url: string | null;
   link_url: string | null;
@@ -31,6 +32,7 @@ const EMPTY_FORM = {
   start_time: '',
   end_time: '',
   location: '',
+  map_url: '',
   description: '',
   image_url: '',
   link_url: '',
@@ -185,6 +187,7 @@ export default function EventsCP() {
       start_time:       ev.start_time || '',
       end_time:         ev.end_time || '',
       location:         ev.location || '',
+      map_url:          ev.map_url || '',
       description:      ev.description || '',
       image_url:        ev.image_url || '',
       link_url:         ev.link_url || '',
@@ -213,8 +216,11 @@ export default function EventsCP() {
         start_time:      form.start_time || null,
         end_time:        form.end_time || null,
         location:        form.location || null,
+        map_url:         form.map_url || null,
         description:     form.description || null,
         image_url:       form.image_url || null,
+        link_url:        form.link_url || null,
+        link_label:      form.link_label || null,
         is_public:       form.is_public,
         chatbot_enabled: form.chatbot_enabled,
         category:        form.category,
@@ -377,10 +383,19 @@ export default function EventsCP() {
                 </div>
               </div>
 
-              {/* Location */}
-              <div>
-                <label className={lbl}>Location</label>
-                <input value={form.location} onChange={e => set('location', e.target.value)} placeholder="e.g. Ruach Tabernacle / Online (Zoom)" className={inp} />
+              {/* Location + Google Maps directions */}
+              <div className="space-y-3">
+                <div>
+                  <label className={lbl}><MapPin className="inline w-3.5 h-3.5 mr-1" />Location Name</label>
+                  <input value={form.location} onChange={e => set('location', e.target.value)} placeholder="e.g. Ruach Tabernacle, Rhema Grounds / Online (Zoom)" className={inp} />
+                </div>
+                <div>
+                  <label className={lbl}>Google Maps Directions Link <span className="text-gray-300 normal-case font-normal">(optional)</span></label>
+                  <input type="url" value={form.map_url} onChange={e => set('map_url', e.target.value)} placeholder="https://maps.app.goo.gl/..." className={inp} />
+                  <p className="text-[11px] text-gray-400 mt-1 leading-relaxed">
+                    Open <a href="https://maps.google.com" target="_blank" rel="noopener noreferrer" className="text-[#BF0A30] hover:underline">Google Maps</a>, search the venue, tap <b>Directions</b> (or <b>Share → Copy link</b>), and paste it here. On the website a <b>Get Directions</b> button will open Maps and route visitors from their own location.
+                  </p>
+                </div>
               </div>
 
               {/* Category */}
@@ -399,14 +414,14 @@ export default function EventsCP() {
               {/* Description */}
               <div>
                 <label className={lbl}>Description</label>
-                <textarea value={form.description} onChange={e => set('description', e.target.value)} rows={4} placeholder="Describe the event…" className={`${inp} resize-none`} />
+                <textarea value={form.description} onChange={e => set('description', e.target.value)} rows={8} placeholder="Describe the event — what it's about, who it's for, what to expect…" className={`${inp} resize-y min-h-[160px]`} />
               </div>
 
               {/* Image — upload from device */}
               <div>
-                <label className={lbl}><Image className="inline w-3.5 h-3.5 mr-1" />Event Image</label>
+                <label className={lbl}><Image className="inline w-3.5 h-3.5 mr-1" />Event Image <span className="text-gray-300 normal-case font-normal">(square — like an Instagram post)</span></label>
                 {form.image_url && (
-                  <img src={form.image_url} alt="preview" className="mb-2 h-32 w-full object-cover rounded-xl" onError={(el) => { (el.target as HTMLImageElement).style.display = 'none'; }} />
+                  <img src={form.image_url} alt="preview" className="mb-2 w-full max-w-[240px] aspect-square object-cover rounded-xl border border-gray-100 dark:border-[#2A2A2A]" onError={(el) => { (el.target as HTMLImageElement).style.display = 'none'; }} />
                 )}
                 <div className="flex items-center gap-3">
                   <label className={`flex items-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-xl cursor-pointer transition-colors ${uploading ? 'bg-gray-300 text-gray-600 cursor-wait' : 'bg-[#BF0A30] text-white hover:bg-[#A00828]'}`}>
@@ -419,7 +434,7 @@ export default function EventsCP() {
                     <button type="button" onClick={() => set('image_url', '')} className="text-xs text-gray-400 hover:text-red-500">Remove</button>
                   )}
                 </div>
-                <p className="text-[11px] text-gray-400 mt-1">Pick a picture from your device — it uploads and appears here automatically.</p>
+                <p className="text-[11px] text-gray-400 mt-1">Pick a picture from your device — it uploads automatically. Use a square (1:1) image like an Instagram post; that's how it's shown on the site.</p>
               </div>
 
               {/* CTA Link */}
