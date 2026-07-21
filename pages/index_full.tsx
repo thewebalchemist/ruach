@@ -724,7 +724,7 @@ export const getStaticProps: GetStaticProps = async () => {
   try {
     const today = new Date().toISOString().split('T')[0];
     const eventsQuery = (cols: string) => supabase.from('events').select(cols)
-      .gte('event_date', today).neq('status', 'cancelled').order('event_date', { ascending: true }).limit(2);
+      .or(`event_date.gte.${today},end_date.gte.${today}`).neq('status', 'cancelled').order('event_date', { ascending: true }).limit(2);
     const EVENTS_BASE = 'id,title,description,event_date,end_date,start_time,location,image_url';
     const [{ data: sermons }, { data: stream }, eventsRes] = await Promise.all([
       supabase.from('sermons').select('id,title,slug,preacher,service_date,youtube_url,thumbnail_url,description').order('service_date', { ascending: false }).limit(12),
