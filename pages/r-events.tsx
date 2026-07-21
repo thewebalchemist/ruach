@@ -4,6 +4,7 @@ import { GetServerSideProps } from 'next';
 import { ArrowRight, CalendarDays, Clock, MapPin, LayoutGrid, Calendar } from 'lucide-react';
 import Layout from '@/components/shared/Layout';
 import { supabase } from '@/lib/supabase';
+import { eventCoversDay } from '@/lib/event-dates';
 
 const H     = { fontFamily: 'Montserrat, sans-serif', fontWeight: 900 } as const;
 const serif = { fontFamily: '"Playfair Display", Georgia, serif', fontStyle: 'italic' as const };
@@ -115,17 +116,12 @@ function CalendarView({ events }: { events: Event[] }) {
   const daysInMo  = new Date(year, month + 1, 0).getDate();
   const monthName = new Date(year, month, 1).toLocaleDateString('en-KE', { month: 'long', year: 'numeric' });
 
-  const eventsThisMonth = events.filter(ev => {
-    const d = new Date(ev.event_date);
-    return d.getFullYear() === year && d.getMonth() === month;
-  });
-
+  // Multi-day events appear on every day they run (not just their start day).
   const evByDay: Record<number, Event[]> = {};
-  eventsThisMonth.forEach(ev => {
-    const d = new Date(ev.event_date).getDate();
-    if (!evByDay[d]) evByDay[d] = [];
-    evByDay[d].push(ev);
-  });
+  for (let day = 1; day <= daysInMo; day++) {
+    const hits = events.filter(ev => eventCoversDay(ev, year, month, day));
+    if (hits.length) evByDay[day] = hits;
+  }
 
   return (
     <div className="bg-white/[0.03] border border-white/[0.07] rounded-3xl overflow-hidden">
@@ -314,7 +310,8 @@ export const getServerSideProps: GetServerSideProps = async () => {
   const run = (cols: string) => supabase
     .from('events')
     .select(cols)
-    .gte('event_date', today)
+    // Upcoming OR still-running (multi-day events whose end date hasn't passed).
+    .or(`event_date.gte.${today},end_date.gte.${today}`)
     .neq('status', 'cancelled')
     .order('event_date', { ascending: true });
   try {

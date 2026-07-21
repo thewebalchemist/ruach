@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import CPLayout from '@/components/control-panel/CPLayout';
 import { supabase } from '@/lib/supabase';
+import { eventCoversDay } from '@/lib/event-dates';
 
 interface DBEvent {
   id: number;
@@ -58,15 +59,12 @@ function CalendarView({ events, onDayClick }: { events: DBEvent[]; onDayClick: (
   const daysInMo  = new Date(year, month + 1, 0).getDate();
   const monthName = new Date(year, month, 1).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
 
+  // Multi-day events appear on every day they run (not just their start day).
   const evByDay: Record<number, DBEvent[]> = {};
-  events.forEach(ev => {
-    const d = new Date(ev.event_date);
-    if (d.getFullYear() === year && d.getMonth() === month) {
-      const day = d.getDate();
-      if (!evByDay[day]) evByDay[day] = [];
-      evByDay[day].push(ev);
-    }
-  });
+  for (let day = 1; day <= daysInMo; day++) {
+    const hits = events.filter(ev => eventCoversDay(ev, year, month, day));
+    if (hits.length) evByDay[day] = hits;
+  }
 
   function prevMonth() { if (month === 0) { setMonth(11); setYear(y => y - 1); } else setMonth(m => m - 1); }
   function nextMonth() { if (month === 11) { setMonth(0); setYear(y => y + 1); } else setMonth(m => m + 1); }
@@ -127,6 +125,7 @@ export default function EventsCP() {
   const [error, setError] = useState('');
   const [filter, setFilter] = useState<'all' | 'upcoming' | 'past'>('upcoming');
   const [uploading, setUploading] = useState(false);
+  const [deleting, setDeleting] = useState<number | string | null>(null);
 
   useEffect(() => {
     loadData();
@@ -247,12 +246,25 @@ export default function EventsCP() {
 
   async function handleDelete(id: string | number) {
     if (!confirm('Delete this event? This cannot be undone.')) return;
-    const { data: { session } } = await supabase.auth.getSession();
-    await fetch(`/api/control-panel/events?id=${id}`, {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${session?.access_token}` },
-    });
-    loadData();
+    setDeleting(id); setError('');
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch(`/api/control-panel/events?id=${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${session?.access_token}` },
+      });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        setError(d.error || 'Could not delete the event. Please try again.');
+        return;
+      }
+      // Remove it immediately so the list reflects the delete.
+      setEvents(prev => prev.filter(e => e.id !== id));
+    } catch {
+      setError('Could not delete the event. Please try again.');
+    } finally {
+      setDeleting(null);
+    }
   }
 
   const today = new Date().toISOString().split('T')[0];
@@ -300,6 +312,13 @@ export default function EventsCP() {
         </div>
       </div>
 
+      {error && !showForm && (
+        <div className="mb-4 flex items-center gap-2 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900 rounded-xl px-4 py-3">
+          <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 flex-shrink-0" />
+          <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+        </div>
+      )}
+
       {loading ? (
         <div className="flex justify-center py-16"><div className="w-8 h-8 border-2 border-[#BF0A30] border-t-transparent rounded-full animate-spin" /></div>
       ) : view === 'calendar' ? (
@@ -334,7 +353,9 @@ export default function EventsCP() {
                 <div className="flex items-center gap-1 flex-shrink-0">
                   {e.chatbot_enabled && <span className="hidden sm:inline text-[10px] bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-2 py-0.5 rounded-full font-medium">AI</span>}
                   <button onClick={() => openEdit(e)} className="p-1.5 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-gray-100 dark:hover:bg-[#222] transition-colors"><Edit className="w-4 h-4" /></button>
-                  <button onClick={() => handleDelete(e.id)} className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-gray-100 dark:hover:bg-[#222] transition-colors"><Trash2 className="w-4 h-4" /></button>
+                  <button onClick={() => handleDelete(e.id)} disabled={deleting === e.id} className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-gray-100 dark:hover:bg-[#222] transition-colors disabled:opacity-50">
+                    {deleting === e.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                  </button>
                 </div>
               </div>
             );
