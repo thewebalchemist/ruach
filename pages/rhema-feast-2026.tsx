@@ -27,12 +27,12 @@ const PILLARS = [
 
 interface Speaker { name: string; title: string; initials: string; photo?: string; }
 const SPEAKERS: Speaker[] = [
-  { name: 'Rev. Julian Kyula',    title: 'Convener, Rhema Feast',                 initials: 'JK' },
-  { name: 'Apostle Joshua Selman', title: 'Senior Pastor, Koinonia Global',        initials: 'JS' },
-  { name: 'Pst. Poju Oyemade',    title: 'Senior Pastor, The Covenant Nation',    initials: 'PO' },
-  { name: 'Bishop JB Masinde',    title: 'Senior Pastor, Deliverance Church — Umoja', initials: 'JB' },
-  { name: 'Bishop Kathy Kiuna',   title: 'Senior Pastor, Jubilee Christian Center', initials: 'KK' },
-  { name: 'Funke Felix-Adejumo',  title: 'President, Funke Felix-Adejumo Foundation', initials: 'FA' },
+  { name: 'Rev. Julian Kyula',     title: 'Convener, Rhema Feast',                     initials: 'JK', photo: '/rhema-feast/speakers/julian-kyula.jpg' },
+  { name: 'Apostle Joshua Selman', title: 'Senior Pastor, Koinonia Global',            initials: 'JS', photo: '/rhema-feast/speakers/joshua-selman.jpg' },
+  { name: 'Pst. Poju Oyemade',     title: 'Senior Pastor, The Covenant Nation',        initials: 'PO', photo: '/rhema-feast/speakers/poju-oyemade.jpg' },
+  { name: 'Bishop JB Masinde',     title: 'Senior Pastor, Deliverance Church — Umoja', initials: 'JB', photo: '/rhema-feast/speakers/jb-masinde.jpg' },
+  { name: 'Bishop Kathy Kiuna',    title: 'Senior Pastor, Jubilee Christian Center',   initials: 'KK', photo: '/rhema-feast/speakers/kathy-kiuna.jpg' },
+  { name: 'Funke Felix-Adejumo',   title: 'President, Funke Felix-Adejumo Foundation',  initials: 'FA', photo: '/rhema-feast/speakers/funke-felix-adejumo.jpg' },
 ];
 
 const GALLERY = [
@@ -46,12 +46,14 @@ function SpeakerCard({ s }: { s: Speaker }) {
   return (
     <div className="group relative rounded-3xl overflow-hidden bg-[#12151C] border border-white/[0.07] p-6 flex flex-col items-center text-center transition-all hover:border-[#D4AF37]/40 hover:-translate-y-1">
       <div className="relative w-28 h-28 rounded-full mb-5 overflow-hidden ring-2 ring-[#D4AF37]/30 group-hover:ring-[#D4AF37]/70 transition-all">
-        {s.photo ? (
-          <img src={s.photo} alt={s.name} className="w-full h-full object-cover" />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#BF0A30] to-[#6A0010]">
-            <span className="text-white text-3xl" style={H}>{s.initials}</span>
-          </div>
+        {/* Initials sit underneath; the photo covers them once it loads. If the
+            file isn't in place yet the image just hides and the initials show. */}
+        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[#BF0A30] to-[#6A0010]">
+          <span className="text-white text-3xl" style={H}>{s.initials}</span>
+        </div>
+        {s.photo && (
+          <img src={s.photo} alt={s.name} className="absolute inset-0 w-full h-full object-cover"
+            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
         )}
       </div>
       <h3 className="text-white text-lg leading-tight" style={H}>{s.name}</h3>
