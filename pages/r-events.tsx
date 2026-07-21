@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { GetServerSideProps } from 'next';
 import { ArrowRight, CalendarDays, Clock, MapPin, LayoutGrid, Calendar } from 'lucide-react';
 import Layout from '@/components/shared/Layout';
-import { supabase } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabase-admin';
 import { eventCoversDay } from '@/lib/event-dates';
 
 const H     = { fontFamily: 'Montserrat, sans-serif', fontWeight: 900 } as const;
@@ -307,9 +307,12 @@ export default function REventsPage({ events }: Props) {
 export const getServerSideProps: GetServerSideProps = async () => {
   const today = new Date().toISOString().split('T')[0];
   const BASE = 'id, title, description, event_date, end_date, start_time, end_time, location, image_url, category';
-  const run = (cols: string) => supabase
+  // Service role (server-only) so RLS doesn't hide events from the public; we
+  // scope to public, non-cancelled events ourselves.
+  const run = (cols: string) => supabaseAdmin
     .from('events')
     .select(cols)
+    .eq('is_public', true)
     // Upcoming OR still-running (multi-day events whose end date hasn't passed).
     .or(`event_date.gte.${today},end_date.gte.${today}`)
     .neq('status', 'cancelled')

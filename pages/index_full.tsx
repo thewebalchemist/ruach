@@ -7,6 +7,7 @@ import ThemeHero from '@/components/streaming/ThemeHero';
 import Countdown from '@/components/rhema/Countdown';
 import { RHEMA_FEAST_2026 as RF } from '@/lib/rhema-feast';
 import { supabase } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabase-admin';
 import type { GetStaticProps } from 'next';
 
 interface HomeSermon { id: string; title: string; slug: string; preacher: string; service_date: string; youtube_url: string; thumbnail_url: string | null; description: string | null; }
@@ -723,7 +724,9 @@ export default function HomePage({ recentSermons, isLive, upcomingEvents }: Page
 export const getStaticProps: GetStaticProps = async () => {
   try {
     const today = new Date().toISOString().split('T')[0];
-    const eventsQuery = (cols: string) => supabase.from('events').select(cols)
+    // Service role (server-only) so RLS doesn't hide events from the public homepage.
+    const eventsQuery = (cols: string) => supabaseAdmin.from('events').select(cols)
+      .eq('is_public', true)
       .or(`event_date.gte.${today},end_date.gte.${today}`).neq('status', 'cancelled').order('event_date', { ascending: true }).limit(2);
     const EVENTS_BASE = 'id,title,description,event_date,end_date,start_time,location,image_url';
     const [{ data: sermons }, { data: stream }, eventsRes] = await Promise.all([
