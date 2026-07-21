@@ -9,7 +9,16 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 // Untyped client: supports both streaming tables (sermons, series, stream_settings…)
 // and connect tables (profiles, cohorts…) without requiring a unified Database type.
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    // Bypass the browser Web Locks API. Its default lock can be left held after a
+    // tab sleeps/backgrounds, which makes the NEXT auth call (signInWithPassword,
+    // getSession) wait forever — the "stuck on Signing in… until I clear cookies"
+    // bug. A no-op lock drops cross-tab refresh serialisation (harmless for this
+    // app) and removes the hang.
+    lock: <R>(_name: string, _acquireTimeout: number, fn: () => Promise<R>): Promise<R> => fn(),
+  },
+});
 
 
 export type Profile = {

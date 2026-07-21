@@ -32,6 +32,10 @@ const ARTICLES_ONLY = args.includes('--articles-only');
 const FORCE = args.includes('--force');
 // Limit to specific slugs: --only=slug-a,slug-b (handy for spot-checks).
 const ONLY = (args.find((a) => a.startsWith('--only=')) || '').replace('--only=', '').split(',').map((x) => x.trim()).filter(Boolean);
+// Article writer engine: --via=groq (default, exact JK model) or --via=mistral
+// (mistral-large — same prompt/voice, no Groq daily cap).
+const VIA = (args.find((a) => a.startsWith('--via=')) || '--via=groq').replace('--via=', '');
+const MISTRAL_WRITER = 'mistral-large-latest';
 
 const sb = createClient(SUPA, SVC, { auth: { persistSession: false } });
 const mistral = new Mistral({ apiKey: MISTRAL_KEY });
@@ -115,13 +119,47 @@ HEADINGS: use natural "##" headings that come from THIS message's own ideas. Do 
 
 LENGTH: long enough to genuinely cover everything above — usually 800 to 1200 words. Don't pad, and don't cut it short.
 No emojis. No corporate filler. No "In conclusion". Output clean Markdown with NO title (the page already shows it). Start straight with the opening line.`;
+
+  const maxTokens = hasTranscript ? 3600 : 2600;
+  const temperature = hasTranscript ? 0.45 : 0.55;
+
+  if (VIA === 'mistral') {
+    const text = await withRetry(async () => {
+      const r = await mistral.chat.complete({
+        model: MISTRAL_WRITER, maxTokens, temperature,
+        messages: [{ role: 'user', content: prompt }],
+      });
+      const c = r.choices?.[0]?.message?.content;
+      return typeof c === 'string' ? c : Array.isArray(c) ? c.map((p) => p.text || '').join('') : '';
+    });
+    return text?.trim() || null;
+  }
+
   const c = await groq.chat.completions.create({
     model: 'llama-3.3-70b-versatile',
-    max_tokens: hasTranscript ? 3600 : 2600,
-    temperature: hasTranscript ? 0.45 : 0.55,
+    max_tokens: maxTokens,
+    temperature,
     messages: [{ role: 'user', content: prompt }],
   });
   return c.choices[0]?.message?.content?.trim() ?? null;
+}
+
+// Retry on transient rate limits (Mistral free tier throttles req/s + tokens/min).
+async function withRetry(fn, tries = 4) {
+  for (let i = 0; i < tries; i++) {
+    try {
+      return await fn();
+    } catch (e) {
+      const code = e?.statusCode || e?.status;
+      if (code === 429 && i < tries - 1) {
+        const wait = 4000 * (i + 1);
+        console.log(`   rate limited, waiting ${wait / 1000}s…`);
+        await sleep(wait);
+        continue;
+      }
+      throw e;
+    }
+  }
 }
 
 async function embedBatch(texts) {
