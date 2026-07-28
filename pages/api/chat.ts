@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { getKnowledgeBase } from '@/lib/knowledge';
+import { getKnowledgeBase, buildSystemPrompt } from '@/lib/knowledge';
 import { retrieveSermons, buildRetrievedSermonsBlock, findRelevantSermonsFromChunks } from '@/lib/sermon-rag';
-import { supabase } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabase-admin';
 import { Groq } from 'groq-sdk';
 
 const ANONYMOUS_SESSION_LIMIT = 10;
@@ -37,9 +37,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
   }
 
-  const knowledge  = await getKnowledgeBase();
-  const chunks     = await retrieveSermons(message);
-  const { buildSystemPrompt } = await import('@/lib/knowledge');
+  // Run the base knowledge (cached) and the vector retrieval in parallel for speed.
+  const [knowledge, chunks] = await Promise.all([
+    getKnowledgeBase(),
+    retrieveSermons(message),
+  ]);
   // RAG: replace the old "stuff every sermon summary into the prompt" (CAG)
   // approach with only the retrieved passages that actually match the question.
   knowledge.sermons = [];
@@ -170,12 +172,12 @@ function generateSessionId(): string {
 
 async function checkRateLimit(ip: string, sessionId: string): Promise<{ allowed: boolean; message?: string; reset_at?: string }> {
   const hourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
-  const { data: ipData } = await supabase.from('chat_rate_limits').select('message_count').eq('ip_address', ip).gte('window_start', hourAgo);
+  const { data: ipData } = await supabaseAdmin.from('chat_rate_limits').select('message_count').eq('ip_address', ip).gte('window_start', hourAgo);
   const totalIp = ipData?.reduce((s, r) => s + r.message_count, 0) || 0;
   if (totalIp >= ANONYMOUS_HOURLY_LIMIT) {
     return { allowed: false, message: "You've reached the hourly limit. Sign in for unlimited access!", reset_at: getNextHourTimestamp() };
   }
-  const { data: sessionData } = await supabase.from('chat_rate_limits').select('message_count').eq('ip_address', ip).eq('session_id', sessionId).single();
+  const { data: sessionData } = await supabaseAdmin.from('chat_rate_limits').select('message_count').eq('ip_address', ip).eq('session_id', sessionId).single();
   if ((sessionData?.message_count || 0) >= ANONYMOUS_SESSION_LIMIT) {
     return { allowed: false, message: "You've reached the session limit. Sign in to continue chatting!", reset_at: getNextHourTimestamp() };
   }
@@ -183,16 +185,16 @@ async function checkRateLimit(ip: string, sessionId: string): Promise<{ allowed:
 }
 
 async function incrementRateLimit(ip: string, sessionId: string): Promise<void> {
-  const { data: existing } = await supabase.from('chat_rate_limits').select('id, message_count').eq('ip_address', ip).eq('session_id', sessionId).single();
+  const { data: existing } = await supabaseAdmin.from('chat_rate_limits').select('id, message_count').eq('ip_address', ip).eq('session_id', sessionId).single();
   if (existing) {
-    await supabase.from('chat_rate_limits').update({ message_count: existing.message_count + 1 }).eq('id', existing.id);
+    await supabaseAdmin.from('chat_rate_limits').update({ message_count: existing.message_count + 1 }).eq('id', existing.id);
   } else {
-    await supabase.from('chat_rate_limits').insert({ ip_address: ip, session_id: sessionId, message_count: 1, window_start: new Date().toISOString() });
+    await supabaseAdmin.from('chat_rate_limits').insert({ ip_address: ip, session_id: sessionId, message_count: 1, window_start: new Date().toISOString() });
   }
 }
 
 async function getRemainingLimit(ip: string, sessionId: string): Promise<number> {
-  const { data } = await supabase.from('chat_rate_limits').select('message_count').eq('ip_address', ip).eq('session_id', sessionId).single();
+  const { data } = await supabaseAdmin.from('chat_rate_limits').select('message_count').eq('ip_address', ip).eq('session_id', sessionId).single();
   return Math.max(0, ANONYMOUS_SESSION_LIMIT - (data?.message_count || 0));
 }
 
