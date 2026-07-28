@@ -37,15 +37,30 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
   }
 
-  // Run the base knowledge (cached) and the vector retrieval in parallel for speed.
-  const [knowledge, chunks] = await Promise.all([
+  // Base knowledge (cached), vector retrieval, and live events — all in parallel.
+  // getKnowledgeBase reads events via the anon client, which RLS hides, so the
+  // assistant never knew about events; refetch public events with the service role.
+  const today = new Date().toISOString().split('T')[0];
+  const [knowledge, chunks, eventsRes] = await Promise.all([
     getKnowledgeBase(),
     retrieveSermons(message),
+    supabaseAdmin.from('events')
+      .select('title, event_date, end_date, start_time, location, description')
+      .eq('is_public', true)
+      .or(`event_date.gte.${today},end_date.gte.${today}`)
+      .neq('status', 'cancelled')
+      .order('event_date', { ascending: true })
+      .limit(6),
   ]);
-  // RAG: replace the old "stuff every sermon summary into the prompt" (CAG)
-  // approach with only the retrieved passages that actually match the question.
-  knowledge.sermons = [];
-  const systemPrompt = buildSystemPrompt(knowledge) + buildRetrievedSermonsBlock(chunks);
+
+  // Build a per-request view (don't mutate the shared cache): RAG passages replace
+  // the old CAG sermon dump, and live events replace the RLS-blocked ones.
+  const kb = {
+    ...knowledge,
+    sermons: [],
+    events: (eventsRes.data ?? []) as unknown as typeof knowledge.events,
+  };
+  const systemPrompt = buildSystemPrompt(kb) + buildRetrievedSermonsBlock(chunks);
 
   const messages = [
     { role: 'system' as const, content: systemPrompt },
