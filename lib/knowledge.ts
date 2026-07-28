@@ -165,6 +165,7 @@ export function buildSystemPrompt(knowledge: KnowledgeBase): string {
 7. Keep responses concise and focused - avoid long rambling answers
 8. DO NOT use markdown formatting like ** for bold or * for italics
 9. You may use emojis sparingly when appropriate 😊
+10. NEVER invent, guess, or assume events, dates, times, programs, prices, or names. Only state events listed under "UPCOMING EVENTS" below — if none are listed there, tell the person nothing is scheduled at the moment. Making up an event is a serious error.
 
 ## INSTANT ANSWERS — USE THESE FIRST (no lookup needed)
 ${COMMON_QA.map(qa => `Q: ${qa.q}\nA: ${qa.a}`).join('\n\n')}
@@ -212,6 +213,8 @@ ${church_info.website ? `- Website: ${church_info.website}` : ''}
       }
     });
     prompt += '\n';
+  } else {
+    prompt += `### UPCOMING EVENTS\nThere are NO upcoming events on the calendar right now. If someone asks about events, tell them plainly that nothing is scheduled at the moment and to check the Events page — do NOT invent an event, date, or name.\n\n`;
   }
 
   // FAQs
