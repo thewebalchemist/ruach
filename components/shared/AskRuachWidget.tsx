@@ -22,8 +22,8 @@ function cardThumb(c: SermonCard) {
 const SUGGESTIONS = [
   { icon: '📍', text: 'Where is Ruach Tabernacle located?' },
   { icon: '⏰', text: 'What time are Sunday services?' },
-  { icon: '📅', text: 'Are there any upcoming events?' },
-  { icon: '🙏', text: 'How do I submit a prayer request?' },
+  { icon: '🔥', text: 'What does it mean to be fruitful?' },
+  { icon: '🙏', text: 'What has the church taught about prayer?' },
 ];
 
 export default function AskRuachWidget() {
@@ -36,7 +36,7 @@ export default function AskRuachWidget() {
   const [error, setError] = useState<string | null>(null);
   const [cards, setCards] = useState<SermonCard[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const isAskPage = router.pathname === '/ask';
 
@@ -70,6 +70,7 @@ export default function AskRuachWidget() {
       id: assistantId, role: 'assistant', content: '', created_at: new Date().toISOString(),
     }]);
     setInputValue('');
+    if (inputRef.current) inputRef.current.style.height = 'auto';
     setIsLoading(true);
     setError(null);
     setCards([]);
@@ -327,20 +328,21 @@ export default function AskRuachWidget() {
               style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
             >
               <div
-                className="flex items-center gap-2 rounded-2xl px-4 py-1.5"
+                className="flex items-end gap-2 rounded-2xl px-4 py-2 transition-colors focus-within:border-[#BF0A30]/50"
                 style={{
                   background: 'rgba(255,255,255,0.05)',
                   border: '1px solid rgba(255,255,255,0.09)',
                 }}
               >
-                <input
+                <textarea
                   ref={inputRef}
-                  type="text"
+                  rows={1}
                   value={inputValue}
                   onChange={e => setInputValue(e.target.value)}
-                  onKeyDown={e => { if (e.key === 'Enter') sendMessage(); }}
-                  placeholder="Ask anything about our church..."
-                  className="flex-1 bg-transparent border-none focus:outline-none text-white text-sm placeholder:text-white/20 py-2.5"
+                  onInput={e => { const t = e.currentTarget; t.style.height = 'auto'; t.style.height = Math.min(t.scrollHeight, 112) + 'px'; }}
+                  onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
+                  placeholder="Ask anything about our church…"
+                  className="flex-1 bg-transparent border-none focus:outline-none text-white text-sm placeholder:text-white/25 py-1.5 resize-none leading-relaxed max-h-[112px] scrollbar-thin"
                 />
                 <button
                   onClick={() => sendMessage()}
