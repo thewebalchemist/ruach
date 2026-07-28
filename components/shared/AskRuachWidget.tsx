@@ -50,7 +50,10 @@ export default function AskRuachWidget() {
       created_at: new Date().toISOString(),
     };
 
-    setMessages(prev => [...prev, userMsg]);
+    const assistantId = `msg_${Date.now()}_ai`;
+    setMessages(prev => [...prev, userMsg, {
+      id: assistantId, role: 'assistant', content: '', created_at: new Date().toISOString(),
+    }]);
     setInputValue('');
     setIsLoading(true);
     setError(null);
@@ -65,22 +68,48 @@ export default function AskRuachWidget() {
           conversation_history: messages,
         }),
       });
-      const data = await res.json();
 
+      // Errors come back as JSON; success is a text/event-stream of deltas.
       if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
         setError(data.message || 'Something went wrong. Please try again.');
+        setMessages(prev => prev.filter(m => m.id !== assistantId));
         return;
       }
 
-      if (data.session_id && !sessionId) setSessionId(data.session_id);
-      setMessages(prev => [...prev, {
-        id: `msg_${Date.now()}_ai`,
-        role: 'assistant',
-        content: data.message,
-        created_at: new Date().toISOString(),
-      }]);
+      const reader = res.body!.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() ?? '';
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+          const raw = line.slice(6).trim();
+          if (!raw) continue;
+          try {
+            const event = JSON.parse(raw);
+            if (event.type === 'delta') {
+              setMessages(prev => prev.map(m =>
+                m.id === assistantId ? { ...m, content: m.content + event.content } : m
+              ));
+            } else if (event.type === 'done') {
+              if (event.session_id && !sessionId) setSessionId(event.session_id);
+            } else if (event.type === 'error') {
+              setError(event.message);
+            }
+          } catch {
+            // ignore malformed SSE lines
+          }
+        }
+      }
     } catch {
       setError('Failed to send. Please check your connection.');
+      setMessages(prev => prev.filter(m => m.id !== assistantId));
     } finally {
       setIsLoading(false);
     }
