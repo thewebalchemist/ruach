@@ -67,6 +67,11 @@ export default function AskRuachWidget({ onOpenAuthModal }: AskRuachWidgetProps)
     setIsLoading(true);
     setError(null);
 
+    const assistantId = `msg_${Date.now()}_assistant`;
+    setMessages(prev => [...prev, {
+      id: assistantId, role: 'assistant', content: '', created_at: new Date().toISOString(),
+    }]);
+
     try {
       const response = await fetch('/api/chat', {
         method: 'POST',
@@ -79,43 +84,54 @@ export default function AskRuachWidget({ onOpenAuthModal }: AskRuachWidgetProps)
         }),
       });
 
-      const data = await response.json();
-
+      // Errors come back as JSON; success is a text/event-stream of deltas.
       if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
         if (response.status === 429) {
           setError(data.message || 'Rate limit reached. Sign in for unlimited access!');
-          if (data.suggest_signin) {
-            setShowSignInPrompt(true);
-          }
+          if (data.suggest_signin) setShowSignInPrompt(true);
         } else {
           setError(data.message || 'Something went wrong. Please try again.');
         }
+        setMessages(prev => prev.filter(m => m.id !== assistantId));
         return;
       }
 
-      // Update session ID if new
-      if (data.session_id && !sessionId) {
-        setSessionId(data.session_id);
+      const reader = response.body!.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() ?? '';
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+          const raw = line.slice(6).trim();
+          if (!raw) continue;
+          try {
+            const event = JSON.parse(raw);
+            if (event.type === 'delta') {
+              setMessages(prev => prev.map(m =>
+                m.id === assistantId ? { ...m, content: m.content + event.content } : m
+              ));
+            } else if (event.type === 'done') {
+              if (event.session_id && !sessionId) setSessionId(event.session_id);
+              if (event.rate_limit) setRateLimit(event.rate_limit);
+            } else if (event.type === 'error') {
+              setError(event.message);
+            }
+          } catch {
+            // ignore malformed SSE lines
+          }
+        }
       }
-
-      // Update rate limit info
-      if (data.rate_limit) {
-        setRateLimit(data.rate_limit);
-      }
-
-      // Add assistant message
-      const assistantMessage: ChatMessage = {
-        id: `msg_${Date.now()}_assistant`,
-        role: 'assistant',
-        content: data.message,
-        created_at: new Date().toISOString(),
-      };
-
-      setMessages(prev => [...prev, assistantMessage]);
-
     } catch (err) {
       console.error('Chat error:', err);
       setError('Failed to send message. Please check your connection.');
+      setMessages(prev => prev.filter(m => m.id !== assistantId));
     } finally {
       setIsLoading(false);
     }
