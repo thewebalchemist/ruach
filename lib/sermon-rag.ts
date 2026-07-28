@@ -16,6 +16,7 @@ export interface RelevantSermon {
   preacher: string | null;
   slug: string;
   youtube_url: string | null;
+  thumbnail_url: string | null;
   service_date: string | null;
   scripture_ref: string | null;
 }
@@ -50,12 +51,13 @@ export async function retrieveSermons(
  */
 export function buildRetrievedSermonsBlock(chunks: SermonChunk[]): string {
   if (!chunks.length) {
-    return `\n\n### RELEVANT SERMONS\nNo specific sermon passage closely matched this question. Answer from general biblical/church guidance, and if it's a teaching topic, invite them to browse /sermons.\n`;
+    return `\n\n## RELEVANT SERMONS\nNo specific sermon passage closely matched this question. Answer warmly from general biblical and church guidance, and if it's a teaching topic, invite them to browse /sermons.\n`;
   }
-  let block = `\n\n### RELEVANT SERMONS (retrieved passages — answer FROM these)
-When a passage below speaks to the question, summarise what it teaches in plain words, then point to the sermon. Give the link as /slug using the exact slug shown. Do not invent sermons or quotes.\n\n`;
+  let block = `\n\n## RELEVANT SERMONS (retrieved passages — ground your answer in these)
+When a passage below speaks to the question, teach what it actually says in a warm, natural way — usually two to four short paragraphs, the way someone who has sat under the preaching would explain it to a friend. Give real substance from these passages; don't invent talks, quotes, or scriptures.
+When a specific sermon backs your answer, name it by its TITLE woven into a sentence ("he unpacks this in Restoration of the Tents"). Do NOT paste raw /slug links or a citation list — the watch links appear as cards below your answer.\n\n`;
   chunks.forEach((c, i) => {
-    block += `[${i + 1}] "${c.title}"${c.preacher ? ` — ${c.preacher}` : ''} | Watch: /${c.slug}\n${c.content.slice(0, 900)}\n\n`;
+    block += `[${i + 1}] "${c.title}"${c.preacher ? ` — ${c.preacher}` : ''} (slug: ${c.slug})\n${c.content.slice(0, 1000)}\n\n`;
   });
   return block;
 }
@@ -102,7 +104,7 @@ export async function findRelevantSermonsFromChunks(chunks: SermonChunk[]): Prom
   if (!slugs.length) return [];
   const { data } = await supabaseAdmin
     .from('sermons')
-    .select('id, title, preacher, slug, youtube_url, service_date, scripture_ref')
+    .select('id, title, preacher, slug, youtube_url, thumbnail_url, service_date, scripture_ref')
     .in('slug', slugs)
     .eq('published', true);
   if (!data) return [];

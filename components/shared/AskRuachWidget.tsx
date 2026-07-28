@@ -1,9 +1,23 @@
 import { useState, useRef, useEffect } from 'react';
-import { Sparkles, X, Send, Loader2, AlertCircle, RotateCcw } from 'lucide-react';
+import { Sparkles, X, Send, Loader2, AlertCircle, RotateCcw, Play } from 'lucide-react';
 import { useRouter } from 'next/router';
+import Link from 'next/link';
 import { ChatMessage } from '@/types';
 
 const H = { fontFamily: 'Montserrat, sans-serif', fontWeight: 900 };
+
+interface SermonCard {
+  id: string; title: string; preacher: string | null; slug: string;
+  thumbnail_url: string | null; youtube_url: string | null;
+}
+function ytId(url?: string | null) {
+  return url?.match(/(?:v=|youtu\.be\/|embed\/)([A-Za-z0-9_-]{11})/)?.[1] ?? '';
+}
+function cardThumb(c: SermonCard) {
+  if (c.thumbnail_url) return c.thumbnail_url;
+  const id = ytId(c.youtube_url);
+  return id ? `https://img.youtube.com/vi/${id}/mqdefault.jpg` : '';
+}
 
 const SUGGESTIONS = [
   { icon: '📍', text: 'Where is Ruach Tabernacle located?' },
@@ -20,6 +34,7 @@ export default function AskRuachWidget() {
   const [isLoading, setIsLoading] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [cards, setCards] = useState<SermonCard[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -57,6 +72,7 @@ export default function AskRuachWidget() {
     setInputValue('');
     setIsLoading(true);
     setError(null);
+    setCards([]);
 
     try {
       const res = await fetch('/api/chat', {
@@ -99,6 +115,7 @@ export default function AskRuachWidget() {
               ));
             } else if (event.type === 'done') {
               if (event.session_id && !sessionId) setSessionId(event.session_id);
+              if (Array.isArray(event.relevant_sermons)) setCards(event.relevant_sermons);
             } else if (event.type === 'error') {
               setError(event.message);
             }
@@ -171,7 +188,7 @@ export default function AskRuachWidget() {
               <div className="flex items-center gap-1">
                 {hasMessages && (
                   <button
-                    onClick={() => { setMessages([]); setSessionId(null); setError(null); }}
+                    onClick={() => { setMessages([]); setSessionId(null); setError(null); setCards([]); }}
                     className="w-8 h-8 rounded-xl flex items-center justify-center text-white/35 hover:text-white/70 hover:bg-white/5 transition-colors"
                     title="Clear chat"
                   >
@@ -258,6 +275,36 @@ export default function AskRuachWidget() {
                     <Loader2 className="w-3.5 h-3.5 animate-spin text-[#BF0A30]" />
                     <span className="text-white/35 text-xs">Meditating...</span>
                   </div>
+                </div>
+              )}
+
+              {/* Related sermon cards — "Watch these" */}
+              {cards.length > 0 && (
+                <div className="space-y-2 pt-1">
+                  <p className="px-1 text-[10px] uppercase tracking-widest text-[#BF0A30]" style={H}>Watch these</p>
+                  {cards.map((c) => (
+                    <Link
+                      key={c.id}
+                      href={`/${c.slug}`}
+                      onClick={() => setOpen(false)}
+                      className="flex items-center gap-3 rounded-xl p-2 transition-colors hover:bg-white/[0.03]"
+                      style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
+                    >
+                      <div className="relative w-14 h-9 rounded-lg overflow-hidden flex-shrink-0 bg-[#BF0A30]/15 grid place-items-center">
+                        {cardThumb(c) && (
+                          <img src={cardThumb(c)} alt="" className="absolute inset-0 w-full h-full object-cover"
+                            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                        )}
+                        <span className="relative w-6 h-6 rounded-full bg-[#BF0A30]/90 flex items-center justify-center">
+                          <Play className="w-3 h-3 text-white fill-white ml-0.5" />
+                        </span>
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-xs font-semibold text-white">{c.title}</p>
+                        {c.preacher && <p className="text-[10px] text-white/40 truncate">{c.preacher}</p>}
+                      </div>
+                    </Link>
+                  ))}
                 </div>
               )}
 
