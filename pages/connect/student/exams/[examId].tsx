@@ -219,9 +219,13 @@ export default function StudentExamPage() {
     }
 
     try {
+      const { data: { session: auth } } = await supabase.auth.getSession();
       const res = await fetch('/api/connect/exams/submit', {
         method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(auth ? { 'Authorization': `Bearer ${auth.access_token}` } : {}),
+        },
         body:    JSON.stringify({ examId: exam.id, studentId, answers }),
       });
       const data = await res.json();

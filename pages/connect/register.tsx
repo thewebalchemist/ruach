@@ -8,7 +8,7 @@ import { supabase } from '@/lib/supabase';
 type Step = 1 | 2 | 3;
 type Mode = 'new' | 'legacy';
 
-interface CohortOption { id: string; name: string; year: number; start_date?: string; end_date?: string; class_type?: string; }
+interface CohortOption { id: string; name: string; year: number; start_date?: string; end_date?: string; }
 
 interface FormData {
   firstName: string; lastName: string; email: string; phone: string;
@@ -46,16 +46,15 @@ export default function ConnectRegister() {
 
   async function loadCohorts() {
     const { data } = await db.from('connect_cohorts')
-      .select('id, cohort_name, year, start_date, end_date, class_type')
+      .select('id, name, year, start_date, end_date')
       .eq('status', 'registration-open')
       .order('start_date', { ascending: true });
     const mapped = (data ?? []).map((c: any) => ({
       id: c.id,
-      name: c.cohort_name,
+      name: c.name,
       year: c.year,
       start_date: c.start_date,
       end_date: c.end_date,
-      class_type: c.class_type,
     }));
     setCohorts(mapped as CohortOption[]);
   }
@@ -233,12 +232,6 @@ export default function ConnectRegister() {
                     </span>
                   </div>
                 )}
-                {selectedCohort.class_type && (
-                  <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                    <span className="text-gray-400">Format:</span>
-                    <span className="capitalize font-medium text-gray-700 dark:text-gray-300">{selectedCohort.class_type}</span>
-                  </div>
-                )}
               </div>
             )}
 
@@ -274,7 +267,7 @@ export default function ConnectRegister() {
       >
         <div className="absolute inset-0 bg-gradient-to-br from-[#BF0A30]/90 via-[#8B0000]/85 to-black/80" />
         <div className="relative z-10 text-center">
-          <img src="/images/ruaach.png" alt="Ruach" className="w-16 h-16 rounded-full mx-auto mb-6" />
+          <img src="/brand/ruach-logo.png" alt="Ruach" className="w-16 h-16 rounded-full mx-auto mb-6" />
           <h1 className="text-3xl font-bold text-white mb-3">Join Connect Class</h1>
           <p className="text-white/70">Begin your journey with Ruach Assemblies</p>
           {mode === 'new' && (
@@ -446,7 +439,6 @@ export default function ConnectRegister() {
                                 {c.end_date ? ` · Ends ${new Date(c.end_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long' })}` : ''}
                               </p>
                             )}
-                            {c.class_type && <p className="text-xs text-gray-400 mt-0.5 capitalize">{c.class_type}</p>}
                           </button>
                         ))}
                       </div>

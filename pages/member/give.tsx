@@ -127,7 +127,7 @@ export default function GivePage() {
           </div>
           <div className="relative z-10 flex items-center gap-4">
             <div className="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center flex-shrink-0">
-              <img src="/images/ruaach.png" alt="Ruach" className="w-10 h-10 rounded-full opacity-90" />
+              <img src="/brand/ruach-logo.png" alt="Ruach" className="w-10 h-10 rounded-full opacity-90" />
             </div>
             <div>
               <p className="text-white/70 text-xs uppercase tracking-widest font-bold mb-0.5">Ruach Assemblies</p>

@@ -19,16 +19,20 @@ export default function PrayerModal({ onClose }: PrayerModalProps) {
     setIsSubmitting(true);
 
     try {
+      // name/phone were never real columns (prayer_requests only has
+      // user_id/is_anonymous/category/request) — RLS also requires
+      // auth.uid() IS NOT NULL, so this needs the real Supabase session
+      // (not the separate localStorage-based getCurrentUser() used
+      // elsewhere in this module), matching NotesEditor.tsx's pattern.
+      const { data: { user } } = await supabase.auth.getUser();
       const { error } = await supabase
         .from('prayer_requests')
-        .insert([
-          {
-            name: formData.name,
-            phone: formData.phone,
-            message: formData.message,
-            status: 'pending',
-          },
-        ]);
+        .insert({
+          user_id:      user?.id ?? null,
+          is_anonymous: !formData.name.trim(),
+          category:     'other',
+          request:      formData.message,
+        });
 
       if (error) throw error;
 

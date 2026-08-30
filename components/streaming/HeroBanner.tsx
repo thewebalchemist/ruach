@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Play, Plus, Info, Check, Volume2, VolumeX } from 'lucide-react';
 import { Sermon, Series } from '@/types';
-import { getYouTubeThumbnail, formatDateShort, stripMarkdown, truncateText } from '@/lib/utils';
+import { getYouTubeThumbnail, formatDateShort, formatDuration, stripMarkdown, truncateText } from '@/lib/utils';
 
 interface HeroBannerProps {
   featuredSermon?: Sermon;
@@ -27,14 +27,14 @@ export default function HeroBanner({
     title: featuredSeries?.title || '',
     preacher: '',
     service_date: featuredSeries?.created_at || '',
-    summary: featuredSeries?.description || '',
+    description: featuredSeries?.description || '',
     youtube_url: '',
     slug: featuredSeries?.slug || '',
-    thumbnail_url: featuredSeries?.image_url || null,
+    thumbnail_url: featuredSeries?.thumbnail_url || null,
   };
 
   const backgroundImage = item.thumbnail_url || getYouTubeThumbnail(item.youtube_url || '', 'maxres');
-  const description = truncateText(stripMarkdown(item.summary || ''), 180);
+  const description = truncateText(stripMarkdown(item.description || ''), 180);
 
   return (
     <section className="relative w-full min-h-[75vh] md:min-h-[85vh] overflow-hidden">
@@ -63,11 +63,6 @@ export default function HeroBanner({
               >
                 {featuredSermon.series.title}
               </Link>
-              {featuredSermon.series_part && (
-                <span className="text-gray-400 text-sm">
-                  Part {featuredSermon.series_part}
-                </span>
-              )}
             </div>
           )}
 
@@ -87,16 +82,16 @@ export default function HeroBanner({
                 <span className="text-sm md:text-base">{formatDateShort(item.service_date)}</span>
               </>
             )}
-            {featuredSermon?.duration && (
+            {featuredSermon?.duration_seconds && (
               <>
                 <span className="w-1.5 h-1.5 bg-gray-500 rounded-full" />
-                <span className="text-sm md:text-base">{featuredSermon.duration}</span>
+                <span className="text-sm md:text-base">{formatDuration(featuredSermon.duration_seconds)}</span>
               </>
             )}
-            {featuredSermon?.scripture && (
+            {featuredSermon?.scripture_ref && (
               <>
                 <span className="w-1.5 h-1.5 bg-gray-500 rounded-full" />
-                <span className="text-[#BF0A30] font-medium text-sm md:text-base">{featuredSermon.scripture}</span>
+                <span className="text-[#BF0A30] font-medium text-sm md:text-base">{featuredSermon.scripture_ref}</span>
               </>
             )}
           </div>

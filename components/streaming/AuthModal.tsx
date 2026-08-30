@@ -121,7 +121,7 @@ export default function AuthModal({ onClose, onSuccess }: AuthModalProps) {
               <Link href="/" className="flex items-center gap-2 sm:gap-3 justify-center mx-auto mb-4">
                 <div className="flex items-center space-x-2">
                   <img
-                    src="/images/ruaach.png"
+                    src="/brand/ruach-logo.png"
                     alt="RUACH CHURCH Logo"
                     className="w-10 h-10 rounded-full" />
                 </div>

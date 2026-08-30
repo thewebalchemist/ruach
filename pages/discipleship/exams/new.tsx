@@ -117,6 +117,7 @@ export default function NewDiscipleshipExamPage() {
           title,
           description:      description || null,
           cohort_id:        cohortId,
+          level:            cohorts.find(c => c.id === cohortId)?.level ?? 1,
           session_id:       sessionId || null,
           duration_minutes: durationMin,
           total_marks:      totalMarks,
@@ -145,7 +146,7 @@ export default function NewDiscipleshipExamPage() {
       const { error: qErr } = await (supabase as any).from('discipleship_exam_questions').insert(qRows);
       if (qErr) throw new Error(qErr.message);
 
-      router.push(`/discipleship/cohorts/${cohortId}`);
+      router.push('/discipleship/cohorts');
     } catch (e: unknown) {
       setSaveError((e as Error).message);
       setSaving(false);
@@ -160,7 +161,7 @@ export default function NewDiscipleshipExamPage() {
 
   return (
     <DiscipleshipLayout title="Create Exam">
-      <Link href={cohortParam ? `/discipleship/cohorts/${cohortParam}` : '/discipleship/exams'}
+      <Link href="/discipleship/cohorts"
         className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 mb-5 transition-colors">
         <ArrowLeft className="w-4 h-4" /> Back
       </Link>

@@ -6,6 +6,12 @@ import { supabase, type Profile } from '@/lib/supabase';
 
 export type UserRole = 'student' | 'member' | 'leader' | 'teacher' | 'admin' | 'pastor';
 
+export interface AdminPermission {
+  moduleKey:    string;
+  action:       string;
+  departmentId: string | null;
+}
+
 interface AuthContextValue {
   session:        Session | null;
   profile:        Profile | null;
@@ -14,6 +20,8 @@ interface AuthContextValue {
   isMember:       boolean;
   isTeacher:      boolean;
   isAdmin:        boolean;
+  permissions:    AdminPermission[];
+  hasPermission:  (moduleKey: string, action: string) => boolean;
   signOut:        () => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
@@ -21,24 +29,15 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue>({
   session: null, profile: null, loading: true, role: null,
   isMember: false, isTeacher: false, isAdmin: false,
+  permissions: [], hasPermission: () => false,
   signOut: async () => {}, refreshProfile: async () => {},
 });
-
-// Sets or clears the sentinel cookie that middleware uses to detect a session.
-// Supabase v2 stores auth in localStorage, not cookies, so the middleware
-// cannot read it directly. This thin cookie bridges that gap.
-function setSentinelCookie(authenticated: boolean) {
-  if (authenticated) {
-    document.cookie = 'sb-session=1; path=/; max-age=604800; SameSite=Lax';
-  } else {
-    document.cookie = 'sb-session=; path=/; max-age=0; SameSite=Lax';
-  }
-}
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [permissions, setPermissions] = useState<AdminPermission[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchProfile = useCallback(async (userId: string) => {
@@ -48,6 +47,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .eq('id', userId)
       .single();
     setProfile(data ?? null);
+
+    // Only admin/pastor ever reach /admin, so only fetch permissions for
+    // them — one RPC call per session, not per render (see lib/admin-auth.ts
+    // for the server-side equivalent used by API routes).
+    if (data?.role === 'admin' || data?.role === 'pastor') {
+      const { data: rows } = await supabase.rpc('get_my_admin_permissions');
+      setPermissions((rows ?? []).map((r: { module_key: string; action: string; department_id: string | null }) => ({
+        moduleKey: r.module_key,
+        action: r.action,
+        departmentId: r.department_id,
+      })));
+    } else {
+      setPermissions([]);
+    }
   }, []);
 
   const refreshProfile = useCallback(async () => {
@@ -57,7 +70,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session: s } }) => {
       setSession(s);
-      setSentinelCookie(!!s);
       if (s?.user?.id) {
         fetchProfile(s.user.id).finally(() => setLoading(false));
       } else {
@@ -68,11 +80,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, s) => {
         setSession(s);
-        setSentinelCookie(!!s);
         if (s?.user?.id) {
           await fetchProfile(s.user.id);
         } else {
           setProfile(null);
+          setPermissions([]);
         }
         setLoading(false);
       },
@@ -83,15 +95,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = useCallback(async () => {
     await supabase.auth.signOut();
-    // Clear immediately — don't wait for onAuthStateChange to race the redirect
-    setSentinelCookie(false);
     setSession(null);
     setProfile(null);
-    // Send the user back to whichever login matches where they were
-    const inAdminArea =
-      router.pathname.startsWith('/admin') ||
-      router.pathname.startsWith('/control-panel');
-    router.push(inAdminArea ? '/auth/login' : '/member/login');
+    setPermissions([]);
+    // Send the user back to whichever login page matches where they were
+    const path = router.pathname;
+    const loginPage =
+      path.startsWith('/admin') || path.startsWith('/control-panel') ? '/auth/login' :
+      path.startsWith('/connect')                                    ? '/connect' :
+      path.startsWith('/discipleship')                                ? '/discipleship' :
+      path.startsWith('/crosspoint')                                  ? '/crosspoint' :
+      '/member/login';
+    router.push(loginPage);
   }, [router]);
 
   const role      = profile?.role as UserRole | null;
@@ -99,10 +114,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const isTeacher = !!role && ['teacher', 'admin', 'pastor', 'leader'].includes(role);
   const isAdmin   = !!role && ['admin', 'pastor'].includes(role);
 
+  // Pastor keeps the same unconditional trust is_admin()/has_permission()
+  // give it server-side — mirrors lib/admin-auth.ts's hasPermission().
+  const hasPermission = useCallback((moduleKey: string, action: string) => {
+    if (role === 'pastor') return true;
+    return permissions.some(p => p.moduleKey === moduleKey && p.action === action);
+  }, [role, permissions]);
+
   return (
     <AuthContext.Provider value={{
       session, profile, loading, role,
       isMember, isTeacher, isAdmin,
+      permissions, hasPermission,
       signOut, refreshProfile,
     }}>
       {children}

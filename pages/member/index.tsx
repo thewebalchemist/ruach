@@ -20,7 +20,7 @@ interface DiscProgressRow {
 }
 interface NoticeRow      { id: string; title: string; priority: string; }
 interface EventRow       { id: string; title: string; event_date: string; location: string | null; }
-interface SermonRow      { id: string; title: string; preacher: string; youtube_id: string; slug: string; }
+interface SermonRow      { id: string; title: string; preacher: string; youtube_id: string | null; slug: string; }
 interface DiscipleshipProgress { level: 1 | 2 | 3; status: string; cohort_name: string; }
 
 const BRANCH_LABELS: Record<string, string> = {
@@ -90,7 +90,8 @@ export default function MemberDashboard() {
           .limit(3),
         (supabase as any).from('sermons')
           .select('id, title, preacher, youtube_id, slug')
-          .order('created_at', { ascending: false })
+          .eq('published', true)
+          .order('service_date', { ascending: false })
           .limit(1)
           .maybeSingle(),
       ]);
@@ -121,8 +122,7 @@ export default function MemberDashboard() {
     if (!prayerText.trim() || !authProfile) return;
     setSubmittingPrayer(true);
     await (supabase as any).from('prayer_requests').insert({
-      name:    authProfile.full_name,
-      message: prayerText.trim(),
+      request: prayerText.trim(),
       user_id: authProfile.id,
     });
     setSubmittingPrayer(false);
@@ -168,7 +168,7 @@ export default function MemberDashboard() {
         <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#BF0A30] to-[#7D0018] flex items-center justify-center shadow-md shadow-[#BF0A30]/20">
-              <img src="/images/ruaach.png" alt="Ruach" className="w-6 h-6 rounded-full opacity-90" />
+              <img src="/brand/ruach-logo.png" alt="Ruach" className="w-6 h-6 rounded-full opacity-90" />
             </div>
             <div>
               <p className="font-black text-gray-900 dark:text-white text-sm leading-tight tracking-tight">RuachConnect</p>
@@ -241,7 +241,7 @@ export default function MemberDashboard() {
           <div className="flex items-start justify-between mb-6">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
-                <img src="/images/ruaach.png" alt="Ruach" className="w-7 h-7 rounded-full opacity-80" />
+                <img src="/brand/ruach-logo.png" alt="Ruach" className="w-7 h-7 rounded-full opacity-80" />
               </div>
               <div>
                 <p className="text-white/50 text-[10px] uppercase tracking-widest font-bold leading-none">Ruach Assemblies</p>
@@ -431,11 +431,13 @@ export default function MemberDashboard() {
             <Link href={`/${latestSermon.slug}`}
               className="flex items-center gap-4 bg-white dark:bg-[#1A1A1A] rounded-2xl border border-gray-200 dark:border-[#2D2D2D] p-4 hover:border-[#BF0A30]/40 transition-colors group">
               <div className="relative w-20 h-14 rounded-xl overflow-hidden bg-gray-900 flex-shrink-0">
-                <img
-                  src={`https://img.youtube.com/vi/${latestSermon.youtube_id}/mqdefault.jpg`}
-                  alt={latestSermon.title}
-                  className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
-                />
+                {latestSermon.youtube_id && (
+                  <img
+                    src={`https://img.youtube.com/vi/${latestSermon.youtube_id}/mqdefault.jpg`}
+                    alt={latestSermon.title}
+                    className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                  />
+                )}
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="w-7 h-7 bg-[#BF0A30] rounded-full flex items-center justify-center shadow-lg">
                     <Video className="w-3.5 h-3.5 text-white ml-0.5" />

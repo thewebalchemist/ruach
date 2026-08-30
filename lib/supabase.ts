@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import { createBrowserClient } from '@supabase/ssr';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -7,9 +7,12 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY — copy .env.example to .env.local');
 }
 
-// Untyped client: supports both streaming tables (sermons, series, stream_settings…)
+// Cookie-based client (not localStorage): this is what lets middleware.ts
+// validate a real session server-side via @supabase/ssr's matching
+// createServerClient, instead of trusting a client-set sentinel cookie.
+// Untyped: supports both streaming tables (sermons, series, stream_settings…)
 // and connect tables (profiles, cohorts…) without requiring a unified Database type.
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey);
 
 
 export type Profile = {

@@ -1,32 +1,56 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { BookOpen, Plus, Eye, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { BookOpen, Plus, Eye, Clock, CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import { ConnectLayout } from '@/components/connect/ConnectLayout';
-import { mockConnectExams, mockConnectCohorts } from '@/data/connect';
+import { supabase } from '@/lib/supabase';
+
+interface Exam {
+  id: string; title: string; status: 'draft' | 'published' | 'closed';
+  total_marks: number; passing_marks: number; duration_minutes: number;
+  available_from: string | null; available_until: string | null; cohort_id: string;
+  connect_exam_questions: { count: number }[];
+}
+interface Cohort { id: string; name: string; }
+
+const STATUS_ICON = {
+  draft:     <Clock className="w-4 h-4 text-gray-400" />,
+  published: <CheckCircle className="w-4 h-4 text-green-500" />,
+  closed:    <XCircle className="w-4 h-4 text-red-400" />,
+};
+
+const STATUS_BADGE: Record<string, string> = {
+  draft:     'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400',
+  published: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
+  closed:    'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
+};
 
 export default function ExamsPage() {
   const [cohortF, setCohortF] = useState('all');
+  const [exams, setExams] = useState<Exam[]>([]);
+  const [cohorts, setCohorts] = useState<Cohort[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filtered = mockConnectExams.filter(e => cohortF === 'all' || e.cohortId === cohortF);
+  const load = useCallback(async () => {
+    setLoading(true);
+    const [examsRes, cohortsRes] = await Promise.all([
+      supabase.from('connect_exams').select('id, title, status, total_marks, passing_marks, duration_minutes, available_from, available_until, cohort_id, connect_exam_questions(count)').order('created_at', { ascending: false }),
+      supabase.from('connect_cohorts').select('id, name'),
+    ]);
+    setExams((examsRes.data as any) ?? []);
+    setCohorts(cohortsRes.data ?? []);
+    setLoading(false);
+  }, []);
 
-  const STATUS_ICON = {
-    draft:     <Clock className="w-4 h-4 text-gray-400" />,
-    published: <CheckCircle className="w-4 h-4 text-green-500" />,
-    closed:    <XCircle className="w-4 h-4 text-red-400" />,
-  };
+  useEffect(() => { load(); }, [load]);
 
-  const STATUS_BADGE: Record<string, string> = {
-    draft:     'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400',
-    published: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
-    closed:    'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
-  };
+  const filtered = exams.filter(e => cohortF === 'all' || e.cohort_id === cohortF);
 
   return (
     <ConnectLayout title="Exams">
       <div className="flex items-center justify-between mb-5">
         <div>
           <h1 className="text-xl font-bold text-gray-900 dark:text-white">Exams</h1>
-          <p className="text-sm text-gray-500 mt-0.5">{mockConnectExams.length} exams created</p>
+          <p className="text-sm text-gray-500 mt-0.5">{exams.length} exams created</p>
         </div>
         <Link
           href="/connect/exams/new"
@@ -36,7 +60,6 @@ export default function ExamsPage() {
         </Link>
       </div>
 
-      {/* Cohort filter */}
       <div className="flex gap-3 mb-5">
         <select
           value={cohortF}
@@ -44,10 +67,13 @@ export default function ExamsPage() {
           className="px-4 py-2.5 text-sm border border-gray-200 dark:border-white/[0.06] rounded-xl bg-white dark:bg-[#141414] text-gray-900 dark:text-white focus:outline-none focus:border-[#BF0A30]"
         >
           <option value="all">All Cohorts</option>
-          {mockConnectCohorts.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+          {cohorts.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
         </select>
       </div>
 
+      {loading ? (
+        <div className="flex justify-center py-16"><Loader2 className="w-6 h-6 animate-spin text-gray-400" /></div>
+      ) : (
       <div className="space-y-3">
         {filtered.length === 0 ? (
           <div className="bg-white dark:bg-[#141414] rounded-2xl border border-gray-200/70 dark:border-white/[0.05] p-16 text-center shadow-sm">
@@ -56,7 +82,8 @@ export default function ExamsPage() {
             <Link href="/connect/exams/new" className="mt-3 inline-block px-4 py-2 bg-[#BF0A30] text-white text-sm font-medium rounded-xl">Create First Exam</Link>
           </div>
         ) : filtered.map(exam => {
-          const cohort = mockConnectCohorts.find(c => c.id === exam.cohortId);
+          const cohort = cohorts.find(c => c.id === exam.cohort_id);
+          const questionCount = exam.connect_exam_questions?.[0]?.count ?? 0;
           return (
             <div key={exam.id} className="bg-white dark:bg-[#141414] rounded-2xl border border-gray-200/70 dark:border-white/[0.05] p-5 shadow-sm">
               <div className="flex items-start justify-between gap-4">
@@ -67,8 +94,13 @@ export default function ExamsPage() {
                       <p className="font-semibold text-gray-900 dark:text-white">{exam.title}</p>
                       <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${STATUS_BADGE[exam.status]}`}>{exam.status}</span>
                     </div>
-                    <p className="text-sm text-gray-500">{cohort?.name} · {exam.questions.length} questions · {exam.durationMinutes} min</p>
-                    <p className="text-xs text-gray-400 mt-1">Pass: {exam.passingMarks}/{exam.totalMarks} marks · Available {new Date(exam.availableFrom).toLocaleDateString()} – {new Date(exam.availableUntil).toLocaleDateString()}</p>
+                    <p className="text-sm text-gray-500">{cohort?.name ?? '—'} · {questionCount} questions · {exam.duration_minutes} min</p>
+                    <p className="text-xs text-gray-400 mt-1">
+                      Pass: {exam.passing_marks}/{exam.total_marks} marks
+                      {exam.available_from && exam.available_until && (
+                        <> · Available {new Date(exam.available_from).toLocaleDateString()} – {new Date(exam.available_until).toLocaleDateString()}</>
+                      )}
+                    </p>
                   </div>
                 </div>
                 <Link href={`/connect/exams/${exam.id}`} className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 border border-gray-200 dark:border-white/[0.06] rounded-xl text-xs font-medium text-gray-600 dark:text-gray-400 hover:border-[#BF0A30] hover:text-[#BF0A30] transition-colors">
@@ -79,6 +111,7 @@ export default function ExamsPage() {
           );
         })}
       </div>
+      )}
     </ConnectLayout>
   );
 }

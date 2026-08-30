@@ -1,33 +1,116 @@
 // pages/connect/student/index.tsx
 // Connect class student dashboard — journey, schedule, exams, graduation progress
 
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import {
   Award, Calendar, BookOpen, ClipboardList, AlertTriangle,
   CheckCircle, XCircle, Clock, FileText, Video, ExternalLink,
-  Bell, LogOut, ChevronRight, MapPin, Users, Sparkles,
-  Sun, Moon, ArrowRight, GraduationCap, Star
+  Bell, LogOut, ChevronRight, MapPin, Sparkles,
+  Sun, Moon, ArrowRight, GraduationCap, Star, Loader2
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
-import {
-  mockConnectStudents, mockConnectCohorts, mockConnectSessions,
-  mockConnectExams, mockConnectUsers, getTeacherById
-} from '@/data/connect';
+import { useAuth } from '@/context/AuthContext';
+import { supabase } from '@/lib/supabase';
 
-// Simulate logged-in student
-const CURRENT_USER_ID = 'user-new-001';
+interface StudentRow {
+  id: string; cohort_id: string; status: string; admission_number: string;
+  total_attendance_percent: number; average_exam_score: number;
+  can_graduate: boolean; certificate_issued: boolean;
+}
+interface CohortRow {
+  id: string; name: string; start_date: string; end_date: string;
+  min_attendance_percent: number; min_exam_score: number;
+  whatsapp_link: string | null; teacher_id: string | null;
+}
+interface SessionRow {
+  id: string; session_number: number; title: string; date: string;
+  start_time: string | null; end_time: string | null; type: string;
+  meeting_link: string | null; venue: string | null; is_completed: boolean;
+}
+interface AttendanceRow { session_id: string; present: boolean }
+interface ExamRow {
+  id: string; title: string; duration_minutes: number; total_marks: number;
+  passing_marks: number; available_from: string | null; available_until: string | null;
+  connect_exam_questions: { count: number }[];
+}
+interface ResultRow { exam_id: string; percentage: number; passed: boolean }
+interface WarningRow { id: string; type: string; message: string }
+interface ResourceRow { id: string; session_id: string; title: string; url: string }
+interface Teacher { first_name: string; last_name: string; phone: string | null }
 
 export default function ConnectStudentDashboard() {
   const { theme, setTheme } = useTheme();
+  const { profile, signOut } = useAuth();
 
-  const student = mockConnectStudents.find(s => s.userId === CURRENT_USER_ID);
-  const user    = mockConnectUsers.find(u => u.id === CURRENT_USER_ID);
-  const cohort  = student ? mockConnectCohorts.find(c => c.id === student.cohortId) : null;
-  const sessions = cohort ? mockConnectSessions.filter(s => s.cohortId === cohort.id) : [];
-  const exams    = cohort ? mockConnectExams.filter(e => e.cohortId === cohort.id && e.status === 'published') : [];
-  const teacher  = cohort ? getTeacherById(cohort.teacherId) : null;
+  const [loading, setLoading]       = useState(true);
+  const [student, setStudent]       = useState<StudentRow | null>(null);
+  const [cohort, setCohort]         = useState<CohortRow | null>(null);
+  const [sessions, setSessions]     = useState<SessionRow[]>([]);
+  const [attendance, setAttendance] = useState<AttendanceRow[]>([]);
+  const [exams, setExams]           = useState<ExamRow[]>([]);
+  const [results, setResults]       = useState<ResultRow[]>([]);
+  const [warnings, setWarnings]     = useState<WarningRow[]>([]);
+  const [resources, setResources]   = useState<ResourceRow[]>([]);
+  const [teacher, setTeacher]       = useState<Teacher | null>(null);
 
-  if (!student || !user || !cohort) {
+  const load = useCallback(async () => {
+    if (!profile?.id) return;
+    setLoading(true);
+
+    const { data: stu } = await (supabase as any)
+      .from('connect_students')
+      .select('id, cohort_id, status, admission_number, total_attendance_percent, average_exam_score, can_graduate, certificate_issued')
+      .eq('user_id', profile.id)
+      .order('enrolled_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (!stu) { setStudent(null); setLoading(false); return; }
+    setStudent(stu as StudentRow);
+
+    const [{ data: cohortData }, { data: sessionData }, { data: attData }, { data: examData }, { data: resultData }, { data: warningData }] = await Promise.all([
+      supabase.from('connect_cohorts').select('id, name, start_date, end_date, min_attendance_percent, min_exam_score, whatsapp_link, teacher_id').eq('id', stu.cohort_id).single(),
+      (supabase as any).from('connect_sessions').select('id, session_number, title, date, start_time, end_time, type, meeting_link, venue, is_completed').eq('cohort_id', stu.cohort_id).order('session_number'),
+      (supabase as any).from('connect_attendance').select('session_id, present').eq('student_id', stu.id),
+      (supabase as any).from('connect_exams').select('id, title, duration_minutes, total_marks, passing_marks, available_from, available_until, connect_exam_questions(count)').eq('cohort_id', stu.cohort_id).eq('status', 'published'),
+      (supabase as any).from('connect_exam_results').select('exam_id, percentage, passed').eq('student_id', stu.id),
+      (supabase as any).from('connect_warnings').select('id, type, message').eq('student_id', stu.id),
+    ]);
+
+    setCohort(cohortData as CohortRow);
+    setSessions((sessionData ?? []) as SessionRow[]);
+    setAttendance((attData ?? []) as AttendanceRow[]);
+    setExams((examData ?? []) as ExamRow[]);
+    setResults((resultData ?? []) as ResultRow[]);
+    setWarnings((warningData ?? []) as WarningRow[]);
+
+    const sessionIds = (sessionData ?? []).map((s: SessionRow) => s.id);
+    const [{ data: resourceData }, { data: teacherData }] = await Promise.all([
+      sessionIds.length
+        ? (supabase as any).from('connect_resources').select('id, session_id, title, url').in('session_id', sessionIds)
+        : Promise.resolve({ data: [] }),
+      cohortData?.teacher_id
+        ? supabase.from('profiles').select('first_name, last_name, phone').eq('id', cohortData.teacher_id).maybeSingle()
+        : Promise.resolve({ data: null }),
+    ]);
+    setResources((resourceData ?? []) as ResourceRow[]);
+    setTeacher(teacherData as Teacher | null);
+
+    setLoading(false);
+  }, [profile?.id]);
+
+  useEffect(() => { load(); }, [load]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#F0F2F5] dark:bg-[#080808] flex items-center justify-center">
+        <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+      </div>
+    );
+  }
+
+  if (!student || !cohort || !profile) {
     return (
       <div className="min-h-screen bg-[#F0F2F5] dark:bg-[#080808] flex items-center justify-center">
         <div className="text-center">
@@ -44,17 +127,16 @@ export default function ConnectStudentDashboard() {
     );
   }
 
-  const attendedSessions        = student.attendance.filter(a => a.present).length;
-  const totalSessionsAttendable = sessions.filter(s => s.isCompleted).length;
-  const isAtRisk    = student.totalAttendancePercent < 80 && totalSessionsAttendable > 0;
-  const canTakeExam = student.totalAttendancePercent >= 80;
+  const attendedSessions        = attendance.filter(a => a.present).length;
+  const totalSessionsAttendable = sessions.filter(s => s.is_completed).length;
+  const isAtRisk    = student.total_attendance_percent < 80 && totalSessionsAttendable > 0;
+  const canTakeExam = student.total_attendance_percent >= 80;
 
-  const upcomingSessions = sessions.filter(s => !s.isCompleted);
+  const upcomingSessions = sessions.filter(s => !s.is_completed);
   const nextSession      = upcomingSessions[0];
 
-  // Progress toward graduation
-  const attendanceMet = student.totalAttendancePercent >= cohort.passRequirement.minAttendancePercent;
-  const examMet       = student.averageExamScore >= cohort.passRequirement.minExamScore;
+  const attendanceMet = student.total_attendance_percent >= cohort.min_attendance_percent;
+  const examMet       = student.average_exam_score >= cohort.min_exam_score;
 
   return (
     <div className="min-h-screen bg-[#F0F2F5] dark:bg-[#080808]">
@@ -64,7 +146,7 @@ export default function ConnectStudentDashboard() {
         <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#BF0A30] to-[#7D0018] flex items-center justify-center shadow-md shadow-[#BF0A30]/20">
-              <img src="/images/ruaach.png" alt="Ruach" className="w-6 h-6 rounded-full opacity-90" />
+              <img src="/brand/ruach-logo.png" alt="Ruach" className="w-6 h-6 rounded-full opacity-90" />
             </div>
             <div>
               <p className="font-black text-gray-900 dark:text-white text-sm leading-tight tracking-tight">Connect Class</p>
@@ -80,14 +162,14 @@ export default function ConnectStudentDashboard() {
             </button>
             <button className="relative p-2.5 rounded-xl text-gray-500 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors">
               <Bell className="w-4 h-4" />
-              {student.warnings.length > 0 && (
+              {warnings.length > 0 && (
                 <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#BF0A30] rounded-full ring-2 ring-white dark:ring-[#111]" />
               )}
             </button>
             <div className="ml-1 w-9 h-9 rounded-xl bg-gradient-to-br from-[#BF0A30] to-[#7D0018] flex items-center justify-center text-white text-xs font-black shadow-md shadow-[#BF0A30]/20">
-              {user.firstName[0]}{user.lastName[0]}
+              {profile.first_name?.[0]}{profile.last_name?.[0]}
             </div>
-            <button className="p-2.5 rounded-xl text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+            <button onClick={signOut} className="p-2.5 rounded-xl text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
               <LogOut className="w-4 h-4" />
             </button>
           </div>
@@ -110,13 +192,13 @@ export default function ConnectStudentDashboard() {
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-white/70 text-sm mb-1">Welcome back,</p>
-                <h1 className="text-2xl font-black tracking-tight mb-1">{user.firstName} {user.lastName}</h1>
+                <h1 className="text-2xl font-black tracking-tight mb-1">{profile.first_name} {profile.last_name}</h1>
                 <p className="text-white/80 font-medium">{cohort.name}</p>
 
                 <div className="flex flex-wrap items-center gap-2 mt-4">
                   <div className="bg-white/15 backdrop-blur rounded-xl px-3 py-1.5">
                     <p className="text-white/60 text-[10px] font-bold uppercase tracking-wider leading-none">Admission No.</p>
-                    <p className="text-white font-black text-sm tracking-wide">{student.admissionNumber}</p>
+                    <p className="text-white font-black text-sm tracking-wide">{student.admission_number}</p>
                   </div>
                   <span className={`px-3 py-1.5 text-xs font-black rounded-xl ${
                     student.status === 'completed'   ? 'bg-green-500 text-white' :
@@ -131,7 +213,7 @@ export default function ConnectStudentDashboard() {
                 </div>
               </div>
 
-              {student.certificateIssued && (
+              {student.certificate_issued && (
                 <div className="flex-shrink-0 text-center">
                   <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mb-2">
                     <Award className="w-8 h-8 text-amber-300" />
@@ -144,12 +226,12 @@ export default function ConnectStudentDashboard() {
         </div>
 
         {/* ── Warning Banner ───────────────────────────────────────────────────── */}
-        {student.warnings.length > 0 && (
+        {warnings.length > 0 && (
           <div className="flex items-start gap-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl px-4 py-3">
             <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
             <div>
               <p className="font-bold text-red-800 dark:text-red-200 text-sm">Attention Required</p>
-              {student.warnings.map(w => (
+              {warnings.map(w => (
                 <p key={w.id} className="text-sm text-red-700 dark:text-red-300 mt-0.5">{w.message}</p>
               ))}
             </div>
@@ -168,7 +250,7 @@ export default function ConnectStudentDashboard() {
             },
             {
               label: 'Attendance Rate',
-              value: `${student.totalAttendancePercent}%`,
+              value: `${student.total_attendance_percent}%`,
               icon: Calendar,
               color: isAtRisk ? 'text-red-600' : 'text-green-600',
               bg: isAtRisk ? 'bg-red-50 dark:bg-red-900/20' : 'bg-green-50 dark:bg-green-900/20',
@@ -177,16 +259,16 @@ export default function ConnectStudentDashboard() {
             },
             {
               label: 'Exams Taken',
-              value: student.examResults.length,
+              value: results.length,
               icon: BookOpen,
               color: 'text-purple-600', bg: 'bg-purple-50 dark:bg-purple-900/20',
               alert: false,
             },
             {
               label: 'Exam Average',
-              value: `${student.averageExamScore}%`,
+              value: `${student.average_exam_score}%`,
               icon: Star,
-              color: student.averageExamScore >= cohort.passRequirement.minExamScore ? 'text-amber-600' : 'text-gray-600',
+              color: student.average_exam_score >= cohort.min_exam_score ? 'text-amber-600' : 'text-gray-600',
               bg: 'bg-amber-50 dark:bg-amber-900/20',
               alert: false,
             },
@@ -206,11 +288,11 @@ export default function ConnectStudentDashboard() {
 
         {/* ── Graduation Progress ──────────────────────────────────────────────── */}
         <div className={`rounded-2xl border p-5 ${
-          student.canGraduate
+          student.can_graduate
             ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white border-transparent'
             : 'bg-white dark:bg-[#1A1A1A] border-gray-200 dark:border-[#2D2D2D]'
         }`}>
-          {student.canGraduate ? (
+          {student.can_graduate ? (
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
                 <GraduationCap className="w-6 h-6 text-white" />
@@ -240,7 +322,7 @@ export default function ConnectStudentDashboard() {
                     : <XCircle className="w-5 h-5 text-red-500 flex-shrink-0" />}
                   <div>
                     <p className={`text-sm font-bold ${attendanceMet ? 'text-green-800 dark:text-green-300' : 'text-red-800 dark:text-red-300'}`}>Attendance</p>
-                    <p className="text-xs text-gray-500">{student.totalAttendancePercent}% / {cohort.passRequirement.minAttendancePercent}% required</p>
+                    <p className="text-xs text-gray-500">{student.total_attendance_percent}% / {cohort.min_attendance_percent}% required</p>
                   </div>
                 </div>
                 <div className={`flex items-center gap-3 p-3 rounded-xl border ${
@@ -253,7 +335,7 @@ export default function ConnectStudentDashboard() {
                     : <Clock className="w-5 h-5 text-gray-400 flex-shrink-0" />}
                   <div>
                     <p className={`text-sm font-bold ${examMet ? 'text-green-800 dark:text-green-300' : 'text-gray-700 dark:text-gray-300'}`}>Exam Score</p>
-                    <p className="text-xs text-gray-500">{student.averageExamScore}% / {cohort.passRequirement.minExamScore}% required</p>
+                    <p className="text-xs text-gray-500">{student.average_exam_score}% / {cohort.min_exam_score}% required</p>
                   </div>
                 </div>
               </div>
@@ -273,7 +355,7 @@ export default function ConnectStudentDashboard() {
                 <h3 className="font-black text-gray-900 dark:text-white text-base mb-1">{nextSession.title}</h3>
                 <p className="text-sm text-gray-500">
                   {new Date(nextSession.date).toLocaleDateString('en-KE', { weekday: 'long', month: 'long', day: 'numeric' })}
-                  {' · '}{nextSession.startTime} – {nextSession.endTime}
+                  {nextSession.start_time ? ` · ${nextSession.start_time}` : ''}{nextSession.end_time ? ` – ${nextSession.end_time}` : ''}
                 </p>
                 {nextSession.venue && (
                   <p className="flex items-center gap-1 text-sm text-gray-500 mt-1">
@@ -289,8 +371,8 @@ export default function ConnectStudentDashboard() {
                 }`}>
                   {nextSession.type === 'virtual' ? 'Virtual' : 'In-person'}
                 </span>
-                {nextSession.meetingLink && (
-                  <a href={nextSession.meetingLink} target="_blank" rel="noopener noreferrer"
+                {nextSession.meeting_link && (
+                  <a href={nextSession.meeting_link} target="_blank" rel="noopener noreferrer"
                     className="btn btn-primary btn-sm gap-1.5">
                     <Video className="w-3.5 h-3.5" /> Join
                   </a>
@@ -313,8 +395,8 @@ export default function ConnectStudentDashboard() {
               </div>
               <div className="divide-y divide-gray-50 dark:divide-[#2D2D2D]">
                 {sessions.map(session => {
-                  const rec        = student.attendance.find(a => a.sessionId === session.id);
-                  const isUpcoming = !session.isCompleted;
+                  const rec        = attendance.find(a => a.session_id === session.id);
+                  const isUpcoming = !session.is_completed;
                   return (
                     <div key={session.id} className={`p-4 ${isUpcoming ? 'bg-blue-50/30 dark:bg-blue-900/5' : ''}`}>
                       <div className="flex items-start gap-3">
@@ -343,15 +425,15 @@ export default function ConnectStudentDashboard() {
                           </div>
                           <p className="text-xs text-gray-500">
                             {new Date(session.date).toLocaleDateString('en-KE', { weekday: 'short', month: 'short', day: 'numeric' })}
-                            {' · '}{session.startTime}
+                            {session.start_time ? ` · ${session.start_time}` : ''}
                           </p>
                           {!isUpcoming && rec && (
                             <p className={`text-xs mt-0.5 font-medium ${rec.present ? 'text-green-600' : 'text-red-500'}`}>
                               {rec.present ? 'Attended' : 'Missed'}
                             </p>
                           )}
-                          {isUpcoming && session.meetingLink && (
-                            <a href={session.meetingLink} target="_blank" rel="noopener noreferrer"
+                          {isUpcoming && session.meeting_link && (
+                            <a href={session.meeting_link} target="_blank" rel="noopener noreferrer"
                               className="inline-flex items-center gap-1 text-xs text-[#BF0A30] font-semibold mt-1">
                               <Video className="w-3 h-3" /> Join <ExternalLink className="w-3 h-3" />
                             </a>
@@ -373,18 +455,19 @@ export default function ConnectStudentDashboard() {
               {exams.length > 0 ? (
                 <div className="divide-y divide-gray-50 dark:divide-[#2D2D2D]">
                   {exams.map(exam => {
-                    const result      = student.examResults.find(r => r.examId === exam.id);
+                    const result      = results.find(r => r.exam_id === exam.id);
                     const now         = new Date();
-                    const availFrom   = new Date(exam.availableFrom);
-                    const availUntil  = new Date(exam.availableUntil);
-                    const isAvailable = now >= availFrom && now <= availUntil && !result;
+                    const availFrom   = exam.available_from ? new Date(exam.available_from) : null;
+                    const availUntil  = exam.available_until ? new Date(exam.available_until) : null;
+                    const isAvailable = (!availFrom || now >= availFrom) && (!availUntil || now <= availUntil) && !result;
+                    const questionCount = exam.connect_exam_questions?.[0]?.count ?? 0;
 
                     return (
                       <div key={exam.id} className="p-4 flex items-center justify-between gap-4">
                         <div className="flex-1 min-w-0">
                           <h3 className="font-semibold text-gray-900 dark:text-white text-sm mb-0.5">{exam.title}</h3>
                           <p className="text-xs text-gray-400">
-                            {exam.questions.length} questions · {exam.durationMinutes} min · Pass: {exam.passingMarks}/{exam.totalMarks}
+                            {questionCount} questions · {exam.duration_minutes} min · Pass: {exam.passing_marks}/{exam.total_marks}
                           </p>
                         </div>
                         <div className="flex-shrink-0">
@@ -403,7 +486,7 @@ export default function ConnectStudentDashboard() {
                             </span>
                           ) : (
                             <span className="text-xs text-gray-400">
-                              {now < availFrom ? `Opens ${availFrom.toLocaleDateString('en-KE', { month: 'short', day: 'numeric' })}` : 'Closed'}
+                              {availFrom && now < availFrom ? `Opens ${availFrom.toLocaleDateString('en-KE', { month: 'short', day: 'numeric' })}` : 'Closed'}
                             </span>
                           )}
                         </div>
@@ -432,10 +515,10 @@ export default function ConnectStudentDashboard() {
                 <h2 className="section-title mb-4">Your Teacher</h2>
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#BF0A30] to-[#7D0018] flex items-center justify-center text-white font-black shadow-md shadow-[#BF0A30]/20">
-                    {teacher.firstName[0]}{teacher.lastName[0]}
+                    {teacher.first_name?.[0]}{teacher.last_name?.[0]}
                   </div>
                   <div>
-                    <p className="font-bold text-gray-900 dark:text-white text-sm">{teacher.fullName}</p>
+                    <p className="font-bold text-gray-900 dark:text-white text-sm">{teacher.first_name} {teacher.last_name}</p>
                     <p className="text-xs text-gray-500">{teacher.phone}</p>
                   </div>
                 </div>
@@ -447,11 +530,11 @@ export default function ConnectStudentDashboard() {
               <h2 className="section-title mb-4">Cohort Info</h2>
               <div className="space-y-2.5 text-sm">
                 {[
-                  { label: 'Start Date',      value: new Date(cohort.startDate).toLocaleDateString('en-KE') },
-                  { label: 'End Date',        value: new Date(cohort.endDate).toLocaleDateString('en-KE') },
+                  { label: 'Start Date',      value: new Date(cohort.start_date).toLocaleDateString('en-KE') },
+                  { label: 'End Date',        value: new Date(cohort.end_date).toLocaleDateString('en-KE') },
                   { label: 'Total Sessions',  value: sessions.length },
-                  { label: 'Min. Attendance', value: `${cohort.passRequirement.minAttendancePercent}%` },
-                  { label: 'Min. Exam Score', value: `${cohort.passRequirement.minExamScore}%` },
+                  { label: 'Min. Attendance', value: `${cohort.min_attendance_percent}%` },
+                  { label: 'Min. Exam Score', value: `${cohort.min_exam_score}%` },
                 ].map(({ label, value }) => (
                   <div key={label} className="flex justify-between items-center">
                     <span className="text-gray-500 text-xs">{label}</span>
@@ -459,8 +542,8 @@ export default function ConnectStudentDashboard() {
                   </div>
                 ))}
               </div>
-              {cohort.whatsappLink && (
-                <a href={cohort.whatsappLink} target="_blank" rel="noopener noreferrer"
+              {cohort.whatsapp_link && (
+                <a href={cohort.whatsapp_link} target="_blank" rel="noopener noreferrer"
                   className="flex items-center justify-center gap-2 mt-4 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-xl text-sm font-bold transition-colors">
                   <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
@@ -473,9 +556,9 @@ export default function ConnectStudentDashboard() {
             {/* Resources */}
             <div className="bg-white dark:bg-[#1A1A1A] rounded-2xl border border-gray-200 dark:border-[#2D2D2D] p-5">
               <h2 className="section-title mb-4">Resources</h2>
-              {sessions.flatMap(s => s.resources).length > 0 ? (
+              {resources.length > 0 ? (
                 <div className="space-y-2">
-                  {sessions.flatMap(s => s.resources).map(resource => (
+                  {resources.map(resource => (
                     <a key={resource.id} href={resource.url} target="_blank" rel="noopener noreferrer"
                       className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-[#252525] rounded-xl hover:bg-gray-100 dark:hover:bg-[#2D2D2D] transition-colors">
                       <div className="w-8 h-8 bg-red-50 dark:bg-red-900/20 rounded-lg flex items-center justify-center flex-shrink-0">

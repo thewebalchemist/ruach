@@ -1,21 +1,18 @@
-import { useState, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import {
-  ArrowLeft, Users, GraduationCap, AlertTriangle, Upload,
+  ArrowLeft, Users, GraduationCap, Upload,
   Plus, X, FileText, Film, Globe, File, Trash2, ExternalLink,
-  CheckCircle, XCircle, Bell, Send, BookOpen, Calendar,
-  ChevronDown, Paperclip
+  CheckCircle, Calendar,
+  ChevronDown, Paperclip, Loader2
 } from 'lucide-react';
 import { ConnectLayout } from '@/components/connect/ConnectLayout';
-import {
-  mockConnectCohorts, mockConnectStudents, mockConnectSessions,
-  mockConnectExams, getUserById, getTeacherById,
-} from '@/data/connect';
-import { ConnectCohort, ConnectClassSession, ConnectResource } from '@/types';
+import { supabase } from '@/lib/supabase';
 
 type Tab = 'students' | 'sessions' | 'exams' | 'resources';
 type ResourceType = 'pdf' | 'video' | 'link' | 'document';
+type CohortStatus = 'active' | 'registration-open' | 'completed' | 'draft' | 'cancelled';
 
 const TYPE_META: Record<ResourceType, { label: string; icon: React.FC<{ className?: string }>; color: string; bg: string }> = {
   pdf:      { label: 'PDF',      icon: FileText, color: 'text-red-600',    bg: 'bg-red-100 dark:bg-red-900/30' },
@@ -24,30 +21,105 @@ const TYPE_META: Record<ResourceType, { label: string; icon: React.FC<{ classNam
   document: { label: 'Document', icon: File,     color: 'text-green-600',  bg: 'bg-green-100 dark:bg-green-900/30' },
 };
 
+interface Cohort {
+  id: string; name: string; status: CohortStatus; description: string | null;
+  min_attendance_percent: number; min_exam_score: number;
+  profiles: { first_name: string; last_name: string } | null;
+}
+interface StudentRow {
+  id: string; admission_number: string; total_attendance_percent: number;
+  status: string; can_graduate: boolean;
+  profiles: { first_name: string; last_name: string; phone: string | null } | null;
+}
+interface SessionRow {
+  id: string; title: string; date: string; start_time: string | null; end_time: string | null;
+  type: string; venue: string | null; is_completed: boolean;
+}
+interface ExamRow {
+  id: string; title: string; duration_minutes: number; total_marks: number;
+  passing_marks: number; status: string;
+  connect_exam_questions: { count: number }[];
+}
+interface ResourceRow {
+  id: string; session_id: string; title: string; type: ResourceType; url: string; uploaded_at: string;
+}
+
 export default function CohortDetailPage() {
   const router = useRouter();
   const { id } = router.query as { id: string };
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const cohortBase = mockConnectCohorts.find(c => c.id === id);
-  const [cohort, setCohort] = useState<ConnectCohort | undefined>(cohortBase);
-  const [sessions, setSessions] = useState<ConnectClassSession[]>(
-    mockConnectSessions.filter(s => s.cohortId === id)
-  );
-  const [activeTab,      setActiveTab]      = useState<Tab>('students');
+  const [loading,      setLoading]      = useState(true);
+  const [cohort,        setCohort]       = useState<Cohort | null>(null);
+  const [students,      setStudents]     = useState<StudentRow[]>([]);
+  const [examCounts,    setExamCounts]   = useState<Record<string, number>>({});
+  const [sessions,      setSessions]     = useState<SessionRow[]>([]);
+  const [exams,         setExams]        = useState<ExamRow[]>([]);
+  const [resources,     setResources]    = useState<ResourceRow[]>([]);
+  const [activeTab,     setActiveTab]    = useState<Tab>('students');
 
   // Resource modal state
-  const [showResource,   setShowResource]   = useState(false);
-  const [resSessionId,   setResSessionId]   = useState('');
-  const [resType,        setResType]        = useState<ResourceType>('pdf');
-  const [resTitle,       setResTitle]       = useState('');
-  const [resUrl,         setResUrl]         = useState('');
-  const [resFile,        setResFile]        = useState<File | null>(null);
-  const [resUploading,   setResUploading]   = useState(false);
+  const [showResource,  setShowResource] = useState(false);
+  const [resSessionId,  setResSessionId] = useState('');
+  const [resType,       setResType]      = useState<ResourceType>('pdf');
+  const [resTitle,      setResTitle]     = useState('');
+  const [resUrl,        setResUrl]       = useState('');
+  const [resSaving,     setResSaving]    = useState(false);
 
   // Notify modal state
-  const [showNotify,     setShowNotify]     = useState(false);
-  const [notifyMsg,      setNotifyMsg]      = useState('');
+  const [showNotify,    setShowNotify]   = useState(false);
+  const [notifyMsg,     setNotifyMsg]    = useState('');
+  const [notifying,     setNotifying]    = useState(false);
+
+  const load = useCallback(async () => {
+    if (!id) return;
+    setLoading(true);
+    const [{ data: cohortData }, { data: studentData }, { data: sessionData }, { data: examData }] = await Promise.all([
+      (supabase as any).from('connect_cohorts')
+        .select('id, name, status, description, min_attendance_percent, min_exam_score, profiles!teacher_id(first_name, last_name)')
+        .eq('id', id).maybeSingle(),
+      (supabase as any).from('connect_students')
+        .select('id, admission_number, total_attendance_percent, status, can_graduate, profiles(first_name, last_name, phone)')
+        .eq('cohort_id', id),
+      (supabase as any).from('connect_sessions')
+        .select('id, title, date, start_time, end_time, type, venue, is_completed')
+        .eq('cohort_id', id).order('session_number'),
+      (supabase as any).from('connect_exams')
+        .select('id, title, duration_minutes, total_marks, passing_marks, status, connect_exam_questions(count)')
+        .eq('cohort_id', id),
+    ]);
+
+    setCohort(cohortData as Cohort | null);
+    setStudents((studentData ?? []) as StudentRow[]);
+    setSessions((sessionData ?? []) as SessionRow[]);
+    setExams((examData ?? []) as ExamRow[]);
+
+    const studentIds = (studentData ?? []).map((s: StudentRow) => s.id);
+    const sessionIds = (sessionData ?? []).map((s: SessionRow) => s.id);
+    const [{ data: resultData }, { data: resourceData }] = await Promise.all([
+      studentIds.length
+        ? (supabase as any).from('connect_exam_results').select('student_id').in('student_id', studentIds)
+        : Promise.resolve({ data: [] }),
+      sessionIds.length
+        ? (supabase as any).from('connect_resources').select('id, session_id, title, type, url, uploaded_at').in('session_id', sessionIds)
+        : Promise.resolve({ data: [] }),
+    ]);
+    const counts: Record<string, number> = {};
+    (resultData ?? []).forEach((r: { student_id: string }) => { counts[r.student_id] = (counts[r.student_id] ?? 0) + 1; });
+    setExamCounts(counts);
+    setResources((resourceData ?? []) as ResourceRow[]);
+
+    setLoading(false);
+  }, [id]);
+
+  useEffect(() => { load(); }, [load]);
+
+  if (loading) {
+    return (
+      <ConnectLayout title="Cohort">
+        <div className="flex justify-center py-24"><Loader2 className="w-6 h-6 animate-spin text-gray-400" /></div>
+      </ConnectLayout>
+    );
+  }
 
   if (!cohort) {
     return (
@@ -60,75 +132,62 @@ export default function CohortDetailPage() {
     );
   }
 
-  const students  = mockConnectStudents.filter(s => s.cohortId === id);
-  const exams     = mockConnectExams.filter(e => e.cohortId === id);
-  const teacher   = getTeacherById(cohort.teacherId);
-  const atRisk    = students.filter(s => s.totalAttendancePercent < cohort.passRequirement.minAttendancePercent);
-  const canGrad   = students.filter(s => s.canGraduate);
-  const allResources = sessions.flatMap(s => s.resources.map(r => ({ ...r, sessionTitle: s.title, sessionId: s.id })));
+  const atRisk       = students.filter(s => s.total_attendance_percent < cohort.min_attendance_percent);
+  const canGrad       = students.filter(s => s.can_graduate);
+  const allResources  = resources;
 
-  // ── Add resource ──────────────────────────────────────────────────────────
   const openResourceModal = (sessionId = '') => {
     setResSessionId(sessionId || sessions[0]?.id || '');
     setResType('pdf');
     setResTitle('');
     setResUrl('');
-    setResFile(null);
     setShowResource(true);
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setResFile(file);
-    if (!resTitle) setResTitle(file.name.replace(/\.[^.]+$/, ''));
-    // Infer type from mime
-    if (file.type.includes('pdf'))   setResType('pdf');
-    else if (file.type.includes('video')) setResType('video');
-    else setResType('document');
-  };
-
   const addResource = async () => {
-    if (!resTitle.trim() || !resSessionId) return;
-    setResUploading(true);
-    await new Promise(r => setTimeout(r, 700)); // simulate upload
-
-    const newResource: ConnectResource = {
-      id:         `res-${Date.now()}`,
-      sessionId:  resSessionId,
+    if (!resTitle.trim() || !resSessionId || !resUrl.trim()) return;
+    setResSaving(true);
+    const { data } = await (supabase as any).from('connect_resources').insert({
+      session_id: resSessionId,
       type:       resType,
       title:      resTitle.trim(),
-      url:        resFile
-        ? `https://storage.ruach.church/${Date.now()}-${resFile.name}`
-        : resUrl.trim(),
-      uploadedAt: new Date().toISOString(),
-    };
-
-    setSessions(prev =>
-      prev.map(s => s.id === resSessionId
-        ? { ...s, resources: [...s.resources, newResource] }
-        : s
-      )
-    );
-    setResUploading(false);
+      url:        resUrl.trim(),
+    }).select('id, session_id, title, type, url, uploaded_at').single();
+    if (data) setResources(prev => [...prev, data as ResourceRow]);
+    setResSaving(false);
     setShowResource(false);
     setActiveTab('resources');
   };
 
-  const deleteResource = (sessionId: string, resourceId: string) => {
-    setSessions(prev =>
-      prev.map(s => s.id === sessionId
-        ? { ...s, resources: s.resources.filter(r => r.id !== resourceId) }
-        : s
-      )
-    );
+  const deleteResource = async (resourceId: string) => {
+    setResources(prev => prev.filter(r => r.id !== resourceId));
+    await supabase.from('connect_resources').delete().eq('id', resourceId);
   };
 
-  const toggleEnrollment = () => {
-    setCohort(prev => prev ? {
-      ...prev,
-      status: prev.status === 'registration-open' ? 'active' : 'registration-open',
-    } : prev);
+  const toggleEnrollment = async () => {
+    const nextStatus: CohortStatus = cohort.status === 'registration-open' ? 'active' : 'registration-open';
+    setCohort(prev => prev ? { ...prev, status: nextStatus } : prev);
+    await supabase.from('connect_cohorts').update({ status: nextStatus }).eq('id', cohort.id);
+  };
+
+  const sendNotification = async () => {
+    if (!notifyMsg.trim() || students.length === 0) return;
+    setNotifying(true);
+    // connect_students doesn't carry user_id in the select above (not needed
+    // elsewhere on this page) — fetch it fresh, scoped to this cohort's students.
+    const { data: recipients } = await (supabase as any)
+      .from('connect_students').select('user_id').eq('cohort_id', id);
+    const rows = (recipients ?? []).map((r: { user_id: string }) => ({
+      user_id: r.user_id,
+      type: 'system',
+      title: `Message from ${cohort.name}`,
+      body: notifyMsg.trim(),
+      action_url: '/connect/student',
+    }));
+    if (rows.length) await supabase.from('notifications').insert(rows);
+    setNotifying(false);
+    setShowNotify(false);
+    setNotifyMsg('');
   };
 
   const STATUS_COLOR: Record<string, string> = {
@@ -148,7 +207,7 @@ export default function CohortDetailPage() {
             <div className="flex items-start justify-between mb-5">
               <div>
                 <h3 className="font-semibold text-gray-900 dark:text-white">Add Resource</h3>
-                <p className="text-xs text-gray-400 mt-0.5">Attach a file or link to a session</p>
+                <p className="text-xs text-gray-400 mt-0.5">Attach a link to a session</p>
               </div>
               <button onClick={() => setShowResource(false)} className="p-1.5 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 text-gray-400">
                 <X className="w-4 h-4" />
@@ -209,52 +268,14 @@ export default function CohortDetailPage() {
                 />
               </div>
 
-              {/* File upload zone */}
-              <div>
-                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">
-                  Upload File {resType !== 'link' && '(PDF, video, doc)'}
-                </label>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".pdf,.doc,.docx,.ppt,.pptx,.mp4,.mov,.avi"
-                  className="hidden"
-                  onChange={handleFileChange}
-                />
-                {resFile ? (
-                  <div className="flex items-center gap-3 px-4 py-3 bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800/40 rounded-xl">
-                    <FileText className="w-5 h-5 text-green-600 flex-shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-green-800 dark:text-green-200 truncate">{resFile.name}</p>
-                      <p className="text-xs text-green-600">{(resFile.size / 1024).toFixed(0)} KB</p>
-                    </div>
-                    <button onClick={() => setResFile(null)} className="text-green-600 hover:text-red-500 transition-colors">
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
-                    className="flex flex-col items-center gap-2 w-full py-6 border-2 border-dashed border-gray-300 dark:border-[#2D2D2D] rounded-xl text-gray-500 hover:border-[#BF0A30] hover:text-[#BF0A30] transition-colors"
-                  >
-                    <Upload className="w-6 h-6" />
-                    <span className="text-sm font-medium">Click to upload file</span>
-                    <span className="text-xs text-gray-400">PDF, DOCX, PPTX, MP4 up to 100MB</span>
-                  </button>
-                )}
-              </div>
-
               {/* URL field */}
               <div>
-                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">
-                  {resFile ? 'Or paste URL instead' : 'URL (if no file)'}
-                </label>
+                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">URL *</label>
                 <input
                   value={resUrl}
                   onChange={e => setResUrl(e.target.value)}
                   placeholder="https://..."
-                  disabled={!!resFile}
-                  className="w-full px-4 py-2.5 border border-gray-200 dark:border-white/[0.06] rounded-xl bg-gray-50 dark:bg-[#1A1A1A] text-sm text-gray-900 dark:text-white focus:outline-none focus:border-[#BF0A30] placeholder:text-gray-400 disabled:opacity-50"
+                  className="w-full px-4 py-2.5 border border-gray-200 dark:border-white/[0.06] rounded-xl bg-gray-50 dark:bg-[#1A1A1A] text-sm text-gray-900 dark:text-white focus:outline-none focus:border-[#BF0A30] placeholder:text-gray-400"
                 />
               </div>
             </div>
@@ -265,11 +286,11 @@ export default function CohortDetailPage() {
               </button>
               <button
                 onClick={addResource}
-                disabled={!resTitle.trim() || (!resFile && !resUrl.trim()) || resUploading}
+                disabled={!resTitle.trim() || !resUrl.trim() || resSaving}
                 className="flex-1 py-2.5 bg-[#BF0A30] text-white rounded-xl text-sm font-medium disabled:opacity-40 hover:bg-[#A0021F] flex items-center justify-center gap-2"
               >
-                {resUploading ? (
-                  <><Upload className="w-4 h-4 animate-bounce" /> Uploading...</>
+                {resSaving ? (
+                  <><Upload className="w-4 h-4 animate-bounce" /> Saving...</>
                 ) : (
                   <><Plus className="w-4 h-4" /> Add Resource</>
                 )}
@@ -299,11 +320,11 @@ export default function CohortDetailPage() {
             <div className="flex gap-3">
               <button onClick={() => setShowNotify(false)} className="flex-1 py-2.5 border border-gray-200 dark:border-white/[0.06] rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400">Cancel</button>
               <button
-                disabled={!notifyMsg.trim()}
-                onClick={() => { setShowNotify(false); setNotifyMsg(''); }}
+                disabled={!notifyMsg.trim() || notifying}
+                onClick={sendNotification}
                 className="flex-1 py-2.5 bg-[#BF0A30] text-white rounded-xl text-sm font-medium disabled:opacity-40 hover:bg-[#A0021F] flex items-center justify-center gap-2"
               >
-                <Send className="w-4 h-4" /> Send
+                {notifying ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Users className="w-4 h-4" /> Send to {students.length}</>}
               </button>
             </div>
           </div>
@@ -325,13 +346,13 @@ export default function CohortDetailPage() {
               </span>
             </div>
             <p className="text-sm text-gray-500">{cohort.description}</p>
-            {teacher && (
-              <p className="text-sm text-gray-500 mt-1">Teacher: <span className="text-gray-700 dark:text-gray-300 font-medium">{teacher.fullName}</span></p>
+            {cohort.profiles && (
+              <p className="text-sm text-gray-500 mt-1">Teacher: <span className="text-gray-700 dark:text-gray-300 font-medium">{cohort.profiles.first_name} {cohort.profiles.last_name}</span></p>
             )}
           </div>
           <div className="flex flex-wrap gap-2">
             <button onClick={() => setShowNotify(true)} className="flex items-center gap-1.5 px-3 py-2 border border-gray-200 dark:border-white/[0.06] rounded-xl text-sm text-gray-600 dark:text-gray-400 hover:border-blue-400 hover:text-blue-600 transition-colors">
-              <Bell className="w-4 h-4" /> Notify
+              <Users className="w-4 h-4" /> Notify
             </button>
             <button onClick={() => openResourceModal()} className="flex items-center gap-1.5 px-3 py-2 border border-gray-200 dark:border-white/[0.06] rounded-xl text-sm text-gray-600 dark:text-gray-400 hover:border-[#BF0A30] hover:text-[#BF0A30] transition-colors">
               <Paperclip className="w-4 h-4" /> Add Resource
@@ -350,7 +371,7 @@ export default function CohortDetailPage() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
           {[
             { label: 'Enrolled',    value: students.length,    color: 'text-gray-900 dark:text-white' },
-            { label: 'Sessions',    value: `${sessions.filter(s=>s.isCompleted).length}/${sessions.length}`, color: 'text-blue-600' },
+            { label: 'Sessions',    value: `${sessions.filter(s=>s.is_completed).length}/${sessions.length}`, color: 'text-blue-600' },
             { label: 'At Risk',     value: atRisk.length,      color: atRisk.length > 0 ? 'text-amber-600' : 'text-gray-400' },
             { label: 'Can Graduate',value: canGrad.length,     color: canGrad.length > 0 ? 'text-green-600' : 'text-gray-400' },
           ].map(({ label, value, color }) => (
@@ -371,9 +392,9 @@ export default function CohortDetailPage() {
               {canGrad.length} student{canGrad.length !== 1 ? 's' : ''} ready to graduate!
             </p>
           </div>
-          <button className="px-3 py-1.5 bg-green-600 text-white text-xs font-medium rounded-xl hover:bg-green-700">
-            Graduate Now
-          </button>
+          <Link href="/connect/graduates" className="px-3 py-1.5 bg-green-600 text-white text-xs font-medium rounded-xl hover:bg-green-700">
+            Review Graduates
+          </Link>
         </div>
       )}
 
@@ -419,23 +440,22 @@ export default function CohortDetailPage() {
                 </thead>
                 <tbody>
                   {students.map(s => {
-                    const u = getUserById(s.userId);
-                    const at = s.totalAttendancePercent;
-                    const atOk = at >= cohort.passRequirement.minAttendancePercent;
+                    const at = s.total_attendance_percent;
+                    const atOk = at >= cohort.min_attendance_percent;
                     return (
                       <tr key={s.id} className="border-b border-gray-50 dark:border-white/[0.02] hover:bg-gray-50 dark:hover:bg-white/[0.02]">
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
                             <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${atOk ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'}`}>
-                              {u?.firstName[0]}{u?.lastName[0]}
+                              {s.profiles?.first_name?.[0]}{s.profiles?.last_name?.[0]}
                             </div>
                             <div>
-                              <p className="font-medium text-gray-900 dark:text-white">{u?.fullName}</p>
-                              <p className="text-xs text-gray-400">{u?.phone}</p>
+                              <p className="font-medium text-gray-900 dark:text-white">{s.profiles?.first_name} {s.profiles?.last_name}</p>
+                              <p className="text-xs text-gray-400">{s.profiles?.phone}</p>
                             </div>
                           </div>
                         </td>
-                        <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{s.admissionNumber}</td>
+                        <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{s.admission_number}</td>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
                             <div className="w-12 h-1.5 bg-gray-100 dark:bg-[#2D2D2D] rounded-full overflow-hidden">
@@ -444,7 +464,7 @@ export default function CohortDetailPage() {
                             <span className={`text-xs font-medium ${atOk ? 'text-green-600' : 'text-red-500'}`}>{at}%</span>
                           </div>
                         </td>
-                        <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{s.examResults.length}</td>
+                        <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{examCounts[s.id] ?? 0}</td>
                         <td className="px-4 py-3">
                           <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${
                             s.status === 'in-progress' ? 'bg-blue-100 text-blue-800' :
@@ -472,19 +492,22 @@ export default function CohortDetailPage() {
       {/* ── Sessions tab ── */}
       {activeTab === 'sessions' && (
         <div className="space-y-3">
-          {sessions.map(session => (
+          {sessions.map(session => {
+            const sessionResources = resources.filter(r => r.session_id === session.id);
+            return (
             <div key={session.id} className="bg-white dark:bg-[#141414] rounded-2xl border border-gray-200/70 dark:border-white/[0.05] p-5 shadow-sm">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="flex items-start gap-3">
-                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 ${session.isCompleted ? 'bg-green-100 dark:bg-green-900/30' : 'bg-gray-100 dark:bg-[#1A1A1A]'}`}>
-                    {session.isCompleted
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 ${session.is_completed ? 'bg-green-100 dark:bg-green-900/30' : 'bg-gray-100 dark:bg-[#1A1A1A]'}`}>
+                    {session.is_completed
                       ? <CheckCircle className="w-4 h-4 text-green-600" />
                       : <Calendar className="w-4 h-4 text-gray-400" />}
                   </div>
                   <div>
                     <p className="font-medium text-gray-900 dark:text-white">{session.title}</p>
                     <p className="text-sm text-gray-500 mt-0.5">
-                      {new Date(session.date).toLocaleDateString('en-KE', { weekday: 'short', day: 'numeric', month: 'short' })} · {session.startTime} – {session.endTime}
+                      {new Date(session.date).toLocaleDateString('en-KE', { weekday: 'short', day: 'numeric', month: 'short' })}
+                      {session.start_time ? ` · ${session.start_time}` : ''}{session.end_time ? ` – ${session.end_time}` : ''}
                     </p>
                     {session.venue && <p className="text-xs text-gray-400 mt-0.5">📍 {session.venue}</p>}
                   </div>
@@ -493,9 +516,9 @@ export default function CohortDetailPage() {
                   <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${session.type === 'virtual' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}`}>
                     {session.type}
                   </span>
-                  {session.resources.length > 0 && (
+                  {sessionResources.length > 0 && (
                     <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-gray-100 dark:bg-[#1A1A1A] text-gray-600 dark:text-gray-400">
-                      {session.resources.length} file{session.resources.length !== 1 ? 's' : ''}
+                      {sessionResources.length} file{sessionResources.length !== 1 ? 's' : ''}
                     </span>
                   )}
                   <button
@@ -507,7 +530,7 @@ export default function CohortDetailPage() {
                 </div>
               </div>
             </div>
-          ))}
+          );})}
         </div>
       )}
 
@@ -524,7 +547,7 @@ export default function CohortDetailPage() {
           </div>
           {exams.length === 0 ? (
             <div className="bg-white dark:bg-[#141414] rounded-2xl border border-gray-200/70 dark:border-white/[0.05] p-12 text-center shadow-sm">
-              <BookOpen className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+              <FileText className="w-12 h-12 text-gray-300 mx-auto mb-3" />
               <p className="text-gray-500">No exams yet</p>
               <Link href={`/connect/exams/new?cohort=${cohort.id}`} className="text-sm text-[#BF0A30] mt-2 inline-block">Create first exam →</Link>
             </div>
@@ -533,7 +556,7 @@ export default function CohortDetailPage() {
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="font-semibold text-gray-900 dark:text-white">{exam.title}</p>
-                  <p className="text-sm text-gray-500 mt-0.5">{exam.questions.length} questions · {exam.durationMinutes} min · Pass: {exam.passingMarks}/{exam.totalMarks}</p>
+                  <p className="text-sm text-gray-500 mt-0.5">{exam.connect_exam_questions?.[0]?.count ?? 0} questions · {exam.duration_minutes} min · Pass: {exam.passing_marks}/{exam.total_marks}</p>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${
@@ -543,7 +566,6 @@ export default function CohortDetailPage() {
                   }`}>
                     {exam.status}
                   </span>
-                  <Link href={`/connect/exams/${exam.id}`} className="text-xs text-[#BF0A30] font-medium hover:underline">View →</Link>
                 </div>
               </div>
             </div>
@@ -572,7 +594,7 @@ export default function CohortDetailPage() {
                 Add first resource →
               </button>
             </div>
-          ) : sessions.filter(s => s.resources.length > 0).map(session => (
+          ) : sessions.filter(s => resources.some(r => r.session_id === s.id)).map(session => (
             <div key={session.id} className="bg-white dark:bg-[#141414] rounded-2xl border border-gray-200/70 dark:border-white/[0.05] shadow-sm overflow-hidden">
               <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100 dark:border-white/[0.04] bg-gray-50 dark:bg-[#1A1A1A]">
                 <p className="font-medium text-sm text-gray-700 dark:text-gray-300">{session.title}</p>
@@ -581,8 +603,8 @@ export default function CohortDetailPage() {
                 </button>
               </div>
               <div className="divide-y divide-gray-50 dark:divide-white/[0.02]">
-                {session.resources.map(resource => {
-                  const meta = TYPE_META[resource.type as ResourceType] ?? TYPE_META.document;
+                {resources.filter(r => r.session_id === session.id).map(resource => {
+                  const meta = TYPE_META[resource.type] ?? TYPE_META.document;
                   const Icon = meta.icon;
                   return (
                     <div key={resource.id} className="flex items-center gap-4 px-5 py-3.5">
@@ -591,13 +613,13 @@ export default function CohortDetailPage() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-sm text-gray-900 dark:text-white truncate">{resource.title}</p>
-                        <p className="text-xs text-gray-400">{meta.label} · {new Date(resource.uploadedAt).toLocaleDateString()}</p>
+                        <p className="text-xs text-gray-400">{meta.label} · {new Date(resource.uploaded_at).toLocaleDateString()}</p>
                       </div>
                       <div className="flex items-center gap-1.5 flex-shrink-0">
                         <a href={resource.url} target="_blank" rel="noopener noreferrer" className="p-1.5 text-gray-400 hover:text-blue-500 transition-colors rounded-lg">
                           <ExternalLink className="w-4 h-4" />
                         </a>
-                        <button onClick={() => deleteResource(session.id, resource.id)} className="p-1.5 text-gray-400 hover:text-red-500 transition-colors rounded-lg">
+                        <button onClick={() => deleteResource(resource.id)} className="p-1.5 text-gray-400 hover:text-red-500 transition-colors rounded-lg">
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>

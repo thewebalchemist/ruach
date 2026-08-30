@@ -1,46 +1,56 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
-import { Plus, Check, Package, Clock, ShoppingBag } from 'lucide-react';
+import { Plus, Check, Package, Clock, ShoppingBag, Loader2 } from 'lucide-react';
 import { CrosspointLayout } from '@/components/connect/CrosspointLayout';
-import { mockCrosspoints } from '@/data';
+import { useCrosspoint } from '@/hooks/useCrosspoint';
+import { supabase } from '@/lib/supabase';
 
-const MOCK_DATA = true;
-
-type RequestStatus = 'pending' | 'approved' | 'fulfilled';
+type RequestStatus = 'pending' | 'approved' | 'fulfilled' | 'declined';
 
 interface FoodBankRequest {
   id: string;
-  name: string;
-  phone: string;
-  date: string;
-  itemsRequested: string;
+  request_date: string;
   status: RequestStatus;
-  notes: string;
+  notes: string | null;
+  food_bank_beneficiaries: { id: string; name: string }[];
 }
-
-const mockFoodBankRequests: FoodBankRequest[] = [
-  { id: 'fbr-001', name: 'Ruth Akinyi', phone: '+254722001001', date: '2026-05-07', itemsRequested: 'Maize flour (5kg), Cooking oil (2L), Sugar (2kg)', status: 'pending', notes: 'Single mother, 3 children' },
-  { id: 'fbr-002', name: 'Joseph Otieno', phone: '+254722001002', date: '2026-05-05', itemsRequested: 'Rice (5kg), Beans (2kg), Salt', status: 'approved', notes: '' },
-  { id: 'fbr-003', name: 'Esther Mutua', phone: '+254722001003', date: '2026-04-28', itemsRequested: 'Maize flour (10kg), Lentils (1kg), Cooking fat', status: 'fulfilled', notes: 'Collected on 2026-04-30' },
-  { id: 'fbr-004', name: 'Daniel Kamau', phone: '+254722001004', date: '2026-04-20', itemsRequested: 'Unga (5kg), Rice (2kg), Sugar (1kg)', status: 'fulfilled', notes: 'Collected on 2026-04-22' },
-];
 
 const statusConfig: Record<RequestStatus, { label: string; color: string }> = {
   pending: { label: 'Pending', color: 'bg-amber-100 text-amber-800' },
   approved: { label: 'Approved', color: 'bg-blue-100 text-blue-800' },
   fulfilled: { label: 'Fulfilled', color: 'bg-green-100 text-green-800' },
+  declined: { label: 'Declined', color: 'bg-gray-100 text-gray-700' },
 };
 
 export default function FoodBankPage() {
   const router = useRouter();
-  const { cpId } = router.query;
-  const [requests, setRequests] = useState<FoodBankRequest[]>(mockFoodBankRequests);
+  const { cpId } = router.query as { cpId?: string };
+  const { crosspoint, loading: cpLoading } = useCrosspoint(cpId);
+
+  const [requests, setRequests] = useState<FoodBankRequest[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [filterStatus, setFilterStatus] = useState<'all' | RequestStatus>('all');
-  const [form, setForm] = useState({ name: '', phone: '', itemsRequested: '', notes: '' });
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState({ name: '', itemsRequested: '' });
 
-  const crosspoint = mockCrosspoints.find(c => c.id === cpId);
+  const load = useCallback(async () => {
+    if (!cpId) return;
+    setLoading(true);
+    const { data } = await supabase
+      .from('food_bank_requests')
+      .select('id, request_date, status, notes, food_bank_beneficiaries(id, name)')
+      .eq('crosspoint_id', cpId)
+      .order('request_date', { ascending: false });
+    setRequests((data as any) ?? []);
+    setLoading(false);
+  }, [cpId]);
 
+  useEffect(() => { load(); }, [load]);
+
+  if (cpLoading) {
+    return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin text-gray-400" /></div>;
+  }
   if (!crosspoint) {
     return <div className="min-h-screen flex items-center justify-center"><p>Crosspoint not found</p></div>;
   }
@@ -54,43 +64,42 @@ export default function FoodBankPage() {
     fulfilled: requests.filter(r => r.status === 'fulfilled').length,
   };
 
-  function updateStatus(id: string, status: RequestStatus) {
-    setRequests(prev => prev.map(r => r.id === id ? { ...r, status } : r));
+  async function updateStatus(id: string, status: RequestStatus) {
+    await supabase.from('food_bank_requests').update({ status }).eq('id', id);
+    load();
   }
 
-  function handleSubmit() {
-    if (!form.name || !form.phone || !form.itemsRequested) return;
-    const newReq: FoodBankRequest = {
-      id: `fbr-${Date.now()}`,
-      name: form.name,
-      phone: form.phone,
-      date: new Date().toISOString().split('T')[0],
-      itemsRequested: form.itemsRequested,
+  async function handleSubmit() {
+    if (!cpId || !form.name || !form.itemsRequested) return;
+    setSaving(true);
+    const { data: { session } } = await supabase.auth.getSession();
+    const { data: req } = await supabase.from('food_bank_requests').insert({
+      crosspoint_id: cpId,
+      requested_by_id: session?.user.id ?? null,
       status: 'pending',
-      notes: form.notes,
-    };
-    setRequests(prev => [newReq, ...prev]);
-    setForm({ name: '', phone: '', itemsRequested: '', notes: '' });
+      notes: form.itemsRequested,
+    }).select('id').single();
+    if (req) {
+      await supabase.from('food_bank_beneficiaries').insert({ request_id: req.id, name: form.name });
+    }
+    setSaving(false);
+    setForm({ name: '', itemsRequested: '' });
     setShowModal(false);
+    load();
   }
 
   return (
     <CrosspointLayout crosspoint={crosspoint} title="Food Bank">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-xl font-bold text-gray-900 dark:text-white">Food Bank Requests</h1>
           <p className="text-gray-500">Manage community food assistance requests</p>
         </div>
-        <button
-          onClick={() => setShowModal(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-[#BF0A30] text-white rounded-lg text-sm font-medium hover:bg-[#B00325]"
-        >
+        <button onClick={() => setShowModal(true)} className="flex items-center gap-2 px-4 py-2 bg-[#BF0A30] text-white rounded-lg text-sm font-medium hover:bg-[#B00325]">
           <Plus className="w-4 h-4" />New Request
         </button>
       </div>
 
-      {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-4">
           <ShoppingBag className="w-5 h-5 text-[#BF0A30] mb-2" />
@@ -114,7 +123,6 @@ export default function FoodBankPage() {
         </div>
       </div>
 
-      {/* Filter */}
       <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-4 mb-6">
         <div className="flex flex-wrap gap-2">
           {(['all', 'pending', 'approved', 'fulfilled'] as const).map(s => (
@@ -122,73 +130,57 @@ export default function FoodBankPage() {
               key={s}
               onClick={() => setFilterStatus(s)}
               className={`px-4 py-2 text-sm font-medium rounded-lg capitalize transition-colors ${
-                filterStatus === s
-                  ? 'bg-[#BF0A30] text-white'
-                  : 'border border-gray-300 dark:border-[#2D2D2D] text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#252525]'
+                filterStatus === s ? 'bg-[#BF0A30] text-white' : 'border border-gray-300 dark:border-[#2D2D2D] text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#252525]'
               }`}
             >
-              {s === 'all' ? `All (${stats.total})` : `${s.charAt(0).toUpperCase() + s.slice(1)} (${stats[s]})`}
+              {s === 'all' ? `All (${stats.total})` : `${s.charAt(0).toUpperCase() + s.slice(1)} (${stats[s as keyof typeof stats]})`}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Requests List */}
       <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D]">
+        {loading ? (
+          <div className="flex justify-center py-16"><Loader2 className="w-6 h-6 animate-spin text-gray-400" /></div>
+        ) : (
         <div className="divide-y divide-gray-100 dark:divide-[#2D2D2D]">
-          {filtered.map(req => (
-            <div key={req.id} className="p-4 sm:p-5">
-              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-                <div className="flex items-start gap-3 flex-1 min-w-0">
-                  <div className="w-10 h-10 rounded-full bg-[#BF0A30] flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
-                    {req.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
-                  </div>
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className="font-medium text-gray-900 dark:text-white">{req.name}</p>
-                      <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${statusConfig[req.status].color}`}>
-                        {statusConfig[req.status].label}
-                      </span>
+          {filtered.map(req => {
+            const name = req.food_bank_beneficiaries?.[0]?.name ?? 'Unnamed';
+            return (
+              <div key={req.id} className="p-4 sm:p-5">
+                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                  <div className="flex items-start gap-3 flex-1 min-w-0">
+                    <div className="w-10 h-10 rounded-full bg-[#BF0A30] flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
+                      {name.split(' ').map(n => n[0]).join('').slice(0, 2)}
                     </div>
-                    <p className="text-sm text-gray-500 mt-0.5">{req.phone} &bull; {new Date(req.date).toLocaleDateString()}</p>
-                    <p className="text-sm text-gray-700 dark:text-gray-300 mt-2">
-                      <span className="font-medium">Items: </span>{req.itemsRequested}
-                    </p>
-                    {req.notes && (
-                      <p className="text-xs text-gray-500 mt-1">{req.notes}</p>
-                    )}
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="font-medium text-gray-900 dark:text-white">{name}</p>
+                        <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${statusConfig[req.status].color}`}>{statusConfig[req.status].label}</span>
+                      </div>
+                      <p className="text-sm text-gray-500 mt-0.5">{new Date(req.request_date).toLocaleDateString()}</p>
+                      {req.notes && <p className="text-sm text-gray-700 dark:text-gray-300 mt-2"><span className="font-medium">Items: </span>{req.notes}</p>}
+                    </div>
                   </div>
+                  {req.status !== 'fulfilled' && req.status !== 'declined' && (
+                    <div className="flex gap-2 flex-shrink-0">
+                      {req.status === 'pending' && (
+                        <button onClick={() => updateStatus(req.id, 'approved')} className="px-3 py-1.5 text-xs font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700">Approve</button>
+                      )}
+                      {req.status === 'approved' && (
+                        <button onClick={() => updateStatus(req.id, 'fulfilled')} className="px-3 py-1.5 text-xs font-medium bg-green-600 text-white rounded-lg hover:bg-green-700">Mark Fulfilled</button>
+                      )}
+                    </div>
+                  )}
                 </div>
-                {req.status !== 'fulfilled' && (
-                  <div className="flex gap-2 flex-shrink-0">
-                    {req.status === 'pending' && (
-                      <button
-                        onClick={() => updateStatus(req.id, 'approved')}
-                        className="px-3 py-1.5 text-xs font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                      >
-                        Approve
-                      </button>
-                    )}
-                    {req.status === 'approved' && (
-                      <button
-                        onClick={() => updateStatus(req.id, 'fulfilled')}
-                        className="px-3 py-1.5 text-xs font-medium bg-green-600 text-white rounded-lg hover:bg-green-700"
-                      >
-                        Mark Fulfilled
-                      </button>
-                    )}
-                  </div>
-                )}
               </div>
-            </div>
-          ))}
-          {filtered.length === 0 && (
-            <div className="p-12 text-center text-gray-500">No requests found</div>
-          )}
+            );
+          })}
+          {filtered.length === 0 && <div className="p-12 text-center text-gray-500">No requests found</div>}
         </div>
+        )}
       </div>
 
-      {/* New Request Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-[#1A1A1A] rounded-2xl w-full max-w-md p-6">
@@ -196,58 +188,16 @@ export default function FoodBankPage() {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Full Name</label>
-                <input
-                  type="text"
-                  placeholder="Applicant name"
-                  className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg bg-transparent text-gray-900 dark:text-white"
-                  value={form.name}
-                  onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Phone Number</label>
-                <input
-                  type="tel"
-                  placeholder="+254700000000"
-                  className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg bg-transparent text-gray-900 dark:text-white"
-                  value={form.phone}
-                  onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
-                />
+                <input type="text" placeholder="Applicant name" className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg bg-transparent text-gray-900 dark:text-white" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Items Needed</label>
-                <textarea
-                  rows={3}
-                  placeholder="List the food items needed..."
-                  className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg bg-transparent text-gray-900 dark:text-white resize-none"
-                  value={form.itemsRequested}
-                  onChange={e => setForm(f => ({ ...f, itemsRequested: e.target.value }))}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Notes (optional)</label>
-                <input
-                  type="text"
-                  placeholder="Additional context..."
-                  className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg bg-transparent text-gray-900 dark:text-white"
-                  value={form.notes}
-                  onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
-                />
+                <textarea rows={3} placeholder="List the food items needed..." className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg bg-transparent text-gray-900 dark:text-white resize-none" value={form.itemsRequested} onChange={e => setForm(f => ({ ...f, itemsRequested: e.target.value }))} />
               </div>
             </div>
             <div className="flex gap-3 mt-6">
-              <button
-                onClick={() => setShowModal(false)}
-                className="flex-1 px-4 py-2.5 text-sm font-medium border border-gray-300 dark:border-[#2D2D2D] rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#252525]"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSubmit}
-                className="flex-1 px-4 py-2.5 text-sm font-medium bg-[#BF0A30] text-white rounded-lg hover:bg-[#B00325]"
-              >
-                Submit Request
-              </button>
+              <button onClick={() => setShowModal(false)} className="flex-1 px-4 py-2.5 text-sm font-medium border border-gray-300 dark:border-[#2D2D2D] rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#252525]">Cancel</button>
+              <button onClick={handleSubmit} disabled={saving || !form.name || !form.itemsRequested} className="flex-1 px-4 py-2.5 text-sm font-medium bg-[#BF0A30] text-white rounded-lg hover:bg-[#B00325] disabled:opacity-50">{saving ? 'Submitting…' : 'Submit Request'}</button>
             </div>
           </div>
         </div>

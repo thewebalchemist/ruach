@@ -181,7 +181,7 @@ export default function DiscipleshipDashboardPage() {
       {/* Quick Actions */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
         {[
-          { href: '/discipleship/cohorts/new', icon: Plus,   bg: 'bg-[#BF0A30]/10', ic: 'text-[#BF0A30]',  label: 'New Cohort' },
+          { href: '/discipleship/cohorts?new=1', icon: Plus,   bg: 'bg-[#BF0A30]/10', ic: 'text-[#BF0A30]',  label: 'New Cohort' },
           { href: '/discipleship/students',    icon: Users,  bg: 'bg-purple-100 dark:bg-purple-900/30', ic: 'text-purple-600', label: 'Students' },
           { href: '/discipleship/exams/new',   icon: BookOpen, bg: 'bg-green-100 dark:bg-green-900/30', ic: 'text-green-600', label: 'Create Exam' },
           { href: '/discipleship/graduates',   icon: Award,  bg: 'bg-amber-100 dark:bg-amber-900/30',  ic: 'text-amber-600', label: 'Graduates' },
@@ -256,7 +256,7 @@ export default function DiscipleshipDashboardPage() {
             ) : (
               <div className="space-y-3">
                 {activeCohorts.slice(0, 5).map(cohort => (
-                  <Link key={cohort.id} href={`/discipleship/cohorts/${cohort.id}`}
+                  <Link key={cohort.id} href="/discipleship/cohorts"
                     className="block p-3 bg-gray-50 dark:bg-[#252525] rounded-lg hover:bg-gray-100 dark:hover:bg-[#2D2D2D] transition-colors">
                     <div className="flex items-center justify-between mb-1">
                       <p className="font-medium text-gray-900 dark:text-white text-sm truncate">{cohort.name}</p>

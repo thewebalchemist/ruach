@@ -1,11 +1,56 @@
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, ArrowRight, Check, X, Clock, Home } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, X, Clock, Home, Loader2 } from 'lucide-react';
 import { AdminLayout, PageHeader } from '@/components/connect/AdminLayout';
-import { mockTransferRequests, getUserById, getCrosspointById } from '@/data';
+import { supabase } from '@/lib/supabase';
+
+interface TransferRequest {
+  id: string; user_id: string; reason: string; status: string; request_date: string;
+  profiles: { first_name: string; last_name: string; phone: string | null; member_id: string | null } | null;
+  from_crosspoint: { id: string; name: string; area: string } | null;
+  to_crosspoint: { id: string; name: string; area: string } | null;
+}
 
 export default function TransfersPage() {
-  const pending = mockTransferRequests.filter(t => t.status === 'pending');
-  const processed = mockTransferRequests.filter(t => t.status !== 'pending');
+  const [requests, setRequests] = useState<TransferRequest[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [processing, setProcessing] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    const { data } = await supabase
+      .from('transfer_requests')
+      .select('id, user_id, reason, status, request_date, profiles(first_name, last_name, phone, member_id), from_crosspoint:crosspoints!from_crosspoint_id(id, name, area), to_crosspoint:crosspoints!to_crosspoint_id(id, name, area)')
+      .order('request_date', { ascending: false });
+    setRequests((data as any) ?? []);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  const pending = requests.filter(t => t.status === 'pending');
+  const processed = requests.filter(t => t.status !== 'pending');
+
+  async function decide(req: TransferRequest, approve: boolean) {
+    setProcessing(req.id);
+    const { data: { session } } = await supabase.auth.getSession();
+
+    await supabase.from('transfer_requests').update({
+      status: approve ? 'approved' : 'declined',
+      reviewed_by: session?.user.id ?? null,
+      reviewed_at: new Date().toISOString(),
+    }).eq('id', req.id);
+
+    if (approve && req.from_crosspoint && req.to_crosspoint) {
+      await supabase.from('crosspoint_memberships').update({ status: 'inactive' }).eq('user_id', req.user_id).eq('crosspoint_id', req.from_crosspoint.id);
+      await supabase.from('crosspoint_memberships').upsert({
+        user_id: req.user_id, crosspoint_id: req.to_crosspoint.id, role: 'member', status: 'active',
+      }, { onConflict: 'user_id,crosspoint_id' });
+    }
+
+    setProcessing(null);
+    load();
+  }
 
   return (
     <AdminLayout title="Transfer Requests">
@@ -16,72 +61,64 @@ export default function TransfersPage() {
         <PageHeader title="Crosspoint Transfers" subtitle={`${pending.length} pending transfer requests`} />
       </div>
 
+      {loading ? (
+        <div className="flex justify-center py-16"><Loader2 className="w-6 h-6 animate-spin text-gray-400" /></div>
+      ) : (
+      <>
       {pending.length > 0 ? (
         <div className="space-y-4 mb-8">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Pending Requests</h2>
-          {pending.map((req) => {
-            // FIX: requests use userId (UserAccount.id), not memberId
-            const user = getUserById(req.userId);
-            const fromCP = getCrosspointById(req.fromCrosspointId);
-            const toCP = getCrosspointById(req.toCrosspointId);
-
-            return (
-              <div key={req.id} className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-5">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-[#BF0A30] flex items-center justify-center text-white font-semibold">
-                      {user?.firstName[0]}{user?.lastName[0]}
-                    </div>
-                    <div>
-                      <p className="font-semibold text-gray-900 dark:text-white">
-                        {user?.firstName} {user?.lastName}
-                      </p>
-                      {/* memberId may be undefined for non-members, phone always exists */}
-                      <p className="text-sm text-gray-500">
-                        {user?.memberId ?? 'No member ID'} • {user?.phone}
-                      </p>
-                    </div>
+          {pending.map((req) => (
+            <div key={req.id} className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-5">
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-[#BF0A30] flex items-center justify-center text-white font-semibold">
+                    {req.profiles?.first_name[0]}{req.profiles?.last_name[0]}
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-500">
-                    <Clock className="w-4 h-4" />
-                    {new Date(req.requestDate).toLocaleDateString()}
+                  <div>
+                    <p className="font-semibold text-gray-900 dark:text-white">{req.profiles?.first_name} {req.profiles?.last_name}</p>
+                    <p className="text-sm text-gray-500">{req.profiles?.member_id ?? 'No member ID'} • {req.profiles?.phone}</p>
                   </div>
                 </div>
-
-                <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-[#252525] rounded-lg mb-4">
-                  <div className="flex-1 text-center">
-                    <div className="w-12 h-12 mx-auto rounded-xl bg-gray-200 dark:bg-[#2D2D2D] flex items-center justify-center mb-2">
-                      <Home className="w-6 h-6 text-gray-500" />
-                    </div>
-                    <p className="font-medium text-gray-900 dark:text-white text-sm">{fromCP?.name}</p>
-                    <p className="text-xs text-gray-500">{fromCP?.area}</p>
-                  </div>
-                  <ArrowRight className="w-6 h-6 text-[#BF0A30] flex-shrink-0" />
-                  <div className="flex-1 text-center">
-                    <div className="w-12 h-12 mx-auto rounded-xl bg-[#BF0A30]/10 flex items-center justify-center mb-2">
-                      <Home className="w-6 h-6 text-[#BF0A30]" />
-                    </div>
-                    <p className="font-medium text-gray-900 dark:text-white text-sm">{toCP?.name}</p>
-                    <p className="text-xs text-gray-500">{toCP?.area}</p>
-                  </div>
-                </div>
-
-                <div className="mb-4">
-                  <p className="text-sm text-gray-500 mb-1">Reason for transfer:</p>
-                  <p className="text-gray-700 dark:text-gray-300">{req.reason}</p>
-                </div>
-
-                <div className="flex gap-3 pt-4 border-t border-gray-100 dark:border-[#2D2D2D]">
-                  <button className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700">
-                    <Check className="w-4 h-4" />Approve Transfer
-                  </button>
-                  <button className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 border border-gray-300 dark:border-[#2D2D2D] text-gray-700 dark:text-gray-300 font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-[#252525]">
-                    <X className="w-4 h-4" />Decline
-                  </button>
+                <div className="flex items-center gap-2 text-sm text-gray-500">
+                  <Clock className="w-4 h-4" />
+                  {new Date(req.request_date).toLocaleDateString()}
                 </div>
               </div>
-            );
-          })}
+
+              <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-[#252525] rounded-lg mb-4">
+                <div className="flex-1 text-center">
+                  <div className="w-12 h-12 mx-auto rounded-xl bg-gray-200 dark:bg-[#2D2D2D] flex items-center justify-center mb-2">
+                    <Home className="w-6 h-6 text-gray-500" />
+                  </div>
+                  <p className="font-medium text-gray-900 dark:text-white text-sm">{req.from_crosspoint?.name}</p>
+                  <p className="text-xs text-gray-500">{req.from_crosspoint?.area}</p>
+                </div>
+                <ArrowRight className="w-6 h-6 text-[#BF0A30] flex-shrink-0" />
+                <div className="flex-1 text-center">
+                  <div className="w-12 h-12 mx-auto rounded-xl bg-[#BF0A30]/10 flex items-center justify-center mb-2">
+                    <Home className="w-6 h-6 text-[#BF0A30]" />
+                  </div>
+                  <p className="font-medium text-gray-900 dark:text-white text-sm">{req.to_crosspoint?.name}</p>
+                  <p className="text-xs text-gray-500">{req.to_crosspoint?.area}</p>
+                </div>
+              </div>
+
+              <div className="mb-4">
+                <p className="text-sm text-gray-500 mb-1">Reason for transfer:</p>
+                <p className="text-gray-700 dark:text-gray-300">{req.reason}</p>
+              </div>
+
+              <div className="flex gap-3 pt-4 border-t border-gray-100 dark:border-[#2D2D2D]">
+                <button onClick={() => decide(req, true)} disabled={processing === req.id} className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 disabled:opacity-50">
+                  <Check className="w-4 h-4" />{processing === req.id ? 'Processing…' : 'Approve Transfer'}
+                </button>
+                <button onClick={() => decide(req, false)} disabled={processing === req.id} className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 border border-gray-300 dark:border-[#2D2D2D] text-gray-700 dark:text-gray-300 font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-[#252525] disabled:opacity-50">
+                  <X className="w-4 h-4" />Decline
+                </button>
+              </div>
+            </div>
+          ))}
         </div>
       ) : (
         <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-12 text-center mb-8">
@@ -105,28 +142,25 @@ export default function TransfersPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-[#2D2D2D]">
-                {processed.map((req) => {
-                  const user = getUserById(req.userId);
-                  const fromCP = getCrosspointById(req.fromCrosspointId);
-                  const toCP = getCrosspointById(req.toCrosspointId);
-                  return (
-                    <tr key={req.id}>
-                      <td className="py-3 px-4 font-medium">{user?.firstName} {user?.lastName}</td>
-                      <td className="py-3 px-4 text-sm">{fromCP?.name}</td>
-                      <td className="py-3 px-4 text-sm">{toCP?.name}</td>
-                      <td className="py-3 px-4 text-sm text-gray-500">{new Date(req.requestDate).toLocaleDateString()}</td>
-                      <td className="py-3 px-4">
-                        <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${req.status === 'approved' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                          {req.status}
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
+                {processed.map((req) => (
+                  <tr key={req.id}>
+                    <td className="py-3 px-4 font-medium">{req.profiles?.first_name} {req.profiles?.last_name}</td>
+                    <td className="py-3 px-4 text-sm">{req.from_crosspoint?.name}</td>
+                    <td className="py-3 px-4 text-sm">{req.to_crosspoint?.name}</td>
+                    <td className="py-3 px-4 text-sm text-gray-500">{new Date(req.request_date).toLocaleDateString()}</td>
+                    <td className="py-3 px-4">
+                      <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${req.status === 'approved' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                        {req.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
         </div>
+      )}
+      </>
       )}
     </AdminLayout>
   );

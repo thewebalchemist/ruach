@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { Plus, Users, Calendar, Lock, ChevronRight, Search } from 'lucide-react';
+import { Plus, Users, Calendar, Lock, ChevronRight, Search, Loader2 } from 'lucide-react';
 import { ConnectLayout } from '@/components/connect/ConnectLayout';
-import { mockConnectCohorts, mockConnectStudents, getTeacherById } from '@/data/connect';
-import { ConnectCohort, ConnectCohortStatus } from '@/types';
+import { supabase } from '@/lib/supabase';
+
+type CohortStatus = 'active' | 'registration-open' | 'completed' | 'draft' | 'cancelled';
 
 const STATUS_COLORS: Record<string, string> = {
   'active':            'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
@@ -13,14 +14,39 @@ const STATUS_COLORS: Record<string, string> = {
   'cancelled':         'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
 };
 
+interface Cohort {
+  id: string; name: string; status: CohortStatus;
+  start_date: string; end_date: string; registration_deadline: string;
+  enrolled_count: number; max_capacity: number;
+  profiles: { first_name: string; last_name: string } | null;
+}
+interface StudentRow { cohort_id: string; can_graduate: boolean }
+
 export default function CohortsPage() {
-  const [cohorts,  setCohorts]  = useState<ConnectCohort[]>(mockConnectCohorts);
-  const [filter,   setFilter]   = useState<ConnectCohortStatus | 'all'>('all');
+  const [cohorts,  setCohorts]  = useState<Cohort[]>([]);
+  const [students, setStudents] = useState<StudentRow[]>([]);
+  const [loading,  setLoading]  = useState(true);
+  const [filter,   setFilter]   = useState<CohortStatus | 'all'>('all');
   const [query,    setQuery]    = useState('');
 
-  const closeEnrollment = (id: string) => {
-    // production: PATCH /api/connect/cohorts/:id  { status: 'active' }
-    setCohorts(prev => prev.map(c => c.id === id ? { ...c, status: 'active' as ConnectCohortStatus } : c));
+  const load = useCallback(async () => {
+    setLoading(true);
+    const [{ data: cohortData }, { data: studentData }] = await Promise.all([
+      (supabase as any).from('connect_cohorts')
+        .select('id, name, status, start_date, end_date, registration_deadline, enrolled_count, max_capacity, profiles!teacher_id(first_name, last_name)')
+        .order('start_date', { ascending: false }),
+      (supabase as any).from('connect_students').select('cohort_id, can_graduate'),
+    ]);
+    setCohorts((cohortData ?? []) as Cohort[]);
+    setStudents((studentData ?? []) as StudentRow[]);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  const closeEnrollment = async (id: string) => {
+    setCohorts(prev => prev.map(c => c.id === id ? { ...c, status: 'active' } : c));
+    await supabase.from('connect_cohorts').update({ status: 'active' }).eq('id', id);
   };
 
   const filtered = cohorts
@@ -72,13 +98,13 @@ export default function CohortsPage() {
         </div>
       </div>
 
-      {/* Cards */}
+      {loading ? (
+        <div className="flex justify-center py-16"><Loader2 className="w-6 h-6 animate-spin text-gray-400" /></div>
+      ) : (
       <div className="space-y-3">
         {filtered.map(cohort => {
-          const teacher     = getTeacherById(cohort.teacherId);
-          const students    = mockConnectStudents.filter(s => s.cohortId === cohort.id);
-          const canGraduate = students.filter(s => s.canGraduate).length;
-          const fillPct     = Math.round((cohort.enrolledCount / cohort.maxCapacity) * 100);
+          const canGraduate = students.filter(s => s.cohort_id === cohort.id && s.can_graduate).length;
+          const fillPct     = cohort.max_capacity > 0 ? Math.round((cohort.enrolled_count / cohort.max_capacity) * 100) : 0;
 
           return (
             <div key={cohort.id} className="bg-white dark:bg-[#141414] rounded-2xl border border-gray-200/70 dark:border-white/[0.05] shadow-sm overflow-hidden">
@@ -93,9 +119,9 @@ export default function CohortsPage() {
                       </span>
                     </div>
                     <p className="text-sm text-gray-500">
-                      {teacher?.firstName} {teacher?.lastName}
+                      {cohort.profiles?.first_name} {cohort.profiles?.last_name}
                       {' · '}
-                      {new Date(cohort.startDate).toLocaleDateString()} – {new Date(cohort.endDate).toLocaleDateString()}
+                      {new Date(cohort.start_date).toLocaleDateString()} – {new Date(cohort.end_date).toLocaleDateString()}
                     </p>
                   </div>
                   <Link
@@ -111,7 +137,7 @@ export default function CohortsPage() {
                   <div className="flex justify-between text-xs text-gray-500 mb-1.5">
                     <span className="flex items-center gap-1.5">
                       <Users className="w-3.5 h-3.5" />
-                      {cohort.enrolledCount}/{cohort.maxCapacity} enrolled
+                      {cohort.enrolled_count}/{cohort.max_capacity} enrolled
                     </span>
                     <span>{fillPct}% full</span>
                   </div>
@@ -128,7 +154,7 @@ export default function CohortsPage() {
                   <div className="flex items-center gap-4 text-xs text-gray-500">
                     <span className="flex items-center gap-1">
                       <Calendar className="w-3.5 h-3.5" />
-                      Reg. deadline {new Date(cohort.registrationDeadline).toLocaleDateString()}
+                      Reg. deadline {new Date(cohort.registration_deadline).toLocaleDateString()}
                     </span>
                     {canGraduate > 0 && (
                       <span className="text-green-600 font-medium">{canGraduate} ready to graduate</span>
@@ -157,6 +183,7 @@ export default function CohortsPage() {
           </div>
         )}
       </div>
+      )}
     </ConnectLayout>
   );
 }

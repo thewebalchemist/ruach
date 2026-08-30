@@ -67,12 +67,11 @@ export default function JoinCrosspointPage() {
     if (!userId) { router.push('/connect'); return; }
     setJoining(cpId); setError('');
 
-    const { error: e } = await (supabase.from('crosspoint_members') as any).upsert({
-      profile_id: userId,
-      crosspoint_id: cpId,
-      joined_at: new Date().toISOString(),
-      status: 'active',
-    }, { onConflict: 'profile_id,crosspoint_id' });
+    // Via RPC, not a direct upsert: crosspoint_memberships_update RLS is
+    // staff-only, so a member re-joining a crosspoint they'd previously
+    // left (existing inactive row) would otherwise hit the ON CONFLICT DO
+    // UPDATE arm and be silently rejected.
+    const { error: e } = await supabase.rpc('crosspoint_memberships_self_upsert', { p_crosspoint_id: cpId });
 
     if (e) {
       setError(e.message);
@@ -116,7 +115,7 @@ export default function JoinCrosspointPage() {
             </div>
           )}
           <Link
-            href={`/crosspoint/${joined}`}
+            href="/member/crosspoints"
             className="block w-full py-3 bg-[#BF0A30] hover:bg-[#A00828] text-white font-bold rounded-2xl transition-colors mb-3"
           >
             Go to My Crosspoint →

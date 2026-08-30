@@ -164,34 +164,47 @@ export default function MemberOnboarding() {
       const { error: profileErr } = await supabase.from('profiles').update(profileUpdate).eq('id', profile.id);
       if (profileErr) throw new Error(profileErr.message);
 
-      // 2. Connect cohort record
+      // 2. Connect cohort record — via a SECURITY DEFINER RPC rather than a
+      // direct upsert: connect_students_update RLS is staff-only, so the
+      // ON CONFLICT DO UPDATE arm of a plain client upsert would be silently
+      // rejected if this member already has a row for the cohort (e.g. a
+      // second run of onboarding). The RPC also generates a real
+      // admission_number (NOT NULL, no default) and hard-codes the only
+      // self-declarable status ('completed' — there is no 'graduated' value).
       if (cohortId && !isLegacy) {
-        await supabase.from('connect_students').upsert(
-          { user_id: profile.id, cohort_id: cohortId, status: 'graduated', year_joined: new Date().getFullYear() },
-          { onConflict: 'user_id,cohort_id' },
-        );
+        await supabase.rpc('connect_students_self_upsert', { p_cohort_id: cohortId });
       } else if (isLegacy && cohortYear) {
-        // Legacy member request
-        await supabase.from('legacy_member_requests').upsert(
-          { user_id: profile.id, year_joined: parseInt(cohortYear), status: 'pending' },
-          { onConflict: 'user_id' },
-        );
+        // Legacy member request — plain insert (no unique constraint on
+        // user_id exists on this table, matching how register.tsx does it).
+        // full_name/email/phone/cohort_attended/years_as_member/branch are
+        // all NOT NULL on this table; the wizard only ever collects a year,
+        // so the rest are filled from data already gathered in step 5 or
+        // the same 'ruach-tabernacle' default register.tsx's branch picker uses.
+        const yearJoinedNum = parseInt(cohortYear, 10) || new Date().getFullYear();
+        await supabase.from('legacy_member_requests').insert({
+          user_id:         profile.id,
+          full_name:       `${firstName} ${lastName}`.trim(),
+          email:           (profile as any)?.email ?? '',
+          phone:           phone.trim(),
+          cohort_attended: cohortYear,
+          year_joined:     yearJoinedNum,
+          years_as_member: Math.max(0, new Date().getFullYear() - yearJoinedNum),
+          branch:          'ruach-tabernacle',
+          status:          'pending',
+        });
       }
 
-      // 3. Discipleship intent
+      // 3. Discipleship intent — same RPC pattern as step 2 (admission_number
+      // is NOT NULL with no default; UPDATE RLS is staff-only).
       if (hasDoneKDC && kdcCohortId) {
-        await supabase.from('discipleship_students').upsert(
-          { user_id: profile.id, cohort_id: kdcCohortId, level: kdcLevel, status: 'completed' },
-          { onConflict: 'user_id,cohort_id' },
-        );
+        await supabase.rpc('discipleship_students_self_upsert', { p_cohort_id: kdcCohortId, p_level: kdcLevel });
       }
 
-      // 4. Crosspoint membership
+      // 4. Crosspoint membership — same RPC pattern (crosspoint_memberships
+      // UPDATE RLS is staff-only, so a repeat run or a previously-left
+      // membership's UPDATE arm would otherwise be silently rejected).
       if (wantCrosspoint && cpId) {
-        await supabase.from('crosspoint_membership').upsert(
-          { user_id: profile.id, crosspoint_id: cpId, joined_at: new Date().toISOString() },
-          { onConflict: 'user_id' },
-        );
+        await supabase.rpc('crosspoint_memberships_self_upsert', { p_crosspoint_id: cpId });
       }
 
       // 5. Feedback survey

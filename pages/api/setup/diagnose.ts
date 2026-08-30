@@ -3,6 +3,10 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  // Never reachable in production, regardless of secret — this endpoint creates
+  // and deletes real auth users to diagnose signup issues; staging/dev only.
+  if (process.env.NODE_ENV === 'production') return res.status(404).end();
+
   if (req.headers['x-setup-secret'] !== process.env.SETUP_SECRET) {
     return res.status(401).json({ error: 'Unauthorized' });
   }

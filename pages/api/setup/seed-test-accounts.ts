@@ -14,6 +14,11 @@ const TEST_ACCOUNTS = [
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
 
+  // Never reachable in production, regardless of secret — this endpoint creates
+  // an account with password 'TestAdmin2026!' and role 'admin'; it must only
+  // ever run against a staging/dev database.
+  if (process.env.NODE_ENV === 'production') return res.status(404).end();
+
   const secret = process.env.SETUP_SECRET;
   if (!secret || req.headers['x-setup-secret'] !== secret) {
     return res.status(401).json({ error: 'Unauthorized' });

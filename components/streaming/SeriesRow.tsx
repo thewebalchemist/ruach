@@ -107,9 +107,9 @@ function SeriesCard({ series, index }: SeriesCardProps) {
     >
       {/* Poster Image - Increased rounded corners */}
       <div className="relative aspect-[2/3] rounded-3xl overflow-hidden bg-gray-200 dark:bg-gray-800 card-hover-scale shadow-lg">
-        {series.image_url && !imageError ? (
+        {series.thumbnail_url && !imageError ? (
           <img
-            src={series.image_url}
+            src={series.thumbnail_url}
             alt={series.title}
             className="w-full h-full object-cover"
             onError={() => setImageError(true)}
@@ -138,7 +138,7 @@ function SeriesCard({ series, index }: SeriesCardProps) {
             {series.title}
           </h3>
           <div className="flex items-center gap-2 text-xs text-gray-300">
-            {series.year && <span>{series.year}</span>}
+            {series.start_date && <span>{new Date(series.start_date).getFullYear()}</span>}
             {series.sermon_count !== undefined && (
               <>
                 <span className="w-1 h-1 bg-gray-400 rounded-full" />
@@ -149,9 +149,9 @@ function SeriesCard({ series, index }: SeriesCardProps) {
         </div>
 
         {/* Year Badge */}
-        {series.year && (
+        {series.start_date && (
           <div className="absolute top-3 right-3 px-2.5 py-1 bg-black/60 backdrop-blur-sm text-white text-xs font-bold rounded-lg">
-            {series.year}
+            {new Date(series.start_date).getFullYear()}
           </div>
         )}
       </div>

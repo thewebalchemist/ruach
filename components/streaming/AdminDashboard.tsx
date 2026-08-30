@@ -24,9 +24,9 @@ export default function AdminDashboard({ onClose }: AdminDashboardProps) {
     preacher: '',
     youtube_url: '',
     service_date: new Date().toISOString().split('T')[0],
-    summary: '',
+    description: '',
   });
-  const [editingSermonId, setEditingSermonId] = useState<number | null>(null);
+  const [editingSermonId, setEditingSermonId] = useState<string | null>(null);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -168,7 +168,7 @@ export default function AdminDashboard({ onClose }: AdminDashboardProps) {
   };
 
   const handleSaveSermon = async () => {
-    if (!sermonForm.title || !sermonForm.preacher || !sermonForm.youtube_url || !sermonForm.summary) {
+    if (!sermonForm.title || !sermonForm.preacher || !sermonForm.youtube_url || !sermonForm.description) {
       alert('Please fill in all fields');
       return;
     }
@@ -212,7 +212,7 @@ export default function AdminDashboard({ onClose }: AdminDashboardProps) {
         preacher: '',
         youtube_url: '',
         service_date: new Date().toISOString().split('T')[0],
-        summary: '',
+        description: '',
       });
       setEditingSermonId(null);
       loadSettings();
@@ -230,14 +230,14 @@ export default function AdminDashboard({ onClose }: AdminDashboardProps) {
       preacher: sermon.preacher,
       youtube_url: sermon.youtube_url,
       service_date: sermon.service_date,
-      summary: sermon.summary,
+      description: sermon.description,
     });
     setEditingSermonId(sermon.id);
     // Scroll to form
     document.getElementById('sermon-form')?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const deleteSermon = async (id: number) => {
+  const deleteSermon = async (id: string) => {
     if (!confirm('Are you sure you want to delete this sermon?')) return;
 
     setLoading(true);
@@ -487,8 +487,8 @@ export default function AdminDashboard({ onClose }: AdminDashboardProps) {
                     AI Summarized Sermon *
                   </label>
                   <textarea
-                    value={sermonForm.summary}
-                    onChange={(e) => handleSermonFormChange('summary', e.target.value)}
+                    value={sermonForm.description}
+                    onChange={(e) => handleSermonFormChange('description', e.target.value)}
                     placeholder="Paste your AI-generated sermon summary here..."
                     rows={10}
                     className="w-full px-4 py-3 rounded-[2rem] border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#BF0A30] resize-none"
@@ -507,7 +507,7 @@ export default function AdminDashboard({ onClose }: AdminDashboardProps) {
                           preacher: '',
                           youtube_url: '',
                           service_date: new Date().toISOString().split('T')[0],
-                          summary: '',
+                          description: '',
                         });
                         setEditingSermonId(null);
                       }}

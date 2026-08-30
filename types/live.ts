@@ -7,12 +7,13 @@
 // =============================================
 
 export interface Series {
-  id: number;
+  id: string;
   slug: string;
   title: string;
   description: string | null;
-  image_url: string | null;
-  year: string | null;
+  thumbnail_url: string | null;
+  start_date: string | null;
+  end_date: string | null;
   created_at: string;
   updated_at: string;
   sermon_count?: number;
@@ -20,23 +21,21 @@ export interface Series {
 }
 
 export interface Sermon {
-  id: number;
+  id: string;
   slug: string;
   title: string;
   preacher: string;
   youtube_url: string;
-  summary: string;
+  description: string;
   service_date: string;
   thumbnail_url: string | null;
   created_at: string;
   updated_at: string;
   // Extended fields
-  series_id?: number | null;
-  series_part?: number | null;
-  audio_url?: string | null;
-  duration?: string | null;
-  scripture?: string | null;
-  views?: number;
+  series_id?: string | null;
+  duration_seconds?: number | null;
+  scripture_ref?: string | null;
+  view_count?: number;
   tags?: string[];
   // Joined relationships
   series?: Series | null;
@@ -307,8 +306,8 @@ export interface SermonSummary {
   title: string;
   preacher: string;
   service_date: string;
-  summary?: string | null;
-  scripture?: string | null;
+  description?: string | null;
+  scripture_ref?: string | null;
   tags?: string[] | null;
 }
 

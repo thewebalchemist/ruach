@@ -1,8 +1,8 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { Upload, FileText, CheckCircle, AlertTriangle, ArrowLeft, X, Users } from 'lucide-react';
 import { ConnectLayout } from '@/components/connect/ConnectLayout';
-import { mockConnectCohorts, mockConnectSessions, mockConnectStudents, getUserById } from '@/data/connect';
+import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/router';
 
 interface ParsedAttendee {
@@ -13,24 +13,46 @@ interface ParsedAttendee {
   studentId?: string;
   admissionNumber?: string;
 }
+interface Cohort { id: string; name: string; }
+interface SessionRow { id: string; title: string; date: string; is_completed: boolean; cohort_id: string; }
+interface StudentRow { id: string; admission_number: string; profiles: { first_name: string; last_name: string; email: string } | null; }
 
 export default function AttendanceImportPage() {
   const router = useRouter();
 
-  const initCohort  = (router.query.cohort as string) || mockConnectCohorts[0]?.id || '';
-  const initSession = (router.query.session as string) || '';
+  const [cohorts, setCohorts] = useState<Cohort[]>([]);
+  const [allSessions, setAllSessions] = useState<SessionRow[]>([]);
+  const [allStudents, setAllStudents] = useState<StudentRow[]>([]);
 
-  const [selectedCohort,  setSelectedCohort]  = useState(initCohort);
-  const [selectedSession, setSelectedSession] = useState(initSession);
+  const [selectedCohort,  setSelectedCohort]  = useState((router.query.cohort as string) || '');
+  const [selectedSession, setSelectedSession] = useState((router.query.session as string) || '');
   const [file,            setFile]            = useState<File | null>(null);
   const [parsedData,      setParsedData]      = useState<ParsedAttendee[]>([]);
   const [isProcessing,    setIsProcessing]    = useState(false);
   const [isSubmitted,     setIsSubmitted]     = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Fix: show ALL sessions (completed and upcoming) — teacher may re-import
-  const sessions = mockConnectSessions.filter(s => s.cohortId === selectedCohort);
-  const students = mockConnectStudents.filter(s => s.cohortId === selectedCohort);
+  const load = useCallback(async () => {
+    const { data } = await supabase.from('connect_cohorts').select('id, name').order('start_date', { ascending: false });
+    setCohorts(data ?? []);
+    setSelectedCohort(prev => prev || data?.[0]?.id || '');
+  }, []);
+  useEffect(() => { load(); }, [load]);
+
+  useEffect(() => {
+    if (!selectedCohort) return;
+    (async () => {
+      const [sessionsRes, studentsRes] = await Promise.all([
+        supabase.from('connect_sessions').select('id, title, date, is_completed, cohort_id').eq('cohort_id', selectedCohort),
+        supabase.from('connect_students').select('id, admission_number, profiles(first_name, last_name, email)').eq('cohort_id', selectedCohort),
+      ]);
+      setAllSessions(sessionsRes.data ?? []);
+      setAllStudents((studentsRes.data as any) ?? []);
+    })();
+  }, [selectedCohort]);
+
+  const sessions = allSessions;
+  const students = allStudents;
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
@@ -60,11 +82,10 @@ export default function AttendanceImportPage() {
       const [name, email, duration] = cols;
 
       const match = students.find(student => {
-        const user = getUserById(student.userId);
-        if (!user) return false;
+        const fullName = `${student.profiles?.first_name ?? ''} ${student.profiles?.last_name ?? ''}`.trim();
         return (
-          user.fullName.toLowerCase() === name?.toLowerCase() ||
-          (user.email && user.email.toLowerCase() === email?.toLowerCase())
+          fullName.toLowerCase() === name?.toLowerCase() ||
+          (student.profiles?.email && student.profiles.email.toLowerCase() === email?.toLowerCase())
         );
       });
 
@@ -74,7 +95,7 @@ export default function AttendanceImportPage() {
         duration:        duration || '0',
         matched:         !!match,
         studentId:       match?.id,
-        admissionNumber: match?.admissionNumber,
+        admissionNumber: match?.admission_number,
       };
     });
 
@@ -84,8 +105,11 @@ export default function AttendanceImportPage() {
 
   const handleSubmit = async () => {
     setIsProcessing(true);
-    // production: POST /api/connect/attendance/import
-    await new Promise(r => setTimeout(r, 1500));
+    const matched = parsedData.filter(p => p.matched && p.studentId);
+    await supabase.from('connect_attendance').upsert(
+      matched.map(p => ({ student_id: p.studentId, session_id: selectedSession, present: true, marked_at: new Date().toISOString() })),
+      { onConflict: 'student_id,session_id' },
+    );
     setIsProcessing(false);
     setIsSubmitted(true);
   };
@@ -155,7 +179,7 @@ export default function AttendanceImportPage() {
                   onChange={e => { setSelectedCohort(e.target.value); setSelectedSession(''); setParsedData([]); setFile(null); }}
                   className="w-full px-4 py-2.5 border border-gray-200 dark:border-white/[0.06] rounded-xl bg-gray-50 dark:bg-[#1A1A1A] text-sm text-gray-900 dark:text-white focus:outline-none focus:border-[#BF0A30]"
                 >
-                  {mockConnectCohorts.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  {cohorts.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
               </div>
               <div>
@@ -168,7 +192,7 @@ export default function AttendanceImportPage() {
                   <option value="">Select a session...</option>
                   {sessions.map(s => (
                     <option key={s.id} value={s.id}>
-                      {s.title} – {new Date(s.date).toLocaleDateString()}{s.isCompleted ? ' ✓' : ''}
+                      {s.title} – {new Date(s.date).toLocaleDateString()}{s.is_completed ? ' ✓' : ''}
                     </option>
                   ))}
                 </select>

@@ -4,9 +4,10 @@ import { useRouter } from 'next/router';
 import {
   LayoutDashboard, Users, Calendar, GraduationCap, ClipboardList,
   BookOpen, FileText, Settings, Menu, X, Sun, Moon, LogOut, Bell,
-  Award, ChevronRight, MessageSquare, FolderOpen, Video, Presentation
+  Award, ChevronRight, MessageSquare, FolderOpen, Video, Presentation, Loader2, ShieldOff,
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
+import { useAuth } from '@/context/AuthContext';
 
 interface ConnectLayoutProps {
   children:          ReactNode;
@@ -30,10 +31,34 @@ const navigation = [
 export function ConnectLayout({ children, title, notificationCount = 0 }: ConnectLayoutProps) {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
+  const { loading, isTeacher, profile, signOut } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const isActive = (href: string) =>
     router.pathname === href || router.pathname.startsWith(href + '/');
+
+  // This is the teacher/staff portal — closes the "0 of 20 Connect pages
+  // have an auth gate" finding at the layout level (see AUDIT_REPORT.md).
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#F0F2F5] dark:bg-[#080808]">
+        <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+      </div>
+    );
+  }
+
+  if (!isTeacher) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#F0F2F5] dark:bg-[#080808] p-6">
+        <div className="text-center max-w-sm">
+          <ShieldOff className="w-10 h-10 text-gray-400 mx-auto mb-4" />
+          <h1 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Not authorized</h1>
+          <p className="text-sm text-gray-500 mb-6">This portal is for Connect Class teachers and staff.</p>
+          <button onClick={() => router.push('/connect')} className="btn btn-primary">Sign in</button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#F0F2F5] dark:bg-[#080808]">
@@ -64,7 +89,7 @@ export function ConnectLayout({ children, title, notificationCount = 0 }: Connec
         <div className="flex items-center justify-between px-4 pt-5 pb-4">
           <Link href="/connect/dashboard" className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#BF0A30] to-[#7D0018] flex items-center justify-center shadow-lg shadow-[#BF0A30]/25 flex-shrink-0">
-              <img src="/images/ruaach.png" alt="Ruach" className="w-6 h-6 rounded-full opacity-90" />
+              <img src="/brand/ruach-logo.png" alt="Ruach" className="w-6 h-6 rounded-full opacity-90" />
             </div>
             <div>
               <p className="text-[13px] font-black text-gray-900 dark:text-white leading-tight tracking-tight">Connect</p>
@@ -116,13 +141,13 @@ export function ConnectLayout({ children, title, notificationCount = 0 }: Connec
 
         {/* Footer */}
         <div className="px-2.5 py-3">
-          <Link
-            href="/connect"
-            className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-medium text-gray-500 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-white/[0.05] hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+          <button
+            onClick={signOut}
+            className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-medium text-gray-500 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-white/[0.05] hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
           >
             <LogOut className="w-4 h-4" />
             <span>Sign out</span>
-          </Link>
+          </button>
         </div>
       </aside>
 
@@ -167,7 +192,7 @@ export function ConnectLayout({ children, title, notificationCount = 0 }: Connec
               </Link>
 
               <div className="ml-1 w-9 h-9 rounded-xl bg-gradient-to-br from-[#BF0A30] to-[#7D0018] flex items-center justify-center text-white text-xs font-black shadow-md shadow-[#BF0A30]/20 flex-shrink-0 cursor-pointer select-none">
-                JM
+                {(profile?.first_name?.[0] ?? '') + (profile?.last_name?.[0] ?? '')}
               </div>
             </div>
           </div>

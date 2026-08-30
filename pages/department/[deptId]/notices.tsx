@@ -1,184 +1,149 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
-import Link from 'next/link';
-import { Plus, Bell, Pin, Calendar, Eye, Edit, Trash2, AlertCircle } from 'lucide-react';
+import { Plus, Bell, AlertTriangle, X, Loader2 } from 'lucide-react';
 import { DepartmentLayout } from '@/components/connect/DepartmentLayout';
-import { mockDepartments } from '@/data';
+import { useDepartment } from '@/hooks/useDepartment';
+import { supabase } from '@/lib/supabase';
 
-// Mock notices data
-const mockDeptNotices = [
-  { 
-    id: 'n1', 
-    title: 'New Schedule Released for February', 
-    content: 'The February schedule has been released. Please check your assignments and confirm your availability by this Friday.',
-    priority: 'high',
-    isPinned: true,
-    createdAt: '2026-02-01',
-    expiresAt: '2026-02-28',
-    author: 'Dept. Leader',
-    views: 45
-  },
-  { 
-    id: 'n2', 
-    title: 'Training Workshop Next Saturday', 
-    content: 'All members are required to attend the training workshop on Saturday, February 15th. This is mandatory for all team members.',
-    priority: 'high',
-    isPinned: true,
-    createdAt: '2026-01-28',
-    expiresAt: '2026-02-15',
-    author: 'Dept. Leader',
-    views: 38
-  },
-  { 
-    id: 'n3', 
-    title: 'New Equipment Available', 
-    content: 'New equipment has been purchased for the department. Training sessions will be scheduled soon.',
-    priority: 'medium',
-    isPinned: false,
-    createdAt: '2026-01-25',
-    expiresAt: null,
-    author: 'Dept. Leader',
-    views: 22
-  },
-  { 
-    id: 'n4', 
-    title: 'Welcome New Members', 
-    content: 'Please welcome our newest members who joined this month. Let\'s make them feel at home!',
-    priority: 'low',
-    isPinned: false,
-    createdAt: '2026-01-20',
-    expiresAt: null,
-    author: 'Dept. Leader',
-    views: 56
-  },
-];
+type Priority = 'high' | 'medium' | 'low';
+
+interface Notice { id: string; title: string; content: string; priority: Priority; published_at: string }
+
+const priorityConfig: Record<Priority, { label: string; color: string }> = {
+  high: { label: 'High Priority', color: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' },
+  medium: { label: 'Medium', color: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300' },
+  low: { label: 'Low', color: 'bg-gray-100 text-gray-700 dark:bg-[#2D2D2D] dark:text-gray-400' },
+};
 
 export default function DepartmentNoticesPage() {
   const router = useRouter();
-  const { deptId } = router.query;
-  const [filter, setFilter] = useState('all');
-  
-  const department = mockDepartments.find(d => d.id === deptId);
-  
+  const { deptId } = router.query as { deptId?: string };
+  const { department, loading: deptLoading } = useDepartment(deptId);
+
+  const [notices, setNotices] = useState<Notice[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<'all' | Priority>('all');
+  const [showModal, setShowModal] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState({ title: '', content: '', priority: 'medium' as Priority });
+
+  const load = useCallback(async () => {
+    if (!deptId) return;
+    setLoading(true);
+    const { data } = await supabase.from('notices').select('id, title, content, priority, published_at').eq('scope', 'department').eq('target_id', deptId).order('published_at', { ascending: false });
+    setNotices(data ?? []);
+    setLoading(false);
+  }, [deptId]);
+
+  useEffect(() => { load(); }, [load]);
+
+  const filtered = filter === 'all' ? notices : notices.filter(n => n.priority === filter);
+
+  async function handleCreate() {
+    if (!deptId || !form.title || !form.content) return;
+    setSaving(true);
+    const { data: { session } } = await supabase.auth.getSession();
+    await supabase.from('notices').insert({
+      title: form.title, content: form.content, priority: form.priority,
+      scope: 'department', target_id: deptId, author_id: session?.user.id ?? null,
+    });
+    setSaving(false);
+    setForm({ title: '', content: '', priority: 'medium' });
+    setShowModal(false);
+    load();
+  }
+
+  async function removeNotice(id: string) {
+    await supabase.from('notices').delete().eq('id', id);
+    load();
+  }
+
+  if (deptLoading) {
+    return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin text-gray-400" /></div>;
+  }
   if (!department) {
     return <div className="min-h-screen flex items-center justify-center"><p>Department not found</p></div>;
   }
 
-  const filtered = mockDeptNotices.filter(n => {
-    if (filter === 'pinned') return n.isPinned;
-    if (filter === 'high') return n.priority === 'high';
-    return true;
-  });
-
-  const pinnedNotices = filtered.filter(n => n.isPinned);
-  const regularNotices = filtered.filter(n => !n.isPinned);
-
   return (
     <DepartmentLayout department={department} title="Notice Board">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-xl font-bold text-gray-900 dark:text-white">Notice Board</h1>
           <p className="text-gray-500">Department announcements and updates</p>
         </div>
-        <Link href={`/department/${deptId}/notices/new`} className="flex items-center gap-2 px-4 py-2 bg-[#BF0A30] text-white rounded-lg text-sm font-medium">
+        <button onClick={() => setShowModal(true)} className="flex items-center gap-2 px-4 py-2 bg-[#BF0A30] text-white rounded-lg text-sm font-medium">
           <Plus className="w-4 h-4" />Post Notice
-        </Link>
+        </button>
       </div>
 
-      {/* Filters */}
       <div className="flex gap-2 mb-6">
-        {[
-          { id: 'all', label: 'All Notices' },
-          { id: 'pinned', label: 'Pinned' },
-          { id: 'high', label: 'Important' },
-        ].map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => setFilter(tab.id)}
-            className={`px-4 py-2 text-sm font-medium rounded-lg ${
-              filter === tab.id
-                ? 'bg-[#BF0A30] text-white'
-                : 'bg-white dark:bg-[#1A1A1A] border border-gray-200 dark:border-[#2D2D2D] text-gray-600'
-            }`}
-          >
-            {tab.label}
+        {(['all', 'high', 'medium', 'low'] as const).map(p => (
+          <button key={p} onClick={() => setFilter(p)} className={`px-4 py-2 text-sm font-medium rounded-lg capitalize ${filter === p ? 'bg-[#BF0A30] text-white' : 'bg-white dark:bg-[#1A1A1A] border border-gray-200 dark:border-[#2D2D2D] text-gray-600'}`}>
+            {p === 'all' ? 'All Notices' : p}
           </button>
         ))}
       </div>
 
-      {/* Pinned Notices */}
-      {pinnedNotices.length > 0 && (
-        <div className="mb-6">
-          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-2">
-            <Pin className="w-4 h-4" />Pinned
-          </h2>
-          <div className="space-y-4">
-            {pinnedNotices.map(notice => (
-              <div key={notice.id} className={`bg-white dark:bg-[#1A1A1A] rounded-xl border-l-4 ${notice.priority === 'high' ? 'border-l-red-500' : 'border-l-amber-500'} border border-gray-200 dark:border-[#2D2D2D] p-5`}>
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <Pin className="w-4 h-4 text-[#BF0A30]" />
-                    <h3 className="font-semibold text-gray-900 dark:text-white">{notice.title}</h3>
-                    {notice.priority === 'high' && (
-                      <span className="flex items-center gap-1 px-2 py-0.5 text-xs font-semibold rounded-full bg-red-100 text-red-800">
-                        <AlertCircle className="w-3 h-3" />Important
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <button className="p-1.5 text-gray-400 hover:text-gray-600"><Edit className="w-4 h-4" /></button>
-                    <button className="p-1.5 text-gray-400 hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
-                  </div>
+      {loading ? (
+        <div className="flex justify-center py-16"><Loader2 className="w-6 h-6 animate-spin text-gray-400" /></div>
+      ) : (
+      <div className="space-y-4">
+        {filtered.map(notice => {
+          const cfg = priorityConfig[notice.priority];
+          return (
+            <div key={notice.id} className={`bg-white dark:bg-[#1A1A1A] rounded-xl border-l-4 ${notice.priority === 'high' ? 'border-l-red-500' : notice.priority === 'medium' ? 'border-l-amber-500' : 'border-l-gray-300'} border border-gray-200 dark:border-[#2D2D2D] p-5`}>
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="font-semibold text-gray-900 dark:text-white">{notice.title}</h3>
+                  <span className={`flex items-center gap-1 px-2 py-0.5 text-xs font-semibold rounded-full ${cfg.color}`}>
+                    {notice.priority === 'high' && <AlertTriangle className="w-3 h-3" />}{cfg.label}
+                  </span>
                 </div>
-                <p className="text-gray-700 dark:text-gray-300 mb-4">{notice.content}</p>
-                <div className="flex items-center justify-between text-sm text-gray-500">
-                  <div className="flex items-center gap-4">
-                    <span className="flex items-center gap-1"><Calendar className="w-4 h-4" />{new Date(notice.createdAt).toLocaleDateString()}</span>
-                    <span className="flex items-center gap-1"><Eye className="w-4 h-4" />{notice.views} views</span>
-                  </div>
-                  {notice.expiresAt && <span className="text-amber-600">Expires: {new Date(notice.expiresAt).toLocaleDateString()}</span>}
-                </div>
+                <button onClick={() => removeNotice(notice.id)} className="p-1.5 text-gray-400 hover:text-red-500"><X className="w-4 h-4" /></button>
               </div>
-            ))}
-          </div>
-        </div>
+              <p className="text-gray-700 dark:text-gray-300 mb-3">{notice.content}</p>
+              <p className="text-xs text-gray-400">{new Date(notice.published_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</p>
+            </div>
+          );
+        })}
+      </div>
       )}
 
-      {/* Regular Notices */}
-      {regularNotices.length > 0 && (
-        <div>
-          {pinnedNotices.length > 0 && (
-            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Recent Notices</h2>
-          )}
-          <div className="space-y-4">
-            {regularNotices.map(notice => (
-              <div key={notice.id} className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-5">
-                <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <h3 className="font-semibold text-gray-900 dark:text-white">{notice.title}</h3>
-                    <p className="text-sm text-gray-500 mt-1">Posted by {notice.author} • {new Date(notice.createdAt).toLocaleDateString()}</p>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <button className="p-1.5 text-gray-400 hover:text-[#BF0A30]" title="Pin"><Pin className="w-4 h-4" /></button>
-                    <button className="p-1.5 text-gray-400 hover:text-gray-600"><Edit className="w-4 h-4" /></button>
-                    <button className="p-1.5 text-gray-400 hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
-                  </div>
-                </div>
-                <p className="text-gray-700 dark:text-gray-300 mb-4">{notice.content}</p>
-                <div className="flex items-center gap-4 text-sm text-gray-500">
-                  <span className="flex items-center gap-1"><Eye className="w-4 h-4" />{notice.views} views</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {filtered.length === 0 && (
+      {!loading && filtered.length === 0 && (
         <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-12 text-center">
           <Bell className="w-12 h-12 text-gray-300 mx-auto mb-4" />
           <p className="text-gray-500">No notices found</p>
+        </div>
+      )}
+
+      {showModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-[#1A1A1A] rounded-2xl w-full max-w-md p-6">
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-5">Post Notice</h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Title</label>
+                <input type="text" className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg bg-transparent text-gray-900 dark:text-white" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Priority</label>
+                <select className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg bg-transparent text-gray-900 dark:text-white" value={form.priority} onChange={e => setForm(f => ({ ...f, priority: e.target.value as Priority }))}>
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High Priority</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Content</label>
+                <textarea rows={4} className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg bg-transparent text-gray-900 dark:text-white resize-none" value={form.content} onChange={e => setForm(f => ({ ...f, content: e.target.value }))} />
+              </div>
+            </div>
+            <div className="flex gap-3 mt-6">
+              <button onClick={() => setShowModal(false)} className="flex-1 px-4 py-2.5 text-sm font-medium border border-gray-300 dark:border-[#2D2D2D] rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#252525]">Cancel</button>
+              <button onClick={handleCreate} disabled={saving || !form.title || !form.content} className="flex-1 px-4 py-2.5 text-sm font-medium bg-[#BF0A30] text-white rounded-lg hover:bg-[#B00325] disabled:opacity-50">{saving ? 'Posting…' : 'Post'}</button>
+            </div>
+          </div>
         </div>
       )}
     </DepartmentLayout>

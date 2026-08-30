@@ -32,9 +32,13 @@ function AttendanceTracker({
         attendedRef.current = true;
         clearInterval(iv);
         try {
+          const { data: { session: auth } } = await supabase.auth.getSession();
           await fetch('/api/classroom/attendance', {
             method:  'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+              'Content-Type': 'application/json',
+              ...(auth ? { 'Authorization': `Bearer ${auth.access_token}` } : {}),
+            },
             body:    JSON.stringify({ userId, sessionId, cohortType: 'connect' }),
           });
           onAttended();

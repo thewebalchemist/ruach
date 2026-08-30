@@ -2,12 +2,12 @@
 // Admin & staff portal login — phone OTP (primary) or email/password (fallback).
 // Redirects here only when accessing /admin or /control-panel without a session.
 
-import { useState, useRef, KeyboardEvent, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { Eye, EyeOff, Loader2, Mail, ChevronRight, ArrowLeft, Shield } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
-import { formatKenyanPhone, isValidKenyanPhone } from '@/lib/auth-utils';
+import { usePhoneOtp } from '@/hooks/usePhoneOtp';
 
 type Step = 'method' | 'otp' | 'email-form';
 
@@ -15,21 +15,11 @@ export default function AdminLogin() {
   const router = useRouter();
 
   const [step,      setStep]      = useState<Step>('method');
-  const [phone,     setPhone]     = useState('');
   const [email,     setEmail]     = useState('');
   const [password,  setPassword]  = useState('');
   const [showPwd,   setShowPwd]   = useState(false);
-  const [otp,       setOtp]       = useState(['', '', '', '', '', '']);
-  const [loading,   setLoading]   = useState(false);
-  const [error,     setError]     = useState('');
-  const [countdown, setCountdown] = useState(0);
-
-  const otpRefs  = useRef<(HTMLInputElement | null)[]>([]);
-  const cdRef    = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  const formatted  = formatKenyanPhone(phone);
-  const phoneValid = isValidKenyanPhone(formatted);
-  const otpDone    = otp.every(d => d);
+  const [emailLoading, setEmailLoading] = useState(false);
+  const [emailError,   setEmailError]   = useState('');
 
   // If the middleware redirected here with a redirectTo that isn't an admin
   // route, pass it along to the member login page instead.
@@ -41,108 +31,49 @@ export default function AdminLogin() {
     }
   }, [router.isReady, router.query.redirectTo]);
 
-  function startCountdown(secs = 60) {
-    setCountdown(secs);
-    if (cdRef.current) clearInterval(cdRef.current);
-    cdRef.current = setInterval(() => {
-      setCountdown(prev => {
-        if (prev <= 1) { clearInterval(cdRef.current!); return 0; }
-        return prev - 1;
-      });
-    }, 1000);
-  }
-
   // ── After a successful auth, redirect by role ──────────────────────────────
   async function redirectByRole(userId: string) {
-    try {
-      const { data, error: fetchErr } = await supabase
-        .from('profiles')
-        .select('role, member_id')
-        .eq('id', userId)
-        .single();
+    const { data } = await supabase.from('profiles').select('role, member_id').eq('id', userId).single();
+    const role       = data?.role ?? '';
+    const redirectTo = router.query.redirectTo as string | undefined;
 
-      if (fetchErr) throw fetchErr;
-
-      const role       = data?.role ?? '';
-      const redirectTo = router.query.redirectTo as string | undefined;
-
-      if (['admin', 'pastor', 'teacher', 'leader'].includes(role)) {
-        // Honour the original destination if it was an admin route
-        const dest = (redirectTo?.startsWith('/admin') || redirectTo?.startsWith('/control-panel'))
-          ? redirectTo
-          : '/admin';
-        await router.push(dest);
-      } else if (data?.member_id) {
-        await router.push('/member');
-      } else {
-        await router.push('/connect/dashboard');
-      }
-    } catch {
-      setError('Something went wrong. Please try again.');
-    } finally {
-      setLoading(false);
+    if (['admin', 'pastor', 'teacher', 'leader'].includes(role)) {
+      const dest = (redirectTo?.startsWith('/admin') || redirectTo?.startsWith('/control-panel'))
+        ? redirectTo
+        : '/admin';
+      await router.push(dest);
+    } else if (data?.member_id) {
+      await router.push('/member');
+    } else {
+      await router.push('/connect/dashboard');
     }
   }
 
-  // ── Phone OTP ──────────────────────────────────────────────────────────────
+  const {
+    phone, setPhone, formatted,
+    otp, otpComplete, otpRefs, handleOtpChange, handleOtpKey,
+    loading, error, countdown,
+    sendOtp, verifyOtp, reset: resetOtp,
+  } = usePhoneOtp(redirectByRole);
+
   async function handleSendOtp() {
-    if (!phoneValid) { setError('Please enter a valid Kenyan phone number.'); return; }
-    setError(''); setLoading(true);
-    try {
-      const { error: e } = await supabase.auth.signInWithOtp({ phone: formatted });
-      if (e) { setError(e.message); return; }
-      startCountdown(60);
-      setStep('otp');
-    } catch {
-      setError('Failed to send OTP. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  function handleOtpChange(i: number, val: string) {
-    if (!/^\d?$/.test(val)) return;
-    const next = [...otp]; next[i] = val; setOtp(next);
-    if (val && i < 5) otpRefs.current[i + 1]?.focus();
-    if (next.every(d => d)) verifyOtp(next.join(''));
-  }
-
-  function handleOtpKey(i: number, e: KeyboardEvent) {
-    if (e.key === 'Backspace' && !otp[i] && i > 0) otpRefs.current[i - 1]?.focus();
-  }
-
-  async function verifyOtp(code: string) {
-    setError(''); setLoading(true);
-    try {
-      const { data, error: e } = await supabase.auth.verifyOtp({ phone: formatted, token: code, type: 'sms' });
-      if (e || !data.session) {
-        setError(e?.message ?? 'Invalid OTP. Please try again.');
-        setOtp(['', '', '', '', '', '']);
-        otpRefs.current[0]?.focus();
-        setLoading(false);
-        return;
-      }
-      await redirectByRole(data.session.user.id);
-    } catch {
-      setError('Verification failed. Please try again.');
-      setLoading(false);
-    }
+    if (await sendOtp()) setStep('otp');
   }
 
   // ── Email / password ───────────────────────────────────────────────────────
   async function handleEmailLogin(e: React.FormEvent) {
-    e.preventDefault(); setError(''); setLoading(true);
+    e.preventDefault(); setEmailError(''); setEmailLoading(true);
     try {
       const { data, error: ae } = await supabase.auth.signInWithPassword({ email, password });
       if (ae || !data.session) {
-        setError(ae?.message ?? 'Invalid email or password.');
-        setLoading(false);
+        setEmailError(ae?.message ?? 'Invalid email or password.');
         return;
       }
       await redirectByRole(data.session.user.id);
     } catch {
-      setError('Sign in failed. Please try again.');
-      setLoading(false);
+      setEmailError('Sign in failed. Please try again.');
+    } finally {
+      setEmailLoading(false);
     }
   }
 
@@ -202,7 +133,7 @@ export default function AdminLogin() {
                         +254
                       </div>
                       <input type="tel" value={phone}
-                        onChange={e => { setPhone(e.target.value); setError(''); }}
+                        onChange={e => setPhone(e.target.value)}
                         placeholder="7XX XXX XXX" className="input rounded-l-none flex-1"
                         style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
                         onKeyDown={e => e.key === 'Enter' && handleSendOtp()} />
@@ -237,7 +168,7 @@ export default function AdminLogin() {
               {/* ── OTP verify ─────────────────────────────────────────────── */}
               {step === 'otp' && (
                 <div className="animate-fade-in">
-                  <button onClick={() => { setStep('method'); setOtp(['', '', '', '', '', '']); setError(''); }}
+                  <button onClick={() => { setStep('method'); resetOtp(); }}
                     className="flex items-center gap-2 text-sm text-gray-500 hover:text-white mb-6 transition-colors">
                     <ArrowLeft className="w-4 h-4" /> Back
                   </button>
@@ -264,7 +195,7 @@ export default function AdminLogin() {
                       <span className="text-sm">Verifying…</span>
                     </div>
                   )}
-                  <button onClick={() => verifyOtp(otp.join(''))} disabled={loading || !otpDone}
+                  <button onClick={() => verifyOtp(otp.join(''))} disabled={loading || !otpComplete}
                     className="btn btn-primary btn-xl w-full mb-4">
                     Verify &amp; Sign In
                   </button>
@@ -277,7 +208,7 @@ export default function AdminLogin() {
               {/* ── Email / password ───────────────────────────────────────── */}
               {step === 'email-form' && (
                 <div className="animate-fade-in">
-                  <button onClick={() => { setStep('method'); setError(''); }}
+                  <button onClick={() => { setStep('method'); setEmailError(''); }}
                     className="flex items-center gap-2 text-sm text-gray-500 hover:text-white mb-6 transition-colors">
                     <ArrowLeft className="w-4 h-4" /> Back
                   </button>
@@ -301,14 +232,14 @@ export default function AdminLogin() {
                         </button>
                       </div>
                     </div>
-                    {error && <div className="alert alert-error text-sm">{error}</div>}
+                    {emailError && <div className="alert alert-error text-sm">{emailError}</div>}
                     <div className="text-right">
                       <Link href="/auth/forgot-password" className="text-sm text-[#BF0A30] hover:underline font-medium">
                         Forgot password?
                       </Link>
                     </div>
-                    <button type="submit" disabled={loading} className="btn btn-primary btn-xl w-full">
-                      {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Signing in…</> : 'Sign In'}
+                    <button type="submit" disabled={emailLoading} className="btn btn-primary btn-xl w-full">
+                      {emailLoading ? <><Loader2 className="w-4 h-4 animate-spin" /> Signing in…</> : 'Sign In'}
                     </button>
                   </form>
                 </div>

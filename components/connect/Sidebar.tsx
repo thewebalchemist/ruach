@@ -13,51 +13,59 @@ import {
   Settings,
   ChevronDown,
   LogOut,
-  Menu,
   X,
   Search,
   Radio,
+  ShieldAlert,
+  BookOpen,
 } from 'lucide-react';
-import { getCurrentUser } from '@/data';
+import { useAuth } from '@/context/AuthContext';
 
+// moduleKey matches admin_permissions.module_key (see execution plan Appendix A /
+// supabase/migrations/*_admin_rbac.sql) — items are hidden unless the signed-in
+// user's roles grant 'view' on that module (pastor always passes, see
+// AuthContext.hasPermission).
 const navigation = [
-  { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
-  { name: 'Search', href: '/admin/search', icon: Search },
-  { 
-    name: 'People', 
+  { name: 'Dashboard', href: '/admin', icon: LayoutDashboard, moduleKey: 'dashboard' },
+  { name: 'Search', href: '/admin/search', icon: Search, moduleKey: 'search' },
+  {
+    name: 'People',
     icon: Users,
+    moduleKey: 'members',
     children: [
       { name: 'All Members', href: '/admin/members' },
       { name: 'Guests', href: '/admin/members/guests' },
-      { name: 'Attendees', href: '/admin/members/attendees' },
     ],
   },
-  { 
-    name: 'Crosspoints', 
+  {
+    name: 'Crosspoints',
     icon: Home,
+    moduleKey: 'crosspoints',
     children: [
       { name: 'All Crosspoints', href: '/admin/crosspoints' },
       { name: 'Transfers', href: '/admin/crosspoints/transfers' },
       { name: 'Modules', href: '/admin/crosspoints/modules' },
     ],
   },
-  { 
-    name: 'Discipleship', 
-    icon: GraduationCap,
+  { name: 'Connect Class', href: '/admin/connect', icon: BookOpen, moduleKey: 'connect' },
+  { name: 'Discipleship', href: '/admin/discipleship', icon: GraduationCap, moduleKey: 'discipleship' },
+  { name: 'Departments', href: '/admin/departments', icon: Building2, moduleKey: 'departments' },
+  { name: 'Events', href: '/admin/events', icon: Calendar, moduleKey: 'events' },
+  { name: 'Food Bank', href: '/admin/food-bank', icon: MessageSquare, moduleKey: 'food-bank' },
+  { name: 'Prayer Requests', href: '/admin/prayer', icon: MessageSquare, moduleKey: 'prayer' },
+  { name: 'Suggestions', href: '/admin/suggestions', icon: MessageSquare, moduleKey: 'suggestions' },
+  { name: 'Notices', href: '/admin/notices', icon: Bell, moduleKey: 'notices' },
+  { name: 'Reports', href: '/admin/reports', icon: LayoutDashboard, moduleKey: 'reports' },
+  {
+    name: 'Settings',
+    icon: Settings,
+    moduleKey: 'settings',
     children: [
-      { name: 'Overview', href: '/admin/discipleship' },
-      { name: 'Connect Classes', href: '/admin/discipleship/connect' },
+      { name: 'General', href: '/admin/settings' },
+      { name: 'Roles & Permissions', href: '/admin/settings/roles' },
     ],
   },
-  { name: 'Departments', href: '/admin/departments', icon: Building2 },
-  { name: 'Events', href: '/admin/events', icon: Calendar },
-  { name: 'Food Bank', href: '/admin/food-bank', icon: MessageSquare },
-  { name: 'Prayer Requests', href: '/admin/prayer', icon: MessageSquare },
-  { name: 'Suggestions', href: '/admin/suggestions', icon: MessageSquare },
-  { name: 'Notices', href: '/admin/notices', icon: Bell },
-  { name: 'Reports', href: '/admin/reports', icon: LayoutDashboard },
-  { name: 'Settings', href: '/admin/settings', icon: Settings },
-  { name: 'Streaming', href: '/admin/stream/dashboard', icon: Radio },
+  { name: 'Streaming', href: '/control-panel', icon: Radio, moduleKey: 'stream' },
 ];
 
 interface SidebarProps {
@@ -67,43 +75,45 @@ interface SidebarProps {
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const router = useRouter();
-  const currentUser = getCurrentUser();
-  const [expandedItems, setExpandedItems] = useState<string[]>(['People', 'Crosspoints', 'Discipleship']);
+  const { profile, hasPermission, signOut } = useAuth();
+  const [expandedItems, setExpandedItems] = useState<string[]>(['People', 'Crosspoints']);
+
+  const visibleNav = navigation.filter(item => hasPermission(item.moduleKey, 'view'));
 
   const toggleExpand = (name: string) => {
-    setExpandedItems(prev => 
+    setExpandedItems(prev =>
       prev.includes(name) ? prev.filter(n => n !== name) : [...prev, name]
     );
   };
 
   const isActive = (href: string) => router.pathname === href;
-  const isParentActive = (children?: { href: string }[]) => 
+  const isParentActive = (children?: { href: string }[]) =>
     children?.some(child => router.pathname === child.href);
 
   return (
     <>
       {/* Mobile overlay */}
       {isOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden" 
+        <div
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
           onClick={onClose}
         />
       )}
 
       {/* Sidebar */}
       <aside className={`
-        fixed top-0 left-0 h-full w-64 bg-white dark:bg-[#1A1A1A] border-r border-gray-200 dark:border-[#2D2D2D] z-50
+        glass-panel fixed top-4 bottom-4 left-4 flex flex-col w-64 rounded-3xl shadow-xl shadow-gray-200/50 dark:shadow-black/30 z-50
         transform transition-transform duration-300 lg:translate-x-0
-        ${isOpen ? 'translate-x-0' : '-translate-x-full'}
+        ${isOpen ? 'translate-x-0' : '-translate-x-[120%]'}
       `}>
         {/* Logo */}
-        <div className="h-16 flex items-center justify-between px-6 border-b border-gray-200 dark:border-[#2D2D2D]">
-          <Link href="/admin" className="flex items-center gap-2">
+        <div className="h-16 flex items-center justify-between px-5 flex-shrink-0">
+          <Link href="/admin" className="flex items-center gap-2.5">
             <div className="flex items-center justify-center">
-            <img 
-                src="/images/ruaach.png" 
-                alt="RUACH CHURCH Logo" 
-                className="w-10 h-10 rounded-full" />
+            <img
+                src="/brand/ruach-logo.png"
+                alt="RUACH CHURCH Logo"
+                className="w-9 h-9 rounded-full" />
             </div>
             <span className="font-bold text-gray-900 dark:text-white">RuachConnect</span>
           </Link>
@@ -113,8 +123,15 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         </div>
 
         {/* Navigation */}
-        <nav className="p-4 space-y-1 overflow-y-auto h-[calc(100%-8rem)]">
-          {navigation.map((item) => (
+        <nav className="flex-1 px-3 pb-3 space-y-1 overflow-y-auto">
+          {visibleNav.length === 0 && (
+            <div className="flex flex-col items-center text-center gap-2 px-4 py-10 text-gray-400">
+              <ShieldAlert className="w-8 h-8" />
+              <p className="text-sm">No modules assigned to your account yet.</p>
+              <p className="text-xs">Ask a super admin to grant you a role.</p>
+            </div>
+          )}
+          {visibleNav.map((item) => (
             <div key={item.name}>
               {item.children ? (
                 <>
@@ -158,18 +175,18 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         </nav>
 
         {/* User */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200 dark:border-[#2D2D2D] bg-white dark:bg-[#1A1A1A]">
+        <div className="flex-shrink-0 p-3 mx-2 mb-2 rounded-2xl bg-gray-100/80 dark:bg-white/5">
           <div className="flex items-center gap-3">
-            <div className="avatar">
-              {currentUser?.firstName?.[0]}{currentUser?.lastName?.[0]}
+            <div className="avatar avatar-md">
+              {profile?.first_name?.[0]}{profile?.last_name?.[0]}
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                {currentUser?.firstName} {currentUser?.lastName}
+                {profile?.first_name} {profile?.last_name}
               </p>
-              <p className="text-xs text-gray-500 truncate">{currentUser?.memberId}</p>
+              <p className="text-xs text-gray-500 truncate">{profile?.member_id ?? profile?.email}</p>
             </div>
-            <button className="p-2 text-gray-400 hover:text-gray-600">
+            <button onClick={signOut} className="p-2 text-gray-400 hover:text-gray-600" title="Sign out">
               <LogOut className="w-4 h-4" />
             </button>
           </div>

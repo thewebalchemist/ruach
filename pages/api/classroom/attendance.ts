@@ -24,8 +24,48 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).json({ message: 'userId, sessionId, and cohortType are required' });
   }
 
+  // Verify caller is authenticated
+  const authHeader = req.headers.authorization;
+  const token = authHeader?.replace('Bearer ', '');
+  if (!token) return res.status(401).json({ message: 'Unauthorized' });
+
+  const { data: { user: caller }, error: authError } = await adminClient.auth.getUser(token);
+  if (authError || !caller) return res.status(401).json({ message: 'Unauthorized' });
+
+  const { data: callerProfile } = await adminClient
+    .from('profiles')
+    .select('role')
+    .eq('id', caller.id)
+    .single();
+
+  const isStaff = ['teacher', 'admin', 'pastor'].includes(callerProfile?.role ?? '');
+
   const studentTable  = cohortType === 'connect' ? 'connect_students'  : 'discipleship_students';
   const attendTable   = cohortType === 'connect' ? 'connect_attendance': 'discipleship_attendance';
+  const sessionTable  = cohortType === 'connect' ? 'connect_sessions'  : 'discipleship_sessions';
+
+  if (!isStaff) {
+    // Non-staff callers may only mark themselves present, and only for a
+    // session belonging to a cohort they're actually enrolled in.
+    if (caller.id !== userId) return res.status(403).json({ message: 'Forbidden' });
+
+    const { data: session } = await adminClient
+      .from(sessionTable)
+      .select('cohort_id')
+      .eq('id', sessionId)
+      .single();
+
+    if (!session) return res.status(404).json({ message: 'Session not found' });
+
+    const { data: enrollment } = await adminClient
+      .from(studentTable)
+      .select('id')
+      .eq('user_id', caller.id)
+      .eq('cohort_id', session.cohort_id)
+      .maybeSingle();
+
+    if (!enrollment) return res.status(403).json({ message: 'You are not enrolled in this cohort' });
+  }
 
   // Find student record
   const { data: student } = await adminClient

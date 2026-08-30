@@ -27,9 +27,10 @@ interface Session {
   id:             string;
   title:          string;
   session_number: number;
-  scheduled_at:   string | null;
+  date:           string | null;
+  start_time:     string | null;
+  type:           string | null;
   is_completed:   boolean;
-  livekit_room_name?: string;
 }
 
 interface AttendanceRow {
@@ -78,7 +79,7 @@ export default function DiscipleshipStudentDashboard() {
       // Parallel fetches
       const [{ data: cohortData }, { data: sessionData }, { data: attData }, { data: examData }, { data: profileData }] = await Promise.all([
         supabase.from('discipleship_cohorts').select('id, name, status').eq('id', stu.cohort_id).single(),
-        (supabase as any).from('discipleship_sessions').select('id, title, session_number, scheduled_at, is_completed, livekit_room_name')
+        (supabase as any).from('discipleship_sessions').select('id, title, session_number, date, start_time, type, is_completed')
           .eq('cohort_id', stu.cohort_id).order('session_number'),
         (supabase as any).from('discipleship_attendance').select('session_id, present').eq('student_id', stu.id),
         (supabase as any).from('discipleship_exam_results')
@@ -180,13 +181,14 @@ export default function DiscipleshipStudentDashboard() {
           <div className="bg-[#BF0A30]/10 border border-[#BF0A30]/20 rounded-2xl p-5">
             <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-2" style={H}>Next Session</p>
             <p className="text-white font-black text-lg mb-1" style={H}>{nextSession.title}</p>
-            {nextSession.scheduled_at && (
+            {nextSession.date && (
               <p className="text-white/40 text-xs flex items-center gap-1.5 mb-3">
                 <Calendar className="w-3.5 h-3.5" />
-                {new Date(nextSession.scheduled_at).toLocaleDateString('en-KE', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}
+                {new Date(nextSession.date).toLocaleDateString('en-KE', { weekday: 'long', day: 'numeric', month: 'long' })}
+                {nextSession.start_time ? ` · ${nextSession.start_time}` : ''}
               </p>
             )}
-            {nextSession.livekit_room_name && (
+            {nextSession.type === 'virtual' && (
               <Link href={`/discipleship/classroom/${nextSession.id}`}
                 className="inline-flex items-center gap-2 px-4 py-2 bg-[#BF0A30] hover:bg-[#A0021F] text-white rounded-xl text-xs font-black transition-colors"
                 style={H}>
@@ -213,13 +215,13 @@ export default function DiscipleshipStudentDashboard() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-white/80 text-sm truncate">{s.title}</p>
-                    {s.scheduled_at && (
-                      <p className="text-white/25 text-xs">{new Date(s.scheduled_at).toLocaleDateString('en-KE', { day: 'numeric', month: 'short' })}</p>
+                    {s.date && (
+                      <p className="text-white/25 text-xs">{new Date(s.date).toLocaleDateString('en-KE', { day: 'numeric', month: 'short' })}</p>
                     )}
                   </div>
                   {isAttended ? (
                     <CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0" />
-                  ) : s.livekit_room_name ? (
+                  ) : s.type === 'virtual' ? (
                     <Link href={`/discipleship/classroom/${s.id}`}
                       className="flex items-center gap-1 px-2 py-1 bg-[#BF0A30]/20 text-[#BF0A30] rounded-lg text-[10px] font-bold"
                       style={H}>
@@ -275,7 +277,7 @@ export default function DiscipleshipStudentDashboard() {
         )}
 
         {/* Graduation status */}
-        {student.status === 'graduated' && (
+        {student.status === 'completed' && (
           <div className="bg-green-500/10 border border-green-500/20 rounded-2xl p-6 text-center">
             <Award className="w-10 h-10 text-green-400 mx-auto mb-3" />
             <h3 className="text-green-300 text-lg mb-1" style={H}>Level {student.level} Graduate</h3>

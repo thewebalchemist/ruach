@@ -2,12 +2,12 @@
 // Member portal login — phone OTP (primary) or email/password (fallback).
 // Anyone who has a member_id lands on /member. Non-members are rejected.
 
-import { useState, useRef, KeyboardEvent } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { Loader2, Shield, ArrowLeft, ChevronRight, Mail, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
-import { formatKenyanPhone, isValidKenyanPhone } from '@/lib/auth-utils';
+import { usePhoneOtp } from '@/hooks/usePhoneOtp';
 
 type Step = 'login' | 'otp' | 'email-form';
 
@@ -15,125 +15,56 @@ export default function MemberLogin() {
   const router = useRouter();
 
   const [step,      setStep]      = useState<Step>('login');
-  const [phone,     setPhone]     = useState('');
   const [email,     setEmail]     = useState('');
   const [password,  setPassword]  = useState('');
   const [showPwd,   setShowPwd]   = useState(false);
-  const [otp,       setOtp]       = useState(['', '', '', '', '', '']);
-  const [loading,   setLoading]   = useState(false);
-  const [error,     setError]     = useState('');
-  const [countdown, setCountdown] = useState(0);
-
-  const otpRefs  = useRef<(HTMLInputElement | null)[]>([]);
-  const cdRef    = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  const formatted  = formatKenyanPhone(phone);
-  const phoneValid = isValidKenyanPhone(formatted);
-  const otpDone    = otp.every(d => d);
-
-  function startCountdown(secs = 60) {
-    setCountdown(secs);
-    if (cdRef.current) clearInterval(cdRef.current);
-    cdRef.current = setInterval(() => {
-      setCountdown(prev => {
-        if (prev <= 1) { clearInterval(cdRef.current!); return 0; }
-        return prev - 1;
-      });
-    }, 1000);
-  }
+  const [emailLoading, setEmailLoading] = useState(false);
+  const [emailError,   setEmailError]   = useState('');
 
   // ── After a successful auth, check member_id and redirect ──────────────────
   async function redirectIfMember(userId: string) {
-    try {
-      const { data, error: fetchErr } = await supabase
-        .from('profiles')
-        .select('member_id')
-        .eq('id', userId)
-        .single();
+    const { data } = await supabase.from('profiles').select('member_id').eq('id', userId).single();
 
-      if (fetchErr) throw fetchErr;
-
-      if (data?.member_id) {
-        const dest = (router.query.redirectTo as string) || '/member';
-        await router.push(dest);
-      } else {
-        setError("You haven't graduated from Connect Class yet. Please use the Connect portal to continue your journey.");
-        await supabase.auth.signOut();
-      }
-    } catch {
-      setError('Something went wrong. Please try again.');
-    } finally {
-      setLoading(false);
+    if (data?.member_id) {
+      const dest = (router.query.redirectTo as string) || '/member';
+      await router.push(dest);
+    } else {
+      setEmailError("You haven't graduated from Connect Class yet. Please use the Connect portal to continue your journey.");
+      await supabase.auth.signOut();
     }
   }
 
-  // ── Phone OTP ──────────────────────────────────────────────────────────────
-  async function sendOtp() {
-    if (!phoneValid) { setError('Please enter a valid Kenyan phone number.'); return; }
-    setError(''); setLoading(true);
-    try {
-      const { error: e } = await supabase.auth.signInWithOtp({ phone: formatted });
-      if (e) { setError(e.message); return; }
-      startCountdown(60);
-      setStep('otp');
-    } catch {
-      setError('Failed to send OTP. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  }
+  const {
+    phone, setPhone, formatted,
+    otp, otpComplete, otpRefs, handleOtpChange, handleOtpKey,
+    loading, error, countdown,
+    sendOtp, verifyOtp, reset: resetOtp,
+  } = usePhoneOtp(redirectIfMember);
 
-  function handleOtpChange(i: number, val: string) {
-    if (!/^\d?$/.test(val)) return;
-    const next = [...otp]; next[i] = val; setOtp(next);
-    if (val && i < 5) otpRefs.current[i + 1]?.focus();
-    if (next.every(d => d)) verifyOtp(next.join(''));
-  }
-
-  function handleOtpKey(i: number, e: KeyboardEvent) {
-    if (e.key === 'Backspace' && !otp[i] && i > 0) otpRefs.current[i - 1]?.focus();
-  }
-
-  async function verifyOtp(code: string) {
-    setError(''); setLoading(true);
-    try {
-      const { data, error: e } = await supabase.auth.verifyOtp({ phone: formatted, token: code, type: 'sms' });
-      if (e || !data.session) {
-        setError(e?.message ?? 'Invalid OTP. Please try again.');
-        setOtp(['', '', '', '', '', '']);
-        otpRefs.current[0]?.focus();
-        setLoading(false);
-        return;
-      }
-      await redirectIfMember(data.session.user.id);
-    } catch {
-      setError('Verification failed. Please try again.');
-      setLoading(false);
-    }
+  async function handleSendOtp() {
+    if (await sendOtp()) setStep('otp');
   }
 
   // ── Email / password ───────────────────────────────────────────────────────
   async function handleEmailLogin(e: React.FormEvent) {
-    e.preventDefault(); setError(''); setLoading(true);
+    e.preventDefault(); setEmailError(''); setEmailLoading(true);
     try {
       const { data, error: ae } = await supabase.auth.signInWithPassword({ email, password });
       if (ae || !data.session) {
-        setError(ae?.message ?? 'Invalid email or password.');
-        setLoading(false);
+        setEmailError(ae?.message ?? 'Invalid email or password.');
         return;
       }
-      await redirectIfMember(data.session.user.id);
+      await redirectIfMember(data.user.id);
     } catch {
-      setError('Sign in failed. Please try again.');
-      setLoading(false);
+      setEmailError('Sign in failed. Please try again.');
+    } finally {
+      setEmailLoading(false);
     }
   }
 
   function reset() {
     setStep('login');
-    setOtp(['', '', '', '', '', '']);
-    setError('');
-    setPhone('');
+    resetOtp();
   }
 
   return (
@@ -204,17 +135,17 @@ export default function MemberLogin() {
                         +254
                       </div>
                       <input type="tel" value={phone}
-                        onChange={e => { setPhone(e.target.value); setError(''); }}
+                        onChange={e => setPhone(e.target.value)}
                         placeholder="7XX XXX XXX" className="input flex-1"
                         style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
-                        onKeyDown={e => e.key === 'Enter' && sendOtp()} />
+                        onKeyDown={e => e.key === 'Enter' && handleSendOtp()} />
                     </div>
                     <p className="form-help">OTP sent via SMS — works with any Kenyan number</p>
                   </div>
 
                   {error && <div className="alert alert-error text-sm mb-4">{error}</div>}
 
-                  <button onClick={sendOtp} disabled={loading || !phone} className="btn btn-primary btn-xl w-full mb-4">
+                  <button onClick={handleSendOtp} disabled={loading || !phone} className="btn btn-primary btn-xl w-full mb-4">
                     {loading
                       ? <><Loader2 className="w-4 h-4 animate-spin" /> Sending OTP…</>
                       : <>Get OTP <ChevronRight className="w-4 h-4" /></>}
@@ -264,20 +195,20 @@ export default function MemberLogin() {
                       <Loader2 className="w-4 h-4 animate-spin text-[#BF0A30]" /> Verifying…
                     </div>
                   )}
-                  <button onClick={() => verifyOtp(otp.join(''))} disabled={loading || !otpDone}
+                  <button onClick={() => verifyOtp(otp.join(''))} disabled={loading || !otpComplete}
                     className="btn btn-primary btn-xl w-full mb-4">
                     Verify &amp; Sign In
                   </button>
                   {countdown > 0
                     ? <p className="text-center text-sm text-gray-400">Resend in <span className="font-semibold text-gray-300">{countdown}s</span></p>
-                    : <button onClick={sendOtp} className="w-full text-center text-sm text-[#BF0A30] font-medium hover:underline">Resend OTP</button>}
+                    : <button onClick={handleSendOtp} className="w-full text-center text-sm text-[#BF0A30] font-medium hover:underline">Resend OTP</button>}
                 </div>
               )}
 
               {/* ── Email/password step ───────────────────────────────────── */}
               {step === 'email-form' && (
                 <div className="animate-fade-in">
-                  <button onClick={() => { setStep('login'); setError(''); }}
+                  <button onClick={() => { setStep('login'); setEmailError(''); }}
                     className="flex items-center gap-2 text-sm text-gray-500 hover:text-white mb-6 transition-colors">
                     <ArrowLeft className="w-4 h-4" /> Back
                   </button>
@@ -301,13 +232,13 @@ export default function MemberLogin() {
                         </button>
                       </div>
                     </div>
-                    {error && <div className="alert alert-error text-sm">{error}</div>}
+                    {emailError && <div className="alert alert-error text-sm">{emailError}</div>}
                     <Link href="/auth/forgot-password"
                       className="block text-right text-sm text-[#BF0A30] hover:underline font-medium">
                       Forgot password?
                     </Link>
-                    <button type="submit" disabled={loading} className="btn btn-primary btn-xl w-full">
-                      {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Signing in…</> : 'Sign In'}
+                    <button type="submit" disabled={emailLoading} className="btn btn-primary btn-xl w-full">
+                      {emailLoading ? <><Loader2 className="w-4 h-4 animate-spin" /> Signing in…</> : 'Sign In'}
                     </button>
                   </form>
                 </div>

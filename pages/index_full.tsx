@@ -7,7 +7,7 @@ import { supabase } from '@/lib/supabase';
 import type { GetStaticProps } from 'next';
 
 interface Sermon   { id: string; title: string; slug: string; preacher: string; service_date: string; }
-interface UpcomingEvent { id: string; title: string; description: string | null; event_date: string; end_date: string | null; start_time: string | null; location: string | null; image_url: string | null; }
+interface UpcomingEvent { id: string; title: string; description: string | null; event_date: string; end_date: string | null; start_time: string | null; location: string | null; }
 interface PageProps { latestSermon: Sermon | null; isLive: boolean; upcomingEvents: UpcomingEvent[]; }
 
 // Font styles
@@ -65,7 +65,7 @@ function FaqItem({ q, a }: { q: string; a: string }) {
   );
 }
 
-export default function HomePage({ latestSermon, isLive, upcomingEvents }: PageProps) {
+export default function HomePage({ latestSermon, isLive, upcomingEvents = [] }: PageProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [muted, setMuted] = useState(true);
 
@@ -630,14 +630,8 @@ export default function HomePage({ latestSermon, isLive, upcomingEvents }: PageP
                 return (
                   <div key={ev.id} className={`rounded-2xl overflow-hidden flex flex-col ${i === 0 && upcomingEvents.length === 1 ? 'lg:col-span-1' : ''}`}
                     style={{ background: 'rgba(18,21,28,0.9)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                    {ev.image_url && (
-                      <div className="aspect-video overflow-hidden">
-                        <img src={ev.image_url} alt={ev.title} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-                          onError={(e) => { (e.target as HTMLImageElement).src = '/church-photos/aug-2025-a.jpg'; }} />
-                      </div>
-                    )}
                     <div className="p-6 flex-1 flex flex-col">
-                      <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-2" style={H}>{dateLabel}</p>
+                      <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-2" style={H}>{dateLabel}{ev.start_time ? ` · ${ev.start_time}` : ''}</p>
                       <h3 className="text-white text-xl font-black mb-3 flex-1" style={H}>{ev.title}</h3>
                       {ev.description && <p className="text-white/40 text-sm leading-relaxed mb-4 line-clamp-2">{ev.description}</p>}
                       {ev.location && (
@@ -732,10 +726,10 @@ export const getStaticProps: GetStaticProps = async () => {
   try {
     const today = new Date().toISOString().split('T')[0];
     const [{ data: sermon }, { data: stream }, { data: events }] = await Promise.all([
-      supabase.from('sermons').select('id,title,slug,preacher,service_date').order('service_date', { ascending: false }).limit(1).single(),
+      supabase.from('sermons').select('id,title,slug,preacher,service_date').eq('published', true).order('service_date', { ascending: false }).limit(1).single(),
       supabase.from('stream_settings').select('is_live').limit(1).single(),
-      supabase.from('events').select('id,title,description,event_date,end_date,start_time,location,image_url')
-        .gte('event_date', today).neq('status', 'cancelled').order('event_date', { ascending: true }).limit(2),
+      supabase.from('events').select('id,title,description,event_date,end_date,start_time,location')
+        .eq('type', 'church-wide').gte('event_date', today).neq('status', 'cancelled').order('event_date', { ascending: true }).limit(2),
     ]);
     return {
       props: {

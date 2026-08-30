@@ -187,8 +187,8 @@ export default function SermonsPage({ sermons, featuredSermon, seriesList }: Ser
                   <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-2" style={H}>Featured Message</p>
                   <h1 className="text-white text-2xl md:text-4xl font-black leading-tight mb-3" style={H}>{heroSermon.title}</h1>
                   <p className="text-white/50 text-sm mb-2">{heroSermon.preacher} · {new Date(heroSermon.service_date).toLocaleDateString('en-KE', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
-                  {heroSermon.scripture && <p className="text-[#BF0A30] text-xs font-bold mb-3">{heroSermon.scripture}</p>}
-                  {heroSermon.summary && <p className="text-white/40 text-sm leading-relaxed mb-5 line-clamp-3">{heroSermon.summary}</p>}
+                  {heroSermon.scripture_ref && <p className="text-[#BF0A30] text-xs font-bold mb-3">{heroSermon.scripture_ref}</p>}
+                  {heroSermon.description && <p className="text-white/40 text-sm leading-relaxed mb-5 line-clamp-3">{heroSermon.description}</p>}
                   <Link href={`/${heroSermon.slug}`}
                     className="inline-flex items-center gap-2 bg-[#BF0A30] hover:bg-[#9A0826] text-white font-black text-xs uppercase tracking-widest px-6 py-3.5 rounded-2xl transition-all shadow-xl shadow-[rgba(191,10,48,0.35)] w-fit"
                     style={H}>

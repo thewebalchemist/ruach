@@ -38,6 +38,30 @@ async function send(
   await transport.sendMail({ from: `"RuachConnect" <${from}>`, to, subject, html });
 }
 
+// ── Shared building blocks ───────────────────────────────────────────────────
+// One button style and one OTP-code style, reused by every template below —
+// so new templates (and any ported/added later) share one visual system
+// instead of each hand-rolling its own inline markup.
+
+function emailButton(href: string, label: string) {
+  return `
+    <div style="text-align:center;margin:28px 0;">
+      <a href="${href}"
+         style="display:inline-block;background:#D2042D;color:#fff;text-decoration:none;padding:14px 32px;border-radius:8px;font-weight:600;font-size:15px;">
+        ${label}
+      </a>
+    </div>`;
+}
+
+function otpBlock(code: string) {
+  return `
+    <div style="text-align:center;margin:28px 0;">
+      <div style="display:inline-block;background:#1a1a1a;color:#fff;letter-spacing:8px;font-size:32px;font-weight:700;padding:18px 28px;border-radius:10px;font-family:'Courier New',monospace;">
+        ${code}
+      </div>
+    </div>`;
+}
+
 // ── Shared HTML wrapper ───────────────────────────────────────────────────────
 function wrap(content: string) {
   return `<!DOCTYPE html>
@@ -165,12 +189,7 @@ export async function sendConnectGraduationNotice(opts: {
       <li>Join a Crosspoint home fellowship</li>
       <li>Serve in ministry departments</li>
     </ul>
-    <div style="text-align:center;margin:28px 0;">
-      <a href="${opts.appUrl}/member" 
-         style="display:inline-block;background:#D2042D;color:#fff;text-decoration:none;padding:14px 32px;border-radius:8px;font-weight:600;font-size:15px;">
-        Access Member Dashboard
-      </a>
-    </div>
+    ${emailButton(`${opts.appUrl}/member`, 'Access Member Dashboard')}
   `);
   await send(connectTransport(), process.env.CONNECT_EMAIL_FROM!, opts.to,
     `You're a Ruach Member! Your ID is ${opts.memberId}`, html);
@@ -196,12 +215,7 @@ export async function sendLegacyVerificationResult(opts: {
         <td style="color:#D2042D;font-weight:700;font-size:18px;text-align:right;">${opts.memberId}</td>
       </tr>
     </table>
-    <div style="text-align:center;margin:28px 0;">
-      <a href="${opts.appUrl}/member" 
-         style="display:inline-block;background:#D2042D;color:#fff;text-decoration:none;padding:14px 32px;border-radius:8px;font-weight:600;font-size:15px;">
-        Access Member Dashboard
-      </a>
-    </div>
+    ${emailButton(`${opts.appUrl}/member`, 'Access Member Dashboard')}
   `) : wrap(`
     <h2 style="color:#D2042D;font-size:20px;margin:0 0 8px;">Legacy Member Request Update</h2>
     <p style="color:#555;font-size:15px;line-height:1.6;margin:0 0 20px;">
@@ -217,6 +231,35 @@ export async function sendLegacyVerificationResult(opts: {
   `);
   await send(connectTransport(), process.env.CONNECT_EMAIL_FROM!, opts.to,
     `Legacy Member Request — ${opts.status === 'verified' ? 'Approved' : 'Update'}`, html);
+}
+
+/** Sent when an admin creates a staff account (teacher/leader/admin/pastor) */
+export async function sendStaffAccountCreated(opts: {
+  to: string;
+  firstName: string;
+  roleLabel: string;
+  tempPassword: string;
+  appUrl: string;
+}) {
+  const html = wrap(`
+    <h2 style="color:#1a1a1a;font-size:20px;margin:0 0 8px;">Welcome to RuachConnect, ${opts.firstName}!</h2>
+    <p style="color:#555;font-size:15px;line-height:1.6;margin:0 0 24px;">
+      You've been added as a <strong>${opts.roleLabel}</strong>. Use the credentials below to sign in — you'll be prompted to set a new password after your first login.
+    </p>
+    <table style="background:#f9f9f9;border-radius:8px;padding:20px;width:100%;margin-bottom:24px;">
+      <tr>
+        <td style="color:#888;font-size:13px;padding:6px 0;">Email</td>
+        <td style="color:#1a1a1a;font-weight:700;font-size:15px;text-align:right;">${opts.to}</td>
+      </tr>
+      <tr>
+        <td style="color:#888;font-size:13px;padding:6px 0;">Temporary Password</td>
+        <td style="color:#D2042D;font-weight:700;font-size:15px;text-align:right;font-family:monospace;">${opts.tempPassword}</td>
+      </tr>
+    </table>
+    ${emailButton(`${opts.appUrl}/auth/login`, 'Sign In')}
+  `);
+  await send(connectTransport(), process.env.CONNECT_EMAIL_FROM!, opts.to,
+    `Your RuachConnect account is ready`, html);
 }
 
 // ── DISCIPLESHIP EMAILS ───────────────────────────────────────────────────────
@@ -255,6 +298,26 @@ export async function sendDiscipleshipEnrollmentConfirmation(opts: {
   `);
   await send(discipleshipTransport(), process.env.DISCIPLESHIP_EMAIL_FROM!, opts.to,
     `Discipleship Enrollment Confirmed — ${opts.admissionNumber}`, html);
+}
+
+/** Sent when a student graduates a KDC level */
+export async function sendDiscipleshipGraduationNotice(opts: {
+  to: string;
+  firstName: string;
+  level: number;
+  cohortName: string;
+  appUrl: string;
+}) {
+  const levelLabel = ['', 'Level 1 — Foundations of Faith', 'Level 2 — Growing in Grace', 'Level 3 — Leadership & Ministry'][opts.level];
+  const html = wrap(`
+    <h2 style="color:#1a1a1a;font-size:20px;margin:0 0 8px;">Congratulations, ${opts.firstName}! 🎓</h2>
+    <p style="color:#555;font-size:15px;line-height:1.6;margin:0 0 24px;">
+      You have successfully completed <strong>${opts.cohortName}</strong> — ${levelLabel}.
+    </p>
+    ${emailButton(`${opts.appUrl}/member`, 'View My Progress')}
+  `);
+  await send(discipleshipTransport(), process.env.DISCIPLESHIP_EMAIL_FROM!, opts.to,
+    `You've completed ${levelLabel.split(' — ')[0]}!`, html);
 }
 
 /** Sent when discipleship legacy request is resolved */
@@ -296,15 +359,26 @@ export async function sendPasswordReset(opts: {
     <p style="color:#555;font-size:15px;line-height:1.6;margin:0 0 24px;">
       Hi ${opts.firstName}, we received a request to reset your RuachConnect password.
     </p>
-    <div style="text-align:center;margin:28px 0;">
-      <a href="${opts.resetUrl}" 
-         style="display:inline-block;background:#D2042D;color:#fff;text-decoration:none;padding:14px 32px;border-radius:8px;font-weight:600;font-size:15px;">
-        Reset Password
-      </a>
-    </div>
+    ${emailButton(opts.resetUrl, 'Reset Password')}
     <p style="color:#999;font-size:13px;text-align:center;">This link expires in 1 hour. If you didn't request this, you can safely ignore this email.</p>
   `);
   // Use either transport — connect is fine for auth emails
   await send(connectTransport(), process.env.CONNECT_EMAIL_FROM!, opts.to,
     'Reset Your RuachConnect Password', html);
+}
+
+// ── AUTH EMAILS (platform-wide, not module-specific) ─────────────────────────
+
+/** OTP login/signup code, sent to any module's contact-first login flow. */
+export async function sendLoginCodeEmail(opts: { to: string; code: string }) {
+  const html = wrap(`
+    <h2 style="color:#1a1a1a;font-size:20px;margin:0 0 8px;">Your verification code</h2>
+    <p style="color:#555;font-size:15px;line-height:1.6;margin:0 0 8px;">
+      Enter this code to continue signing in to RuachConnect:
+    </p>
+    ${otpBlock(opts.code)}
+    <p style="color:#999;font-size:13px;text-align:center;">This code expires in 10 minutes. If you didn't request it, you can safely ignore this email.</p>
+  `);
+  await send(connectTransport(), process.env.CONNECT_EMAIL_FROM!, opts.to,
+    `${opts.code} is your RuachConnect verification code`, html);
 }

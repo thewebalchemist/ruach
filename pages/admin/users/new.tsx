@@ -1,14 +1,14 @@
 // pages/admin/users/new.tsx
 // Admin: Create new teachers, leaders, HoDs with full details
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
-  ArrowLeft, User, Mail, Phone, Shield, CheckCircle, Loader2,
-  Eye, EyeOff, UserPlus, Building, MapPin, Calendar
+  CheckCircle, Loader2,
+  Eye, EyeOff, UserPlus,
 } from 'lucide-react';
 import { AdminLayout, PageHeader } from '@/components/connect/AdminLayout';
-import { mockCrosspoints } from '@/data';
+import { supabase } from '@/lib/supabase';
 
 type UserRole = 'teacher' | 'leader' | 'admin' | 'pastor';
 
@@ -22,10 +22,12 @@ interface NewUserForm {
   dateOfBirth:  string;
   branch:       string;
   crosspointId: string;
-  department:   string;
+  departmentId: string;
   sendWelcome:  boolean;
   tempPassword: string;
 }
+
+interface Option { id: string; name: string; area?: string }
 
 const ROLE_CONFIG: Record<UserRole, { label: string; description: string; color: string; bg: string }> = {
   teacher: {
@@ -62,23 +64,25 @@ const BRANCHES = [
   { id: 'ruach-rivers',     label: 'Ruach Rivers' },
 ];
 
-const DEPARTMENTS = [
-  'Media & Creative', 'Worship & Praise', 'Intercessors', 'R-Kids',
-  'Youth (Ruach Underground)', 'Kingdom Woman', 'Hospitality', 'Evangelism',
-  'Connect Class', 'Discipleship', 'Crosspoints',
-];
-
 export default function CreateUserPage() {
   const [form, setForm] = useState<NewUserForm>({
     firstName: '', lastName: '', email: '', phone: '',
     role: 'teacher', gender: '', dateOfBirth: '',
-    branch: 'ruach-tabernacle', crosspointId: '', department: '',
+    branch: 'ruach-tabernacle', crosspointId: '', departmentId: '',
     sendWelcome: true, tempPassword: '',
   });
+  const [crosspoints, setCrosspoints] = useState<Option[]>([]);
+  const [departments, setDepartments] = useState<Option[]>([]);
   const [showPassword, setShowPassword] = useState(false);
   const [saving,       setSaving]       = useState(false);
   const [success,      setSuccess]      = useState(false);
   const [errors,       setErrors]       = useState<Partial<Record<keyof NewUserForm, string>>>({});
+  const [submitError,  setSubmitError]  = useState('');
+
+  useEffect(() => {
+    supabase.from('crosspoints').select('id, name, area').eq('status', 'active').order('name').then(({ data }) => setCrosspoints(data ?? []));
+    supabase.from('departments').select('id, name').order('name').then(({ data }) => setDepartments(data ?? []));
+  }, []);
 
   function update(field: keyof NewUserForm, value: string | boolean) {
     setForm(prev => ({ ...prev, [field]: value }));
@@ -102,15 +106,20 @@ export default function CreateUserPage() {
   async function handleCreate() {
     if (!validate()) return;
     setSaving(true);
-    await new Promise(r => setTimeout(r, 2000));
+    setSubmitError('');
+    const { data: { session } } = await supabase.auth.getSession();
+    const res = await fetch('/api/admin/create-staff-user', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
+      body: JSON.stringify(form),
+    });
     setSaving(false);
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      setSubmitError(body.error ?? 'Failed to create account.');
+      return;
+    }
     setSuccess(true);
-  }
-
-  function formatKenyanPhone(raw: string): string {
-    const d = raw.replace(/\D/g, '');
-    if (d.startsWith('0') && d.length === 10) return '+254' + d.slice(1);
-    return raw;
   }
 
   if (success) {
@@ -132,7 +141,6 @@ export default function CreateUserPage() {
             </p>
           )}
 
-          {/* Credentials card */}
           <div className="bg-gray-50 dark:bg-[#1A1A1A] border border-gray-200 dark:border-[#2D2D2D] rounded-xl p-5 mb-8 text-left">
             <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Login Credentials</p>
             <div className="space-y-2">
@@ -153,7 +161,7 @@ export default function CreateUserPage() {
 
           <div className="flex gap-3">
             <Link href="/admin/members" className="btn btn-secondary flex-1">View All Users</Link>
-            <button onClick={() => { setSuccess(false); setForm({ firstName: '', lastName: '', email: '', phone: '', role: 'teacher', gender: '', dateOfBirth: '', branch: 'ruach-tabernacle', crosspointId: '', department: '', sendWelcome: true, tempPassword: '' }); }}
+            <button onClick={() => { setSuccess(false); setForm({ firstName: '', lastName: '', email: '', phone: '', role: 'teacher', gender: '', dateOfBirth: '', branch: 'ruach-tabernacle', crosspointId: '', departmentId: '', sendWelcome: true, tempPassword: '' }); }}
               className="btn btn-primary flex-1 gap-2">
               <UserPlus className="w-4 h-4" /> Create Another
             </button>
@@ -168,9 +176,12 @@ export default function CreateUserPage() {
       <div className="max-w-3xl mx-auto">
         <PageHeader title="Create New User" subtitle="Add a teacher, leader, or admin to the platform" />
 
+        {submitError && (
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4 mb-4 text-sm text-red-700 dark:text-red-300">{submitError}</div>
+        )}
+
         <div className="space-y-6">
 
-          {/* Role selection */}
           <div className="bg-white dark:bg-[#1A1A1A] rounded-2xl border border-gray-200 dark:border-[#2D2D2D] p-6">
             <h2 className="section-title mb-1">User Role</h2>
             <p className="text-sm text-gray-500 mb-4">Select the appropriate role — this determines what the user can access</p>
@@ -187,7 +198,6 @@ export default function CreateUserPage() {
             </div>
           </div>
 
-          {/* Personal details */}
           <div className="bg-white dark:bg-[#1A1A1A] rounded-2xl border border-gray-200 dark:border-[#2D2D2D] p-6">
             <h2 className="section-title mb-4">Personal Details</h2>
             <div className="grid sm:grid-cols-2 gap-4">
@@ -218,7 +228,6 @@ export default function CreateUserPage() {
             </div>
           </div>
 
-          {/* Contact details */}
           <div className="bg-white dark:bg-[#1A1A1A] rounded-2xl border border-gray-200 dark:border-[#2D2D2D] p-6">
             <h2 className="section-title mb-4">Contact & Login</h2>
             <div className="grid sm:grid-cols-2 gap-4">
@@ -258,7 +267,6 @@ export default function CreateUserPage() {
             </div>
           </div>
 
-          {/* Church details */}
           <div className="bg-white dark:bg-[#1A1A1A] rounded-2xl border border-gray-200 dark:border-[#2D2D2D] p-6">
             <h2 className="section-title mb-4">Church Details</h2>
             <div className="grid sm:grid-cols-2 gap-4">
@@ -274,7 +282,7 @@ export default function CreateUserPage() {
                   <label className="form-label">Assigned Crosspoint</label>
                   <select value={form.crosspointId} onChange={e => update('crosspointId', e.target.value)} className="select">
                     <option value="">No crosspoint (yet)</option>
-                    {mockCrosspoints.map(cp => (
+                    {crosspoints.map(cp => (
                       <option key={cp.id} value={cp.id}>{cp.name} — {cp.area}</option>
                     ))}
                   </select>
@@ -284,16 +292,15 @@ export default function CreateUserPage() {
               {(['teacher', 'leader'].includes(form.role)) && (
                 <div className="form-group">
                   <label className="form-label">Department / Ministry</label>
-                  <select value={form.department} onChange={e => update('department', e.target.value)} className="select">
+                  <select value={form.departmentId} onChange={e => update('departmentId', e.target.value)} className="select">
                     <option value="">Select department</option>
-                    {DEPARTMENTS.map(d => <option key={d} value={d}>{d}</option>)}
+                    {departments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
                   </select>
                 </div>
               )}
             </div>
           </div>
 
-          {/* Welcome email toggle */}
           <div className="bg-white dark:bg-[#1A1A1A] rounded-2xl border border-gray-200 dark:border-[#2D2D2D] p-5">
             <label className="flex items-center justify-between cursor-pointer">
               <div>
@@ -311,7 +318,6 @@ export default function CreateUserPage() {
             </label>
           </div>
 
-          {/* Actions */}
           <div className="flex gap-3">
             <Link href="/admin/members" className="btn btn-secondary flex-1">Cancel</Link>
             <button onClick={handleCreate} disabled={saving} className="btn btn-primary flex-1 gap-2">

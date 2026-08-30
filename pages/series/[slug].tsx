@@ -6,7 +6,7 @@ import { Play, ArrowLeft, Calendar, User } from 'lucide-react';
 import Layout from '@/components/shared/Layout';
 import { supabase } from '@/lib/supabase';
 import { Series, Sermon } from '@/types';
-import { formatDateShort, getYouTubeThumbnail } from '@/lib/utils';
+import { formatDateShort, formatDuration, getYouTubeThumbnail } from '@/lib/utils';
 
 interface SingleSeriesPageProps {
   series: Series | null;
@@ -39,9 +39,9 @@ export default function SingleSeriesPage({ series, sermons }: SingleSeriesPagePr
         <div className="relative h-[50vh] md:h-[60vh] overflow-hidden">
           {/* Background */}
           <div className="absolute inset-0">
-            {series.image_url ? (
+            {series.thumbnail_url ? (
               <img
-                src={series.image_url}
+                src={series.thumbnail_url}
                 alt={series.title}
                 className="w-full h-full object-cover"
               />
@@ -65,7 +65,7 @@ export default function SingleSeriesPage({ series, sermons }: SingleSeriesPagePr
 
               <div className="flex items-center gap-3">
                 <span className="px-3 py-1 rounded-full bg-[#BF0A30]/20 text-[#BF0A30] text-xs font-bold uppercase tracking-wider border border-[#BF0A30]/30">
-                  {series.year || 'Series'}
+                  {series.start_date ? new Date(series.start_date).getFullYear() : 'Series'}
                 </span>
                 <span className="text-gray-400 text-sm">
                   {sermons.length} {sermons.length === 1 ? 'sermon' : 'sermons'}
@@ -109,7 +109,7 @@ export default function SingleSeriesPage({ series, sermons }: SingleSeriesPagePr
                 <SermonListItem
                   key={sermon.id}
                   sermon={sermon}
-                  episodeNumber={sermon.series_part || index + 1}
+                  episodeNumber={index + 1}
                 />
               ))}
             </div>
@@ -155,9 +155,9 @@ function SermonListItem({ sermon, episodeNumber }: { sermon: Sermon; episodeNumb
           </div>
         </div>
         {/* Duration Badge */}
-        {sermon.duration && (
+        {sermon.duration_seconds && (
           <div className="absolute bottom-2 right-2 px-2 py-1 bg-black/80 text-white text-xs font-medium rounded">
-            {sermon.duration}
+            {formatDuration(sermon.duration_seconds)}
           </div>
         )}
       </div>
@@ -186,9 +186,9 @@ function SermonListItem({ sermon, episodeNumber }: { sermon: Sermon; episodeNumb
         </div>
 
         {/* Summary Preview */}
-        {sermon.summary && (
+        {sermon.description && (
           <p className="mt-3 text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
-            {sermon.summary.replace(/[#*_]/g, '').substring(0, 200)}
+            {sermon.description.replace(/[#*_]/g, '').substring(0, 200)}
           </p>
         )}
 
@@ -230,7 +230,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       .from('sermons')
       .select('*')
       .eq('series_id', series.id)
-      .order('series_part', { ascending: true, nullsFirst: false })
       .order('service_date', { ascending: true });
 
     return {

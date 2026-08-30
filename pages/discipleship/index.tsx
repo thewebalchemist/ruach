@@ -1,92 +1,27 @@
 // pages/discipleship/index.tsx
 // Kingdom Discipleship portal login — same design as Connect portal
 
-import { useState, useRef, KeyboardEvent } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { Loader2, Shield, ArrowLeft, ChevronRight, Mail, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { usePhoneOtp } from '@/hooks/usePhoneOtp';
 
 type Step = 'role' | 'otp' | 'email-form';
 type Tab  = 'student' | 'teacher';
 interface ProfileResult { role: string; member_id: string | null; }
-
-function formatKenyanPhone(raw: string): string {
-  const d = raw.replace(/\D/g, '');
-  if (d.startsWith('0') && d.length === 10) return '+254' + d.slice(1);
-  if (d.startsWith('254') && d.length === 12) return '+' + d;
-  if (d.startsWith('7') && d.length === 9) return '+254' + d;
-  return raw;
-}
-
-function isValidPhone(phone: string): boolean {
-  return /^\+254[17]\d{8}$/.test(phone);
-}
 
 export default function DiscipleshipLogin() {
   const router = useRouter();
 
   const [tab,       setTab]       = useState<Tab>('student');
   const [step,      setStep]      = useState<Step>('role');
-  const [phone,     setPhone]     = useState('');
   const [email,     setEmail]     = useState('');
   const [password,  setPassword]  = useState('');
   const [showPwd,   setShowPwd]   = useState(false);
-  const [otp,       setOtp]       = useState(['', '', '', '', '', '']);
-  const [loading,   setLoading]   = useState(false);
-  const [error,     setError]     = useState('');
-  const [countdown, setCountdown] = useState(0);
-  const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
-  const cdRef   = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  const formatted   = formatKenyanPhone(phone);
-  const phoneValid  = isValidPhone(formatted);
-  const otpComplete = otp.every(d => d);
-
-  function startCountdown(secs = 60) {
-    setCountdown(secs);
-    if (cdRef.current) clearInterval(cdRef.current);
-    cdRef.current = setInterval(() => {
-      setCountdown(prev => { if (prev <= 1) { clearInterval(cdRef.current!); return 0; } return prev - 1; });
-    }, 1000);
-  }
-
-  async function sendOtp() {
-    if (!phoneValid) { setError('Please enter a valid Kenyan phone number'); return; }
-    setError(''); setLoading(true);
-    const { error: e } = await supabase.auth.signInWithOtp({ phone: formatted });
-    setLoading(false);
-    if (e) { setError(e.message); return; }
-    startCountdown(60); setStep('otp');
-  }
-
-  function handleOtpChange(i: number, val: string) {
-    if (!/^\d?$/.test(val)) return;
-    const next = [...otp]; next[i] = val; setOtp(next);
-    if (val && i < 5) otpRefs.current[i + 1]?.focus();
-    if (next.every(d => d)) verifyOtp(next.join(''));
-  }
-
-  function handleOtpKey(i: number, e: KeyboardEvent) {
-    if (e.key === 'Backspace' && !otp[i] && i > 0) otpRefs.current[i - 1]?.focus();
-  }
-
-  async function verifyOtp(code: string) {
-    setError(''); setLoading(true);
-    const { data, error: e } = await supabase.auth.verifyOtp({ phone: formatted, token: code, type: 'sms' });
-    if (e || !data.session) {
-      setError(e?.message ?? 'Invalid OTP.');
-      setOtp(['','','','','','']); otpRefs.current[0]?.focus(); setLoading(false); return;
-    }
-    await redirectByRole(data.session.user.id);
-  }
-
-  async function handleEmailLogin(e: React.FormEvent) {
-    e.preventDefault(); setError(''); setLoading(true);
-    const { data, error: ae } = await supabase.auth.signInWithPassword({ email, password });
-    if (ae || !data.session) { setError(ae?.message ?? 'Invalid credentials.'); setLoading(false); return; }
-    await redirectByRole(data.session.user.id);
-  }
+  const [emailLoading, setEmailLoading] = useState(false);
+  const [emailError,   setEmailError]   = useState('');
 
   async function redirectByRole(userId: string) {
     const { data: pd } = await supabase.from('profiles').select('role, member_id').eq('id', userId).single();
@@ -97,20 +32,42 @@ export default function DiscipleshipLogin() {
 
     if (tab === 'teacher') {
       if (!['teacher', 'admin', 'pastor', 'leader'].includes(role)) {
-        setError('You do not have facilitator access.'); await supabase.auth.signOut(); setLoading(false); return;
+        setEmailError('You do not have facilitator access.'); await supabase.auth.signOut(); return;
       }
       router.push('/discipleship/dashboard'); return;
     }
 
     // Student tab — must be a member who has graduated Connect
     if (!profile?.member_id) {
-      setError('You must have graduated from Connect Class to access Discipleship. Please use the Connect portal.');
-      await supabase.auth.signOut(); setLoading(false); return;
+      setEmailError('You must have graduated from Connect Class to access Discipleship. Please use the Connect portal.');
+      await supabase.auth.signOut(); return;
     }
     router.push('/discipleship/student');
   }
 
-  function reset() { setStep('role'); setOtp(['','','','','','']); setError(''); setPhone(''); }
+  const {
+    phone, setPhone, formatted,
+    otp, otpComplete, otpRefs, handleOtpChange, handleOtpKey,
+    loading, error, countdown,
+    sendOtp, verifyOtp, reset: resetOtp,
+  } = usePhoneOtp(redirectByRole);
+
+  async function handleSendOtp() {
+    if (await sendOtp()) setStep('otp');
+  }
+
+  async function handleEmailLogin(e: React.FormEvent) {
+    e.preventDefault(); setEmailError(''); setEmailLoading(true);
+    try {
+      const { data, error: ae } = await supabase.auth.signInWithPassword({ email, password });
+      if (ae || !data.session) { setEmailError(ae?.message ?? 'Invalid credentials.'); return; }
+      await redirectByRole(data.user.id);
+    } finally {
+      setEmailLoading(false);
+    }
+  }
+
+  function reset() { setStep('role'); resetOtp(); }
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-[#0A0000]">
@@ -216,10 +173,10 @@ export default function DiscipleshipLogin() {
                       </div>
                       <input
                         type="tel" value={phone}
-                        onChange={e => { setPhone(e.target.value); setError(''); }}
+                        onChange={e => setPhone(e.target.value)}
                         placeholder="7XX XXX XXX" className="input flex-1"
                         style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
-                        onKeyDown={e => e.key === 'Enter' && sendOtp()}
+                        onKeyDown={e => e.key === 'Enter' && handleSendOtp()}
                       />
                     </div>
                     <p className="form-help">OTP sent via SMS — works with any Kenyan number</p>
@@ -227,7 +184,7 @@ export default function DiscipleshipLogin() {
 
                   {error && <div className="alert alert-error text-sm mb-4">{error}</div>}
 
-                  <button onClick={sendOtp} disabled={loading || !phone} className="btn btn-primary btn-xl w-full mb-4">
+                  <button onClick={handleSendOtp} disabled={loading || !phone} className="btn btn-primary btn-xl w-full mb-4">
                     {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Sending OTP…</> : <>Get OTP <ChevronRight className="w-4 h-4" /></>}
                   </button>
 
@@ -282,7 +239,7 @@ export default function DiscipleshipLogin() {
               {/* ── Email form ────────────────────────────────────────────── */}
               {step === 'email-form' && (
                 <div className="animate-fade-in">
-                  <button onClick={() => { setStep('role'); setError(''); }}
+                  <button onClick={() => { setStep('role'); setEmailError(''); }}
                     className="flex items-center gap-2 text-sm text-gray-500 hover:text-white mb-6 transition-colors">
                     <ArrowLeft className="w-4 h-4" /> Back
                   </button>
@@ -307,12 +264,12 @@ export default function DiscipleshipLogin() {
                         </button>
                       </div>
                     </div>
-                    {error && <div className="alert alert-error text-sm">{error}</div>}
+                    {emailError && <div className="alert alert-error text-sm">{emailError}</div>}
                     <Link href="/auth/forgot-password" className="block text-right text-sm text-[#BF0A30] hover:underline font-medium">
                       Forgot password?
                     </Link>
-                    <button type="submit" disabled={loading} className="btn btn-primary btn-xl w-full">
-                      {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Signing in…</> : 'Sign In'}
+                    <button type="submit" disabled={emailLoading} className="btn btn-primary btn-xl w-full">
+                      {emailLoading ? <><Loader2 className="w-4 h-4 animate-spin" /> Signing in…</> : 'Sign In'}
                     </button>
                   </form>
                 </div>

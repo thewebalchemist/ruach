@@ -1,24 +1,60 @@
-import { useState } from 'react';
-import { MessageSquare, AlertCircle, ThumbsUp, Clock, CheckCircle, Eye } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { MessageSquare, AlertCircle, ThumbsUp, Clock, CheckCircle, Eye, Loader2 } from 'lucide-react';
 import { AdminLayout, PageHeader } from '@/components/connect/AdminLayout';
-import { mockSuggestions } from '@/data';
+import { supabase } from '@/lib/supabase';
+
+type Status = 'pending' | 'reviewing' | 'resolved';
+type SuggestionType = 'suggestion' | 'complaint' | 'feedback';
+
+interface Suggestion {
+  id: string; is_anonymous: boolean; type: SuggestionType; category: string;
+  subject: string; message: string; status: Status; admin_response: string | null; created_at: string;
+}
 
 export default function SuggestionsPage() {
-  const [filter, setFilter] = useState('all');
-  const [typeFilter, setTypeFilter] = useState('all');
+  const [filter, setFilter] = useState<'all' | Status>('all');
+  const [typeFilter, setTypeFilter] = useState<'all' | SuggestionType>('all');
+  const [items, setItems] = useState<Suggestion[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [noteDraftId, setNoteDraftId] = useState<string | null>(null);
+  const [noteText, setNoteText] = useState('');
 
-  const filtered = mockSuggestions.filter(s => {
+  const load = useCallback(async () => {
+    setLoading(true);
+    const { data } = await supabase.from('suggestions').select('id, is_anonymous, type, category, subject, message, status, admin_response, created_at').order('created_at', { ascending: false });
+    setItems(data ?? []);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  const filtered = items.filter(s => {
     const matchesStatus = filter === 'all' || s.status === filter;
     const matchesType = typeFilter === 'all' || s.type === typeFilter;
     return matchesStatus && matchesType;
   });
 
   const stats = {
-    total: mockSuggestions.length,
-    pending: mockSuggestions.filter(s => s.status === 'pending').length,
-    reviewing: mockSuggestions.filter(s => s.status === 'reviewing').length,
-    resolved: mockSuggestions.filter(s => s.status === 'resolved').length,
+    total: items.length,
+    pending: items.filter(s => s.status === 'pending').length,
+    reviewing: items.filter(s => s.status === 'reviewing').length,
+    resolved: items.filter(s => s.status === 'resolved').length,
   };
+
+  async function updateStatus(id: string, status: Status) {
+    setBusyId(id);
+    await supabase.from('suggestions').update({ status }).eq('id', id);
+    setBusyId(null);
+    load();
+  }
+
+  async function saveNote(id: string) {
+    await supabase.from('suggestions').update({ admin_response: noteText.trim() || null }).eq('id', id);
+    setNoteDraftId(null);
+    setNoteText('');
+    load();
+  }
 
   const getTypeIcon = (type: string) => {
     switch (type) {
@@ -42,7 +78,6 @@ export default function SuggestionsPage() {
     <AdminLayout title="Suggestions">
       <PageHeader title="Suggestions & Feedback" subtitle="View and respond to feedback from the congregation" />
 
-      {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
         <button onClick={() => setFilter('all')} className={`bg-white dark:bg-[#1A1A1A] rounded-xl border p-4 text-left transition-colors ${filter === 'all' ? 'border-[#BF0A30] ring-2 ring-[#BF0A30]/20' : 'border-gray-200 dark:border-[#2D2D2D]'}`}>
           <p className="text-sm text-gray-500">Total</p>
@@ -62,16 +97,13 @@ export default function SuggestionsPage() {
         </button>
       </div>
 
-      {/* Type Filter */}
       <div className="flex gap-2 mb-6">
-        {['all', 'suggestion', 'complaint', 'feedback'].map(type => (
+        {(['all', 'suggestion', 'complaint', 'feedback'] as const).map(type => (
           <button
             key={type}
             onClick={() => setTypeFilter(type)}
             className={`px-4 py-2 text-sm font-medium rounded-lg capitalize ${
-              typeFilter === type
-                ? 'bg-[#BF0A30] text-white'
-                : 'bg-white dark:bg-[#1A1A1A] border border-gray-200 dark:border-[#2D2D2D] text-gray-600'
+              typeFilter === type ? 'bg-[#BF0A30] text-white' : 'bg-white dark:bg-[#1A1A1A] border border-gray-200 dark:border-[#2D2D2D] text-gray-600'
             }`}
           >
             {type === 'all' ? 'All Types' : type}
@@ -79,7 +111,9 @@ export default function SuggestionsPage() {
         ))}
       </div>
 
-      {/* Suggestions List */}
+      {loading ? (
+        <div className="flex justify-center py-16"><Loader2 className="w-6 h-6 animate-spin text-gray-400" /></div>
+      ) : (
       <div className="space-y-4">
         {filtered.map((item) => (
           <div key={item.id} className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-5">
@@ -89,9 +123,9 @@ export default function SuggestionsPage() {
                 <div>
                   <h3 className="font-semibold text-gray-900 dark:text-white">{item.subject}</h3>
                   <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
-                    <span>{item.isAnonymous ? 'Anonymous' : 'Member'}</span>
+                    <span>{item.is_anonymous ? 'Anonymous' : 'Member'}</span>
                     <span>•</span>
-                    <span>{new Date(item.createdAt).toLocaleDateString()}</span>
+                    <span>{new Date(item.created_at).toLocaleDateString()}</span>
                     <span>•</span>
                     <span className="capitalize">{item.category}</span>
                   </div>
@@ -109,6 +143,23 @@ export default function SuggestionsPage() {
 
             <p className="text-gray-700 dark:text-gray-300 mb-4">{item.message}</p>
 
+            {item.admin_response && (
+              <div className="bg-gray-50 dark:bg-[#252525] rounded-lg p-3 mb-4">
+                <p className="text-xs font-medium text-gray-500 mb-1">Admin note</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">{item.admin_response}</p>
+              </div>
+            )}
+
+            {noteDraftId === item.id && (
+              <div className="mb-4 space-y-2">
+                <textarea rows={2} className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg bg-transparent text-gray-900 dark:text-white resize-none" value={noteText} onChange={e => setNoteText(e.target.value)} placeholder="Internal note or response..." autoFocus />
+                <div className="flex gap-2">
+                  <button onClick={() => saveNote(item.id)} className="px-3 py-1.5 text-xs font-medium bg-[#BF0A30] text-white rounded-lg">Save Note</button>
+                  <button onClick={() => { setNoteDraftId(null); setNoteText(''); }} className="px-3 py-1.5 text-xs font-medium border border-gray-300 dark:border-[#2D2D2D] rounded-lg">Cancel</button>
+                </div>
+              </div>
+            )}
+
             <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-[#2D2D2D]">
               <div className="flex items-center gap-2 text-sm text-gray-500">
                 {item.status === 'pending' && <Clock className="w-4 h-4" />}
@@ -118,19 +169,20 @@ export default function SuggestionsPage() {
               </div>
               <div className="flex gap-2">
                 {item.status === 'pending' && (
-                  <button className="px-4 py-2 text-sm font-medium bg-[#BF0A30] text-white rounded-lg hover:bg-[#B00325]">Start Review</button>
+                  <button onClick={() => updateStatus(item.id, 'reviewing')} disabled={busyId === item.id} className="px-4 py-2 text-sm font-medium bg-[#BF0A30] text-white rounded-lg hover:bg-[#B00325] disabled:opacity-50">Start Review</button>
                 )}
                 {item.status === 'reviewing' && (
-                  <button className="px-4 py-2 text-sm font-medium bg-green-600 text-white rounded-lg hover:bg-green-700">Mark Resolved</button>
+                  <button onClick={() => updateStatus(item.id, 'resolved')} disabled={busyId === item.id} className="px-4 py-2 text-sm font-medium bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50">Mark Resolved</button>
                 )}
-                <button className="px-4 py-2 text-sm font-medium border border-gray-300 dark:border-[#2D2D2D] rounded-lg hover:bg-gray-50">Add Note</button>
+                <button onClick={() => { setNoteDraftId(item.id); setNoteText(item.admin_response ?? ''); }} className="px-4 py-2 text-sm font-medium border border-gray-300 dark:border-[#2D2D2D] rounded-lg hover:bg-gray-50">Add Note</button>
               </div>
             </div>
           </div>
         ))}
       </div>
+      )}
 
-      {filtered.length === 0 && (
+      {!loading && filtered.length === 0 && (
         <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-12 text-center">
           <MessageSquare className="w-12 h-12 text-gray-300 mx-auto mb-4" />
           <p className="text-gray-500">No suggestions found</p>

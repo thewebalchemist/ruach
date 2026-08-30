@@ -30,7 +30,7 @@ export default function SermonsCP() {
   const [form, setForm] = useState(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [deleting, setDeleting] = useState<number | null>(null);
+  const [deleting, setDeleting] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [generatingNotes, setGeneratingNotes] = useState(false);
 
@@ -72,8 +72,8 @@ export default function SermonsCP() {
       youtube_url: sermon.youtube_url,
       series_id:   String(sermon.series_id || ''),
       service_date: sermon.service_date,
-      scripture:   sermon.scripture || '',
-      summary:     sermon.summary || '',
+      scripture:   sermon.scripture_ref || '',
+      summary:     sermon.description || '',
       tags:        (sermon.tags || []).join(', '),
       slug:        sermon.slug,
       spotify_url: (sermon as any).spotify_url || '',
@@ -123,10 +123,10 @@ export default function SermonsCP() {
       title:         form.title,
       preacher:      form.preacher,
       youtube_url:   form.youtube_url,
-      series_id:     form.series_id ? parseInt(form.series_id) : null,
+      series_id:     form.series_id || null,
       service_date:  form.service_date,
-      scripture:     form.scripture || null,
-      summary:       form.summary || null,
+      scripture_ref: form.scripture || null,
+      description:   form.summary || null,
       thumbnail_url: thumb || null,
       tags:          form.tags ? form.tags.split(',').map(t => t.trim()).filter(Boolean) : [],
       slug:          form.slug || generateSlug(form.title),
@@ -148,7 +148,7 @@ export default function SermonsCP() {
     setTimeout(() => { setSaved(false); setShowForm(false); loadData(); }, 1500);
   }
 
-  async function handleDelete(id: number) {
+  async function handleDelete(id: string) {
     if (!confirm('Delete this sermon? This cannot be undone.')) return;
     setDeleting(id);
     await (supabase.from('sermons') as any).delete().eq('id', id);

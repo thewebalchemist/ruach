@@ -3,6 +3,8 @@ import Link from 'next/link';
 import { ArrowLeft, Plus, Trash2, CheckCircle, Calendar, Video, MapPin } from 'lucide-react';
 import { ConnectLayout } from '@/components/connect/ConnectLayout';
 import { ConnectClassType } from '@/types';
+import { useAuth } from '@/context/AuthContext';
+import { supabase } from '@/lib/supabase';
 
 interface SessionForm {
   id: string;
@@ -16,6 +18,8 @@ interface SessionForm {
 }
 
 export default function CreateCohortPage() {
+  const { profile } = useAuth();
+  const [error, setError] = useState('');
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [startDate, setStartDate] = useState('');
@@ -64,8 +68,60 @@ export default function CreateCohortPage() {
   };
 
   const handleSave = async () => {
+    if (!startDate || !endDate) { setError('Start and end dates are required'); return; }
     setIsSaving(true);
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    setError('');
+
+    const year = new Date(startDate).getFullYear();
+    const { count } = await supabase
+      .from('connect_cohorts')
+      .select('id', { count: 'exact', head: true })
+      .eq('year', year);
+    const cohortNumber = (count ?? 0) + 1;
+
+    const { data: cohort, error: cohortErr } = await supabase
+      .from('connect_cohorts')
+      .insert({
+        name,
+        year,
+        cohort_number: cohortNumber,
+        description: description || null,
+        start_date: startDate,
+        end_date: endDate,
+        registration_deadline: registrationDeadline || startDate,
+        status: 'registration-open',
+        teacher_id: profile?.id ?? null,
+        whatsapp_link: whatsappLink || null,
+        max_capacity: maxCapacity,
+        min_attendance_percent: minAttendance,
+        min_exam_score: minExamScore,
+      })
+      .select('id')
+      .single();
+
+    if (cohortErr || !cohort) {
+      setIsSaving(false);
+      setError(cohortErr?.message ?? 'Failed to create cohort');
+      return;
+    }
+
+    if (sessions.length > 0) {
+      const { error: sessionsErr } = await supabase.from('connect_sessions').insert(
+        sessions.map((s, i) => ({
+          cohort_id: cohort.id,
+          session_number: i + 1,
+          title: s.title,
+          date: s.date || startDate,
+          start_time: s.startTime,
+          end_time: s.endTime,
+          type: s.type,
+          meeting_link: s.type === 'virtual' ? (s.meetingLink || null) : null,
+          venue: s.type === 'physical' ? (s.venue || null) : null,
+        })),
+      );
+      if (sessionsErr) console.error('Session insert (non-fatal):', sessionsErr.message);
+    }
+
     setIsSaving(false);
     setSavedSuccess(true);
   };
@@ -102,6 +158,8 @@ export default function CreateCohortPage() {
             {isSaving ? 'Creating...' : 'Create Cohort'}
           </button>
         </div>
+
+        {error && <div className="alert alert-error text-sm mb-4">{error}</div>}
 
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Cohort Details */}

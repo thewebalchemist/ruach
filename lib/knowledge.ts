@@ -96,8 +96,8 @@ async function fetchActiveFAQs(): Promise<FAQ[]> {
   const { data, error } = await supabase
     .from('faqs')
     .select('*')
-    .eq('is_active', true)
-    .order('order_index', { ascending: true });
+    .eq('published', true)
+    .order('sort_order', { ascending: true });
   
   if (error) {
     console.error('Error fetching FAQs:', error);
@@ -113,7 +113,7 @@ async function fetchActiveFAQs(): Promise<FAQ[]> {
 async function fetchSermonSummaries(): Promise<SermonSummary[]> {
   const { data, error } = await supabase
     .from('sermons')
-    .select('id, slug, title, preacher, service_date, summary, scripture, tags')
+    .select('id, slug, title, preacher, service_date, description, scripture_ref, tags')
     .order('service_date', { ascending: false })
     .limit(50); // Last 50 sermons for context
   
@@ -232,10 +232,10 @@ ${church_info.website ? `- Website: ${church_info.website}` : ''}
         year: 'numeric',
       });
       prompt += `- "${sermon.title}" by ${sermon.preacher} (${date})`;
-      if (sermon.scripture) prompt += ` - ${sermon.scripture}`;
+      if (sermon.scripture_ref) prompt += ` - ${sermon.scripture_ref}`;
       prompt += `\n  Link: /sermons/${sermon.slug}\n`;
-      if (sermon.summary) {
-        const shortSummary = sermon.summary.substring(0, 200).replace(/\n/g, ' ').replace(/[*#_]/g, '');
+      if (sermon.description) {
+        const shortSummary = sermon.description.substring(0, 200).replace(/\n/g, ' ').replace(/[*#_]/g, '');
         prompt += `  Summary: ${shortSummary}...\n`;
       }
       prompt += '\n';

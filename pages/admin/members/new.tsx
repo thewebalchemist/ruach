@@ -1,33 +1,43 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import { ArrowLeft, Save, User } from 'lucide-react';
+import { ArrowLeft, Save } from 'lucide-react';
 import { AdminLayout, PageHeader } from '@/components/connect/AdminLayout';
-import { mockCrosspoints, mockDepartments } from '@/data';
+import { supabase } from '@/lib/supabase';
+
+interface CrosspointOption { id: string; name: string; member_count: number; max_members: number }
 
 export default function NewMemberPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [crosspoints, setCrosspoints] = useState<CrosspointOption[]>([]);
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    gender: '',
-    dateOfBirth: '',
-    address: '',
-    occupation: '',
-    maritalStatus: '',
-    crosspointId: '',
-    role: 'member',
+    firstName: '', lastName: '', email: '', phone: '', gender: '', dateOfBirth: '',
+    address: '', occupation: '', maritalStatus: '', crosspointId: '', role: 'member',
   });
+
+  useEffect(() => {
+    supabase.from('crosspoints').select('id, name, member_count, max_members').eq('status', 'active').order('name')
+      .then(({ data }) => setCrosspoints(data ?? []));
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    setError('');
+    const { data: { session } } = await supabase.auth.getSession();
+    const res = await fetch('/api/admin/create-member', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
+      body: JSON.stringify(formData),
+    });
     setLoading(false);
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      setError(body.error ?? 'Failed to create member.');
+      return;
+    }
     router.push('/admin/members');
   };
 
@@ -41,11 +51,14 @@ export default function NewMemberPage() {
         <Link href="/admin/members" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 mb-4">
           <ArrowLeft className="w-4 h-4" />Back to Members
         </Link>
-        
+
         <PageHeader title="Add New Member" subtitle="Create a new member record" />
 
+        {error && (
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4 mb-4 text-sm text-red-700 dark:text-red-300">{error}</div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Basic Information */}
           <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-6">
             <h2 className="font-semibold text-gray-900 dark:text-white mb-4">Basic Information</h2>
             <div className="grid sm:grid-cols-2 gap-4">
@@ -80,7 +93,6 @@ export default function NewMemberPage() {
             </div>
           </div>
 
-          {/* Additional Details */}
           <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-6">
             <h2 className="font-semibold text-gray-900 dark:text-white mb-4">Additional Details</h2>
             <div className="grid sm:grid-cols-2 gap-4">
@@ -105,7 +117,6 @@ export default function NewMemberPage() {
             </div>
           </div>
 
-          {/* Church Assignment */}
           <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-6">
             <h2 className="font-semibold text-gray-900 dark:text-white mb-4">Church Assignment</h2>
             <div className="grid sm:grid-cols-2 gap-4">
@@ -121,15 +132,14 @@ export default function NewMemberPage() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Crosspoint</label>
                 <select name="crosspointId" value={formData.crosspointId} onChange={handleChange} className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg bg-white dark:bg-[#1A1A1A] focus:outline-none focus:ring-2 focus:ring-[#BF0A30]">
                   <option value="">Not assigned</option>
-                  {mockCrosspoints.filter(cp => cp.status === 'active').map(cp => (
-                    <option key={cp.id} value={cp.id}>{cp.name} ({cp.memberCount}/{cp.maxMembers})</option>
+                  {crosspoints.map(cp => (
+                    <option key={cp.id} value={cp.id}>{cp.name} ({cp.member_count}/{cp.max_members})</option>
                   ))}
                 </select>
               </div>
             </div>
           </div>
 
-          {/* Actions */}
           <div className="flex items-center justify-end gap-3">
             <Link href="/admin/members" className="px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-[#2D2D2D] rounded-lg hover:bg-gray-50 dark:hover:bg-[#252525]">
               Cancel

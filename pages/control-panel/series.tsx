@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase';
 import { Series } from '@/types';
 import { generateSlug } from '@/lib/utils';
 
-const EMPTY_FORM = { title: '', description: '', year: new Date().getFullYear().toString(), slug: '', image_url: '' };
+const EMPTY_FORM = { title: '', description: '', year: new Date().getFullYear().toString(), slug: '', thumbnail_url: '' };
 
 const inp = "w-full px-3 py-2.5 bg-gray-50 dark:bg-[#111] border border-gray-200 dark:border-[#333] rounded-xl text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#BF0A30]";
 const lbl = "block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide mb-1.5";
@@ -36,7 +36,7 @@ export default function SeriesCP() {
   }
 
   async function loadData() {
-    const { data } = await supabase.from('series').select('*').order('year', { ascending: false });
+    const { data } = await supabase.from('series').select('*').order('start_date', { ascending: false });
     setSeries((data || []) as Series[]);
     setLoading(false);
   }
@@ -50,7 +50,7 @@ export default function SeriesCP() {
 
   function openEdit(s: Series) {
     setEditing(s);
-    setForm({ title: s.title, description: s.description || '', year: s.year || '', slug: s.slug, image_url: s.image_url || '' });
+    setForm({ title: s.title, description: s.description || '', year: s.start_date ? new Date(s.start_date).getFullYear().toString() : '', slug: s.slug, thumbnail_url: s.thumbnail_url || '' });
     setError('');
     setShowForm(true);
   }
@@ -69,9 +69,9 @@ export default function SeriesCP() {
     const payload = {
       title: form.title,
       description: form.description || null,
-      year: form.year || null,
+      start_date: form.year ? `${form.year}-01-01` : null,
       slug: form.slug || generateSlug(form.title),
-      image_url: form.image_url || null,
+      thumbnail_url: form.thumbnail_url || null,
     };
 
     let err;
@@ -86,7 +86,7 @@ export default function SeriesCP() {
     setTimeout(() => { setSaved(false); setShowForm(false); loadData(); }, 1500);
   }
 
-  async function handleDelete(id: number) {
+  async function handleDelete(id: string) {
     if (!confirm('Delete this series? Sermons in it will be unlinked.')) return;
     await (supabase.from('series') as any).delete().eq('id', id);
     loadData();
@@ -123,15 +123,15 @@ export default function SeriesCP() {
           ) : filtered.map(s => (
             <div key={s.id} className="bg-white dark:bg-[#1A1A1A] rounded-2xl border border-gray-100 dark:border-[#2A2A2A] overflow-hidden group">
               <div className="aspect-video bg-gray-100 dark:bg-[#222] relative">
-                {s.image_url
-                  ? <img src={s.image_url} alt={s.title} className="w-full h-full object-cover" />
+                {s.thumbnail_url
+                  ? <img src={s.thumbnail_url} alt={s.title} className="w-full h-full object-cover" />
                   : <div className="w-full h-full flex items-center justify-center"><Layers className="w-8 h-8 text-gray-300 dark:text-gray-600" /></div>}
               </div>
               <div className="p-4">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
                     <p className="font-bold text-gray-900 dark:text-white text-sm truncate">{s.title}</p>
-                    {s.year && <p className="text-xs text-gray-400 mt-0.5">{s.year}</p>}
+                    {s.start_date && <p className="text-xs text-gray-400 mt-0.5">{new Date(s.start_date).getFullYear()}</p>}
                   </div>
                   <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button onClick={() => openEdit(s)} className="p-1.5 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-gray-100 dark:hover:bg-[#222]">
@@ -160,7 +160,7 @@ export default function SeriesCP() {
               <div><label className={lbl}>Series Title *</label><input value={form.title} onChange={e => set('title', e.target.value)} placeholder="e.g. Kingdom Champions" className={inp} /></div>
               <div><label className={lbl}>Year</label><input value={form.year} onChange={e => set('year', e.target.value)} placeholder="2026" className={inp} /></div>
               <div><label className={lbl}>Description</label><textarea value={form.description} onChange={e => set('description', e.target.value)} rows={3} className={`${inp} resize-none`} /></div>
-              <div><label className={lbl}>Cover Image URL</label><input type="url" value={form.image_url} onChange={e => set('image_url', e.target.value)} placeholder="https://…" className={inp} /></div>
+              <div><label className={lbl}>Cover Image URL</label><input type="url" value={form.thumbnail_url} onChange={e => set('thumbnail_url', e.target.value)} placeholder="https://…" className={inp} /></div>
               <div><label className={lbl}>URL Slug</label><input value={form.slug} onChange={e => set('slug', e.target.value)} className={inp} /></div>
               {error && <div className="flex items-center gap-2 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900 rounded-xl px-4 py-3"><AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0" /><p className="text-sm text-red-600">{error}</p></div>}
               <div className="flex items-center gap-3 pt-2">
