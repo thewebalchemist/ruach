@@ -196,17 +196,17 @@ export default function ConnectRegister() {
 
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-[#0F0F0F] p-6">
+      <div className="min-h-screen flex items-center justify-center bg-[#0A0C10] p-6">
         <div className="max-w-lg w-full">
           {/* Success card */}
-          <div className="bg-white dark:bg-[#1A1A1A] rounded-3xl border border-gray-100 dark:border-[#2A2A2A] p-8 text-center shadow-xl">
+          <div className="bg-[#12151C] rounded-3xl border border-white/[0.04] p-8 text-center shadow-xl">
             <div className="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-5">
               <CheckCircle className="w-10 h-10 text-green-600 dark:text-green-400" />
             </div>
-            <h1 className="text-2xl font-black text-gray-900 dark:text-white mb-2">
+            <h1 className="text-2xl font-black text-white mb-2">
               {mode === 'new' ? 'You\'re registered!' : 'Request Submitted!'}
             </h1>
-            <p className="text-gray-500 dark:text-gray-400 mb-6 text-sm leading-relaxed">
+            <p className="text-gray-500 mb-6 text-sm leading-relaxed">
               {mode === 'new'
                 ? `Welcome to Ruach Tabernacle! We've sent your admission details to ${registeredEmail}.`
                 : 'Your legacy member request has been submitted. Our admin team will review and contact you within 3–5 business days.'}
@@ -215,19 +215,19 @@ export default function ConnectRegister() {
             {mode === 'new' && selectedCohort && (
               <div className="bg-[#BF0A30]/6 dark:bg-[#BF0A30]/12 border border-[#BF0A30]/15 rounded-2xl p-5 mb-6 text-left">
                 <p className="text-xs font-bold text-[#BF0A30] uppercase tracking-wider mb-3">Your Connect Cohort</p>
-                <p className="font-bold text-gray-900 dark:text-white mb-2">{selectedCohort.name}</p>
+                <p className="font-bold text-white mb-2">{selectedCohort.name}</p>
                 {selectedCohort.start_date && (
-                  <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 mb-1">
+                  <div className="flex items-center gap-2 text-sm text-white/50 mb-1">
                     <span className="text-gray-400">Starts:</span>
-                    <span className="font-semibold text-gray-900 dark:text-white">
+                    <span className="font-semibold text-white">
                       {new Date(selectedCohort.start_date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
                     </span>
                   </div>
                 )}
                 {selectedCohort.end_date && (
-                  <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 mb-1">
+                  <div className="flex items-center gap-2 text-sm text-white/50 mb-1">
                     <span className="text-gray-400">Ends:</span>
-                    <span className="font-semibold text-gray-900 dark:text-white">
+                    <span className="font-semibold text-white">
                       {new Date(selectedCohort.end_date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
                     </span>
                   </div>
@@ -256,11 +256,11 @@ export default function ConnectRegister() {
     );
   }
 
-  const inputClass = "w-full px-4 py-3 bg-gray-50 dark:bg-[#1A1A1A] border border-gray-200 dark:border-[#2D2D2D] rounded-xl text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#BF0A30]";
-  const labelClass = "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5";
+  const inputClass = "w-full px-4 py-3 bg-[#0A0C10] border border-white/[0.06] rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-[#BF0A30]";
+  const labelClass = "block text-sm font-medium text-white/70 mb-1.5";
 
   return (
-    <div className="min-h-screen flex bg-white dark:bg-[#0F0F0F]">
+    <div className="min-h-screen flex bg-[#12151C]">
       <div
         className="hidden lg:flex lg:w-[40%] flex-col justify-center items-center p-12 relative"
         style={{ backgroundImage: "url('/images/connect-bg.jpg')", backgroundSize: 'cover', backgroundPosition: 'center' }}
@@ -275,7 +275,7 @@ export default function ConnectRegister() {
               {[1, 2, 3].map(s => (
                 <div key={s} className={`flex items-center gap-3 text-left ${step >= s ? 'opacity-100' : 'opacity-40'}`}>
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-bold ${
-                    step > s ? 'bg-green-500 text-white' : step === s ? 'bg-white text-[#BF0A30]' : 'bg-white/20 text-white'
+                    step > s ? 'bg-green-500 text-white' : step === s ? 'bg-[#12151C] text-[#BF0A30]' : 'bg-white/20 text-white'
                   }`}>{step > s ? '✓' : s}</div>
                   <span className="text-white text-sm">
                     {s === 1 ? 'Personal Details' : s === 2 ? 'Church Info' : 'Class Preferences'}
@@ -293,11 +293,11 @@ export default function ConnectRegister() {
             <Link href="/connect" className="flex items-center gap-2 text-gray-500 hover:text-[#BF0A30] text-sm">
               <ArrowLeft className="w-4 h-4" /> Back to Sign In
             </Link>
-            <div className="flex bg-gray-100 dark:bg-[#1A1A1A] rounded-xl p-1">
+            <div className="flex bg-white/5 rounded-xl p-1">
               {(['new', 'legacy'] as Mode[]).map(m => (
                 <button key={m} onClick={() => { setMode(m); setError(''); setStep(1); }}
                   className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all ${
-                    mode === m ? 'bg-white dark:bg-[#2D2D2D] text-[#BF0A30] shadow-sm' : 'text-gray-500'
+                    mode === m ? 'bg-[#12151C] text-[#BF0A30] shadow-sm' : 'text-gray-500'
                   }`}>
                   {m === 'new' ? 'New Registration' : 'Legacy Member'}
                 </button>
@@ -307,8 +307,8 @@ export default function ConnectRegister() {
 
           {mode === 'legacy' ? (
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Legacy Member Request</h2>
-              <p className="text-gray-500 dark:text-gray-400 mb-8 text-sm">
+              <h2 className="text-2xl font-bold text-white mb-2">Legacy Member Request</h2>
+              <p className="text-gray-500 mb-8 text-sm">
                 Already completed Connect Class before this system? Submit a verification request.
               </p>
               <div className="space-y-5">
@@ -346,12 +346,12 @@ export default function ConnectRegister() {
             </div>
           ) : (
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+              <h2 className="text-2xl font-bold text-white mb-2">
                 Step {step} of 3 — {step === 1 ? 'Personal Details' : step === 2 ? 'Church Information' : 'Class Preferences'}
               </h2>
               <div className="flex gap-2 mb-8">
                 {[1, 2, 3].map(s => (
-                  <div key={s} className={`h-1.5 flex-1 rounded-full transition-colors ${step >= s ? 'bg-[#BF0A30]' : 'bg-gray-200 dark:bg-[#2D2D2D]'}`} />
+                  <div key={s} className={`h-1.5 flex-1 rounded-full transition-colors ${step >= s ? 'bg-[#BF0A30]' : 'bg-gray-200'}`} />
                 ))}
               </div>
 
@@ -429,10 +429,10 @@ export default function ConnectRegister() {
                             className={`w-full text-left p-4 rounded-xl border-2 transition-all ${
                               form.cohortId === c.id
                                 ? 'border-[#BF0A30] bg-[#BF0A30]/5'
-                                : 'border-gray-200 dark:border-[#2D2D2D] hover:border-gray-300 dark:hover:border-[#3D3D3D]'
+                                : 'border-white/[0.06] hover:border-white/10 dark:hover:border-[#3D3D3D]'
                             }`}
                           >
-                            <p className={`font-semibold text-sm ${form.cohortId === c.id ? 'text-[#BF0A30]' : 'text-gray-900 dark:text-white'}`}>{c.name}</p>
+                            <p className={`font-semibold text-sm ${form.cohortId === c.id ? 'text-[#BF0A30]' : 'text-white'}`}>{c.name}</p>
                             {c.start_date && (
                               <p className="text-xs text-gray-500 mt-1">
                                 Starts {new Date(c.start_date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
@@ -450,7 +450,7 @@ export default function ConnectRegister() {
                       {[['physical', '🏛️ Physical'], ['virtual', '💻 Virtual']].map(([v, l]) => (
                         <button key={v} type="button" onClick={() => set('preferredClassType', v)}
                           className={`py-3 rounded-xl border-2 text-sm font-medium transition-all ${
-                            form.preferredClassType === v ? 'border-[#BF0A30] bg-[#BF0A30]/5 text-[#BF0A30]' : 'border-gray-200 dark:border-[#2D2D2D] text-gray-600 dark:text-gray-400'
+                            form.preferredClassType === v ? 'border-[#BF0A30] bg-[#BF0A30]/5 text-[#BF0A30]' : 'border-white/[0.06] text-white/50'
                           }`}>{l}</button>
                       ))}
                     </div>
@@ -461,7 +461,7 @@ export default function ConnectRegister() {
                       {[['yes', 'Yes'], ['no', 'No'], ['not-sure', 'Not Sure']].map(([v, l]) => (
                         <button key={v} type="button" onClick={() => set('acceptedJesus', v)}
                           className={`py-3 rounded-xl border-2 text-sm font-medium transition-all ${
-                            form.acceptedJesus === v ? 'border-[#BF0A30] bg-[#BF0A30]/5 text-[#BF0A30]' : 'border-gray-200 dark:border-[#2D2D2D] text-gray-600 dark:text-gray-400'
+                            form.acceptedJesus === v ? 'border-[#BF0A30] bg-[#BF0A30]/5 text-[#BF0A30]' : 'border-white/[0.06] text-white/50'
                           }`}>{l}</button>
                       ))}
                     </div>
@@ -490,7 +490,7 @@ export default function ConnectRegister() {
                 <div className="flex gap-3 pt-2">
                   {step > 1 && (
                     <button type="button" onClick={() => setStep((step - 1) as Step)}
-                      className="flex items-center gap-2 px-6 py-3 border border-gray-200 dark:border-[#2D2D2D] rounded-xl text-gray-600 dark:text-gray-400 font-medium hover:border-[#BF0A30] hover:text-[#BF0A30]">
+                      className="flex items-center gap-2 px-6 py-3 border border-white/[0.06] rounded-xl text-white/50 font-medium hover:border-[#BF0A30] hover:text-[#BF0A30]">
                       <ArrowLeft className="w-4 h-4" /> Back
                     </button>
                   )}
@@ -505,7 +505,7 @@ export default function ConnectRegister() {
             </div>
           )}
 
-          <p className="text-center text-gray-500 dark:text-gray-400 text-sm mt-8">
+          <p className="text-center text-gray-500 text-sm mt-8">
             Already registered?{' '}
             <Link href="/connect" className="text-[#BF0A30] font-semibold hover:underline">Sign in here</Link>
           </p>

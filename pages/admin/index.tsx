@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { Users, Home, GraduationCap, Calendar, AlertCircle, ChevronRight, UserPlus, ArrowRight, Loader2 } from 'lucide-react';
 import { AdminLayout, StatCard, PageHeader } from '@/components/connect/AdminLayout';
+import { IntroGuide } from '@/components/connect/IntroGuide';
 import { supabase } from '@/lib/supabase';
 
 interface Stats {
@@ -80,7 +81,8 @@ export default function AdminDashboard() {
   ].filter(item => item.count > 0);
 
   return (
-    <AdminLayout title="Dashboard">
+    <AdminLayout title="Dashboard" requirePermission={{ moduleKey: 'dashboard', action: 'view' }}>
+      <IntroGuide />
       <PageHeader title="Dashboard" subtitle="Welcome back! Here's what's happening at Ruach today." />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -93,17 +95,17 @@ export default function AdminDashboard() {
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           {attentionItems.length > 0 && (
-            <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-6">
+            <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-6">
               <div className="flex items-center gap-2 mb-4">
                 <AlertCircle className="w-5 h-5 text-[#BF0A30]" />
-                <h2 className="font-semibold text-gray-900 dark:text-white">Requires Attention</h2>
+                <h2 className="font-semibold text-white">Requires Attention</h2>
               </div>
               <div className="space-y-3">
                 {attentionItems.map((item, i) => (
-                  <Link key={i} href={item.href} className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-[#252525] hover:bg-gray-100 dark:hover:bg-[#2D2D2D]">
+                  <Link key={i} href={item.href} className="flex items-center justify-between p-3 rounded-lg bg-white/[0.04] hover:bg-white/[0.08]">
                     <div className="flex items-center gap-3">
                       <span className="inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-full bg-amber-100 text-amber-800">{item.count}</span>
-                      <span className="text-sm text-gray-700 dark:text-gray-300">{item.label}</span>
+                      <span className="text-sm text-white/70">{item.label}</span>
                     </div>
                     <ChevronRight className="w-4 h-4 text-gray-400" />
                   </Link>
@@ -117,8 +119,8 @@ export default function AdminDashboard() {
               <h2 className="font-semibold text-gray-900 dark:text-white">Recent Guests</h2>
               <Link href="/admin/members/guests" className="text-sm text-[#BF0A30] hover:underline flex items-center gap-1">View all <ArrowRight className="w-4 h-4" /></Link>
             </div>
-            <div className="divide-y divide-gray-100 dark:divide-[#2D2D2D]">
-              {recentGuests.map((guest) => (
+            <div className="divide-y divide-white/[0.06]">
+              {recentGuests.length > 0 ? recentGuests.map((guest) => (
                 <div key={guest.id} className="flex items-center justify-between p-4">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-[#BF0A30] flex items-center justify-center text-white font-semibold text-sm">{guest.first_name[0]}{guest.last_name[0]}</div>
@@ -129,8 +131,9 @@ export default function AdminDashboard() {
                   </div>
                   <span className={`px-2.5 py-1 text-xs font-semibold rounded-full ${guest.follow_up_status === 'pending' ? 'bg-amber-100 text-amber-800' : 'bg-green-100 text-green-800'}`}>{guest.follow_up_status}</span>
                 </div>
-              ))}
-              {recentGuests.length === 0 && <div className="p-8 text-center text-gray-500">No guests yet</div>}
+              )) : (
+                <div className="p-8 text-center text-gray-500">No guests yet</div>
+              )}
             </div>
           </div>
 
@@ -142,22 +145,21 @@ export default function AdminDashboard() {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="text-left text-xs font-semibold text-gray-500 uppercase bg-gray-50 dark:bg-[#252525]">
-                    <th className="py-3 px-4">Member</th><th className="py-3 px-4">ID</th><th className="py-3 px-4">Role</th><th className="py-3 px-4">Crosspoint</th><th className="py-3 px-4">Status</th>
+                  <tr className="text-left text-xs font-semibold text-gray-500 uppercase bg-white/[0.04]">
+                    <th className="py-3 px-4">Member</th><th className="py-3 px-4">ID</th><th className="py-3 px-4">Role</th><th className="py-3 px-4">Status</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100 dark:divide-[#2D2D2D]">
+                <tbody className="divide-y divide-white/[0.06]">
                   {recentMembers.map((m) => (
-                    <tr key={m.id} className="hover:bg-gray-50 dark:hover:bg-[#252525]">
+                    <tr key={m.id} className="hover:bg-white/[0.06]">
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-full bg-[#BF0A30] flex items-center justify-center text-white text-xs font-semibold">{m.first_name[0]}{m.last_name[0]}</div>
                           <span className="font-medium text-gray-900 dark:text-white">{m.first_name} {m.last_name}</span>
                         </div>
                       </td>
-                      <td className="py-3 px-4 font-mono text-sm text-gray-600 dark:text-gray-400">{m.member_id}</td>
+                      <td className="py-3 px-4 font-mono text-sm text-gray-600 dark:text-gray-400">{m.member_id ?? '—'}</td>
                       <td className="py-3 px-4"><span className="px-2 py-0.5 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 capitalize">{m.role}</span></td>
-                      <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">{m.crosspointName ?? '—'}</td>
                       <td className="py-3 px-4"><span className="px-2 py-0.5 text-xs font-medium rounded-full bg-green-100 text-green-800 capitalize">{m.status}</span></td>
                     </tr>
                   ))}
@@ -169,18 +171,18 @@ export default function AdminDashboard() {
         </div>
 
         <div className="space-y-6">
-          <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-6">
-            <h2 className="font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h2>
+          <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-6">
+            <h2 className="font-semibold text-white mb-4">Quick Actions</h2>
             <div className="space-y-2">
               <Link href="/admin/members/new" className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium bg-[#BF0A30] text-white hover:bg-[#B00325]"><UserPlus className="w-4 h-4" />Add New Member</Link>
-              <Link href="/admin/crosspoints/new" className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium border border-gray-300 dark:border-[#2D2D2D] text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#252525]"><Home className="w-4 h-4" />Create Crosspoint</Link>
-              <Link href="/admin/events/new" className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium border border-gray-300 dark:border-[#2D2D2D] text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#252525]"><Calendar className="w-4 h-4" />Create Event</Link>
+              <Link href="/admin/crosspoints/new" className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium border border-white/10 text-white/70 hover:bg-white/[0.06]"><Home className="w-4 h-4" />Create Crosspoint</Link>
+              <Link href="/admin/events/new" className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium border border-white/10 text-white/70 hover:bg-white/[0.06]"><Calendar className="w-4 h-4" />Create Event</Link>
             </div>
           </div>
 
-          <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D]">
-            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-[#2D2D2D]">
-              <h2 className="font-semibold text-gray-900 dark:text-white">Crosspoints</h2>
+          <div className="bg-[#12151C] rounded-xl border border-white/[0.06]">
+            <div className="flex items-center justify-between p-4 border-b border-white/[0.06]">
+              <h2 className="font-semibold text-white">Crosspoints</h2>
               <Link href="/admin/crosspoints" className="text-sm text-[#BF0A30] hover:underline">View all</Link>
             </div>
             <div className="divide-y divide-gray-100 dark:divide-[#2D2D2D]">

@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { ArrowLeft, Clock, CheckCircle, XCircle, Search, User, Calendar, MapPin, Building, Loader2 } from 'lucide-react';
 import { ConnectLayout } from '@/components/connect/ConnectLayout';
 import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/context/AuthContext';
 
 interface LegacyRequest {
   id: string;
@@ -34,6 +35,7 @@ const zoneLabels: Record<string, string> = {
 };
 
 export default function LegacyRequestsPage() {
+  const { profile, loading: authLoading } = useAuth();
   const [requests, setRequests] = useState<LegacyRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -53,14 +55,16 @@ export default function LegacyRequestsPage() {
     setLoading(false);
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    if (!authLoading && profile) load();
+  }, [authLoading, profile, load]);
 
   const selectedRequest = requests.find(r => r.id === selectedId) ?? null;
 
   const filteredRequests = requests.filter(r => {
     const matchesStatus = filterStatus === 'all' || r.status === filterStatus;
     const q = searchQuery.toLowerCase();
-    const matchesSearch = r.full_name.toLowerCase().includes(q) || r.email.toLowerCase().includes(q);
+    const matchesSearch = (r.full_name ?? '').toLowerCase().includes(q) || (r.email ?? '').toLowerCase().includes(q);
     return matchesStatus && matchesSearch;
   });
 
@@ -85,6 +89,26 @@ export default function LegacyRequestsPage() {
     if (!res.ok) { setError(data.error ?? 'Failed to process request'); return; }
     setReviewNotes('');
     await load();
+  }
+
+  if (authLoading || loading) {
+    return (
+      <ConnectLayout title="Legacy Verification">
+        <div className="flex items-center justify-center py-32">
+          <Loader2 className="w-8 h-8 animate-spin text-[#BF0A30]" />
+        </div>
+      </ConnectLayout>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <ConnectLayout title="Legacy Verification">
+        <div className="flex items-center justify-center py-32">
+          <p className="text-gray-500">Please sign in to view legacy requests.</p>
+        </div>
+      </ConnectLayout>
+    );
   }
 
   return (
@@ -119,9 +143,6 @@ export default function LegacyRequestsPage() {
           </div>
         </div>
 
-        {loading ? (
-          <div className="flex justify-center py-16"><Loader2 className="w-6 h-6 animate-spin text-gray-400" /></div>
-        ) : (
         <div className="grid lg:grid-cols-5 gap-6">
           {/* Requests List */}
           <div className="lg:col-span-2 bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D]">
@@ -262,6 +283,7 @@ export default function LegacyRequestsPage() {
                     </div>
                   </div>
 
+                  {/* Additional Info */}
                   {selectedRequest.additional_info && (
                     <div>
                       <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Additional Information</h3>
@@ -331,7 +353,6 @@ export default function LegacyRequestsPage() {
             )}
           </div>
         </div>
-        )}
       </div>
     </ConnectLayout>
   );

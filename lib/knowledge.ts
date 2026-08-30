@@ -4,7 +4,7 @@ import { KnowledgeBase, ChurchInfo, Event, FAQ, SermonSummary } from '@/types';
 // In-memory cache
 let knowledgeCache: KnowledgeBase | null = null;
 let cacheTimestamp: number = 0;
-const CACHE_DURATION = 60 * 60 * 1000; // 1 hour in milliseconds
+const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes in milliseconds
 
 /**
  * Fetches and caches the church knowledge base for CAG
@@ -113,9 +113,9 @@ async function fetchActiveFAQs(): Promise<FAQ[]> {
 async function fetchSermonSummaries(): Promise<SermonSummary[]> {
   const { data, error } = await supabase
     .from('sermons')
-    .select('id, slug, title, preacher, service_date, description, scripture_ref, tags')
+    .select('id, slug, title, preacher, service_date, description, scripture_ref, tags, notes, youtube_url')
     .order('service_date', { ascending: false })
-    .limit(50); // Last 50 sermons for context
+    .limit(30);
   
   if (error) {
     console.error('Error fetching sermons:', error);
@@ -165,6 +165,7 @@ export function buildSystemPrompt(knowledge: KnowledgeBase): string {
 7. Keep responses concise and focused - avoid long rambling answers
 8. DO NOT use markdown formatting like ** for bold or * for italics
 9. You may use emojis sparingly when appropriate 😊
+10. NEVER invent, guess, or assume events, dates, times, programs, prices, or names. Only state events listed under "UPCOMING EVENTS" below — if none are listed there, tell the person nothing is scheduled at the moment. Making up an event is a serious error.
 
 ## INSTANT ANSWERS — USE THESE FIRST (no lookup needed)
 ${COMMON_QA.map(qa => `Q: ${qa.q}\nA: ${qa.a}`).join('\n\n')}
@@ -212,6 +213,8 @@ ${church_info.website ? `- Website: ${church_info.website}` : ''}
       }
     });
     prompt += '\n';
+  } else {
+    prompt += `### UPCOMING EVENTS\nThere are NO upcoming events on the calendar right now. If someone asks about events, tell them plainly that nothing is scheduled at the moment and to check the Events page — do NOT invent an event, date, or name.\n\n`;
   }
 
   // FAQs
@@ -224,19 +227,16 @@ ${church_info.website ? `- Website: ${church_info.website}` : ''}
 
   // Recent Sermons
   if (sermons.length > 0) {
-    prompt += `### RECENT SERMONS\nWhen someone asks about sermons or teachings, reference these. Provide the link format: /sermons/[slug]\n\n`;
-    sermons.slice(0, 20).forEach((sermon) => {
-      const date = new Date(sermon.service_date).toLocaleDateString('en-US', {
-        month: 'long',
-        day: 'numeric',
-        year: 'numeric',
-      });
-      prompt += `- "${sermon.title}" by ${sermon.preacher} (${date})`;
-      if (sermon.scripture_ref) prompt += ` - ${sermon.scripture_ref}`;
-      prompt += `\n  Link: /sermons/${sermon.slug}\n`;
+    prompt += `### SERMONS LIBRARY\nWhen someone asks about a sermon topic, teaching, or wants to learn about something spiritually, find relevant sermons below and summarize the key points FROM THOSE SERMONS. Always provide the watch link.\nIMPORTANT: Sermon links use the format /${'{'}slug{'}'} (not /sermons/slug).\n\n`;
+    sermons.slice(0, 25).forEach((sermon) => {
+      const date = new Date(sermon.service_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+      prompt += `SERMON: "${sermon.title}"\nPreacher: ${sermon.preacher} | Date: ${date}${sermon.scripture_ref ? ` | Scripture: ${sermon.scripture_ref}` : ''}\nWatch: /${sermon.slug}\n`;
       if (sermon.description) {
-        const shortSummary = sermon.description.substring(0, 200).replace(/\n/g, ' ').replace(/[*#_]/g, '');
-        prompt += `  Summary: ${shortSummary}...\n`;
+        prompt += `Description: ${sermon.description.substring(0, 150).replace(/\n/g, ' ').replace(/[*#_]/g, '')}\n`;
+      }
+      if (sermon.notes) {
+        const notesText = sermon.notes.substring(0, 400).replace(/[#*_`]/g, '').replace(/\n+/g, ' ');
+        prompt += `Sermon content: ${notesText}\n`;
       }
       prompt += '\n';
     });
@@ -248,10 +248,12 @@ ${church_info.website ? `- Website: ${church_info.website}` : ''}
 2. For prayer requests, encourage them to submit through the church or speak with a pastor
 3. For urgent matters, recommend calling the church phone number
 4. When mentioning sermons, include the link so users can listen/watch
-5. Be encouraging and supportive, reflecting the love of Christ
-6. Keep responses focused and to the point
-7. Never make up information - only use what's in your knowledge base
-8. For questions about faith/Bible, you can provide general Christian guidance
+5. When someone asks about a spiritual topic, summarize what our sermons teach about it, then recommend the specific sermon(s) with the watch link
+6. When recommending sermons, provide the link as: Watch here: /slug (using the exact slug from the library above)
+7. Be encouraging and supportive, reflecting the love of Christ
+8. Keep responses focused and to the point
+9. Never make up information - only use what's in your knowledge base
+10. For questions about faith/Bible, you can provide general Christian guidance
 
 Remember: You represent the church. Always be gracious, helpful, and stay within your role as a church assistant!`;
 

@@ -112,7 +112,7 @@ export default function DiscipleshipCohortsPage() {
     <DiscipleshipLayout title="Cohorts">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white">Discipleship Cohorts</h1>
+          <h1 className="text-xl font-bold text-white">Discipleship Cohorts</h1>
           <p className="text-gray-500">{stats.total} cohorts across all levels</p>
         </div>
         <button
@@ -124,21 +124,21 @@ export default function DiscipleshipCohortsPage() {
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-4">
+        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-4">
           <p className="text-sm text-gray-500">Total Cohorts</p>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total}</p>
+          <p className="text-2xl font-bold text-white">{stats.total}</p>
         </div>
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-green-200 dark:border-green-800 p-4">
+        <div className="bg-[#12151C] rounded-xl border border-green-200 dark:border-green-800 p-4">
           <p className="text-sm text-gray-500">Active</p>
           <p className="text-2xl font-bold text-green-600">{stats.active}</p>
         </div>
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-blue-200 dark:border-blue-800 p-4">
+        <div className="bg-[#12151C] rounded-xl border border-blue-200 dark:border-blue-800 p-4">
           <p className="text-sm text-gray-500">Open Registration</p>
           <p className="text-2xl font-bold text-blue-600">{stats.open}</p>
         </div>
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-4">
+        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-4">
           <p className="text-sm text-gray-500">Total Enrolled</p>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.enrolled}</p>
+          <p className="text-2xl font-bold text-white">{stats.enrolled}</p>
         </div>
       </div>
 
@@ -154,7 +154,7 @@ export default function DiscipleshipCohortsPage() {
                   className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${
                     filterLevel === l
                       ? 'bg-[#BF0A30] text-white'
-                      : 'border border-gray-300 dark:border-[#2D2D2D] text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#252525]'
+                      : 'border border-white/10 dark:border-[#2D2D2D] text-white/70 hover:bg-white/[0.06]'
                   }`}
                 >
                   {l === 'all' ? 'All Levels' : `Level ${l}`}
@@ -165,7 +165,7 @@ export default function DiscipleshipCohortsPage() {
           <div>
             <label className="block text-xs font-medium text-gray-500 mb-1">Status</label>
             <select
-              className="px-4 py-2 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg bg-transparent text-gray-900 dark:text-white"
+              className="px-4 py-2 text-sm border border-white/10 dark:border-[#2D2D2D] rounded-lg bg-transparent text-white"
               value={filterStatus}
               onChange={e => setFilterStatus(e.target.value as CohortStatus | 'all')}
             >
@@ -189,7 +189,7 @@ export default function DiscipleshipCohortsPage() {
           const capacity = cohort.max_capacity > 0 ? Math.round((cohort.enrolled_count / cohort.max_capacity) * 100) : 0;
 
           return (
-            <div key={cohort.id} className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-5 hover:border-[#BF0A30]/30 transition-colors">
+            <div key={cohort.id} className="bg-[#12151C] rounded-xl border border-white/[0.06] p-5 hover:border-[#BF0A30]/30 transition-colors">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-start gap-4">
                   <div className="w-14 h-14 rounded-xl bg-[#BF0A30] text-white flex items-center justify-center text-lg font-bold flex-shrink-0">
@@ -197,7 +197,7 @@ export default function DiscipleshipCohortsPage() {
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="font-semibold text-gray-900 dark:text-white">{cohort.name}</h3>
+                      <h3 className="font-semibold text-white">{cohort.name}</h3>
                       <span className={`px-2.5 py-0.5 text-xs font-semibold rounded-full ${cfg.color}`}>{cfg.label}</span>
                     </div>
                     <p className="text-sm text-gray-500 mt-0.5">{course?.title}</p>
@@ -215,7 +215,7 @@ export default function DiscipleshipCohortsPage() {
                     <p className="text-xs text-gray-500 mt-1">{cohort.schedule}</p>
 
                     <div className="mt-2 flex items-center gap-3">
-                      <div className="flex-1 h-1.5 bg-gray-100 dark:bg-[#2D2D2D] rounded-full overflow-hidden">
+                      <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
                         <div
                           className={`h-full rounded-full ${capacity >= 90 ? 'bg-red-500' : capacity >= 70 ? 'bg-amber-500' : 'bg-green-500'}`}
                           style={{ width: `${Math.min(capacity, 100)}%` }}
@@ -227,7 +227,7 @@ export default function DiscipleshipCohortsPage() {
                 </div>
                 <Link
                   href={`/discipleship/cohorts/${cohort.id}`}
-                  className="flex items-center gap-1 px-4 py-2 text-sm font-medium border border-gray-300 dark:border-[#2D2D2D] rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#252525] flex-shrink-0"
+                  className="flex items-center gap-1 px-4 py-2 text-sm font-medium border border-white/10 dark:border-[#2D2D2D] rounded-lg text-white/70 hover:bg-white/[0.06] flex-shrink-0"
                 >
                   View<ChevronRight className="w-4 h-4" />
                 </Link>
@@ -237,7 +237,7 @@ export default function DiscipleshipCohortsPage() {
         })}
 
         {filtered.length === 0 && (
-          <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-12 text-center text-gray-500">
+          <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-12 text-center text-gray-500">
             No cohorts found
           </div>
         )}
@@ -246,8 +246,8 @@ export default function DiscipleshipCohortsPage() {
 
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-[#1A1A1A] rounded-2xl w-full max-w-md p-6">
-            <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-5">New Cohort</h2>
+          <div className="bg-[#12151C] rounded-2xl w-full max-w-md p-6">
+            <h2 className="text-lg font-bold text-white mb-5">New Cohort</h2>
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cohort Name</label>

@@ -116,7 +116,7 @@ export default function GlobalSearchPage() {
   ];
 
   return (
-    <AdminLayout title="Search">
+    <AdminLayout title="Search" requirePermission={{ moduleKey: 'search', action: 'view' }}>
       <div className="max-w-3xl mx-auto px-4 py-8">
 
         <div className="mb-8">

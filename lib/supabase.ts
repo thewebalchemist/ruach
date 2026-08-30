@@ -12,7 +12,16 @@ if (!supabaseUrl || !supabaseAnonKey) {
 // createServerClient, instead of trusting a client-set sentinel cookie.
 // Untyped: supports both streaming tables (sermons, series, stream_settings…)
 // and connect tables (profiles, cohorts…) without requiring a unified Database type.
-export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    // Bypass the browser Web Locks API. Its default lock can be left held after a
+    // tab sleeps/backgrounds, which makes the NEXT auth call (signInWithPassword,
+    // getSession) wait forever — the "stuck on Signing in… until I clear cookies"
+    // bug. A no-op lock drops cross-tab refresh serialisation (harmless for this
+    // app) and removes the hang.
+    lock: <R>(_name: string, _acquireTimeout: number, fn: () => Promise<R>): Promise<R> => fn(),
+  },
+});
 
 
 export type Profile = {
@@ -22,7 +31,7 @@ export type Profile = {
   first_name: string;
   last_name: string;
   full_name: string;
-  role: 'student' | 'member' | 'leader' | 'teacher' | 'admin' | 'pastor';
+  role: 'student' | 'member' | 'leader' | 'teacher' | 'admin' | 'pastor' | 'media';
   status: 'pending' | 'active' | 'suspended' | 'inactive';
   avatar_url: string | null;
   gender: 'male' | 'female' | null;

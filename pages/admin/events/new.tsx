@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save, Upload, X } from 'lucide-react';
 import { AdminLayout, PageHeader } from '@/components/connect/AdminLayout';
 import { supabase } from '@/lib/supabase';
 
@@ -11,17 +11,56 @@ export default function NewEventPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [uploading, setUploading] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [departments, setDepartments] = useState<Option[]>([]);
   const [crosspoints, setCrosspoints] = useState<Option[]>([]);
   const [formData, setFormData] = useState({
     title: '', description: '', type: 'church-wide', departmentId: '', crosspointId: '',
-    startDate: '', endDate: '', time: '', venue: '', capacity: '', requiresRegistration: false,
+    event_date: '', end_date: '', start_time: '', end_time: '', location: '',
+    capacity: '', requiresRegistration: false,
+    image_url: '', is_public: true, chatbot_enabled: true,
   });
 
   useEffect(() => {
     supabase.from('departments').select('id, name').order('name').then(({ data }) => setDepartments(data ?? []));
     supabase.from('crosspoints').select('id, name').eq('status', 'active').order('name').then(({ data }) => setCrosspoints(data ?? []));
   }, []);
+
+  async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    try {
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const base64 = (reader.result as string).split(',')[1];
+        const { data: { session } } = await supabase.auth.getSession();
+        const res = await fetch('/api/admin/upload-image', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token ?? ''}` },
+          body: JSON.stringify({
+            file_base64: base64,
+            file_name: file.name,
+            content_type: file.type,
+          }),
+        });
+        const result = await res.json();
+        if (res.ok && result.url) {
+          setFormData(prev => ({ ...prev, image_url: result.url }));
+          setImagePreview(result.url);
+        } else {
+          alert(result.error || 'Upload failed');
+        }
+        setUploading(false);
+      };
+      reader.readAsDataURL(file);
+    } catch {
+      alert('Upload failed');
+      setUploading(false);
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,14 +71,19 @@ export default function NewEventPage() {
       title: formData.title,
       description: formData.description || null,
       type: formData.type,
+      category: formData.type,
       department_id: formData.type === 'department' ? (formData.departmentId || null) : null,
       crosspoint_id: formData.type === 'crosspoint' ? (formData.crosspointId || null) : null,
-      event_date: formData.startDate,
-      end_date: formData.endDate || null,
-      start_time: formData.time || null,
-      location: formData.venue || null,
+      event_date: formData.event_date,
+      end_date: formData.end_date || null,
+      start_time: formData.start_time || null,
+      end_time: formData.end_time || null,
+      location: formData.location || null,
       capacity: formData.requiresRegistration && formData.capacity ? parseInt(formData.capacity, 10) : null,
       requires_registration: formData.requiresRegistration,
+      image_url: formData.image_url || null,
+      is_public: formData.is_public,
+      chatbot_enabled: formData.chatbot_enabled,
       status: 'upcoming',
       created_by: session?.user.id ?? null,
     });
@@ -108,19 +152,47 @@ export default function NewEventPage() {
           </div>
 
           <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-6">
+            <h2 className="font-semibold text-gray-900 dark:text-white mb-4">Event Image</h2>
+            <div className="space-y-4">
+              {imagePreview ? (
+                <div className="relative">
+                  <img src={imagePreview} alt="Event preview" className="w-full max-h-64 object-cover rounded-lg" />
+                  <button
+                    type="button"
+                    onClick={() => { setImagePreview(null); setFormData(prev => ({ ...prev, image_url: '' })); }}
+                    className="absolute top-2 right-2 p-1.5 bg-red-600 text-white rounded-full hover:bg-red-700"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : (
+                <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-gray-300 dark:border-[#2D2D2D] rounded-lg cursor-pointer hover:border-[#BF0A30]/50 transition-colors">
+                  <Upload className="w-8 h-8 text-gray-400 mb-2" />
+                  <span className="text-sm text-gray-500">{uploading ? 'Uploading...' : 'Click to upload event image'}</span>
+                  <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" disabled={uploading} />
+                </label>
+              )}
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-6">
             <h2 className="font-semibold text-gray-900 dark:text-white mb-4">Date & Time</h2>
-            <div className="grid sm:grid-cols-3 gap-4">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Start Date *</label>
-                <input type="date" name="startDate" value={formData.startDate} onChange={handleChange} required className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg" />
+                <input type="date" name="event_date" value={formData.event_date} onChange={handleChange} required className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">End Date</label>
-                <input type="date" name="endDate" value={formData.endDate} onChange={handleChange} className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg" />
+                <input type="date" name="end_date" value={formData.end_date} onChange={handleChange} className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Time *</label>
-                <input type="text" name="time" value={formData.time} onChange={handleChange} placeholder="e.g., 9:00 AM - 12:00 PM" required className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg" />
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Start Time</label>
+                <input type="time" name="start_time" value={formData.start_time} onChange={handleChange} className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">End Time</label>
+                <input type="time" name="end_time" value={formData.end_time} onChange={handleChange} className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg" />
               </div>
             </div>
           </div>
@@ -130,7 +202,7 @@ export default function NewEventPage() {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Venue *</label>
-                <input type="text" name="venue" value={formData.venue} onChange={handleChange} required className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg" />
+                <input type="text" name="location" value={formData.location} onChange={handleChange} required className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg" />
               </div>
               <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-[#252525] rounded-lg">
                 <input type="checkbox" name="requiresRegistration" checked={formData.requiresRegistration} onChange={handleChange} className="w-4 h-4 text-[#BF0A30] rounded" />
@@ -145,6 +217,20 @@ export default function NewEventPage() {
                   <input type="number" name="capacity" value={formData.capacity} onChange={handleChange} placeholder="Maximum attendees" className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg" />
                 </div>
               )}
+              <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-[#252525] rounded-lg">
+                <input type="checkbox" name="is_public" checked={formData.is_public} onChange={handleChange} className="w-4 h-4 text-[#BF0A30] rounded" />
+                <div>
+                  <label className="font-medium text-gray-900 dark:text-white">Publicly Visible</label>
+                  <p className="text-sm text-gray-500">Show this event on the public site</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-[#252525] rounded-lg">
+                <input type="checkbox" name="chatbot_enabled" checked={formData.chatbot_enabled} onChange={handleChange} className="w-4 h-4 text-[#BF0A30] rounded" />
+                <div>
+                  <label className="font-medium text-gray-900 dark:text-white">Include in AI Assistant</label>
+                  <p className="text-sm text-gray-500">Let the chatbot answer questions about this event</p>
+                </div>
+              </div>
             </div>
           </div>
 

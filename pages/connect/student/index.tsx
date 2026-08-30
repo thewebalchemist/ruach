@@ -7,9 +7,8 @@ import {
   Award, Calendar, BookOpen, ClipboardList, AlertTriangle,
   CheckCircle, XCircle, Clock, FileText, Video, ExternalLink,
   Bell, LogOut, ChevronRight, MapPin, Sparkles,
-  Sun, Moon, ArrowRight, GraduationCap, Star, Loader2
+  ArrowRight, GraduationCap, Star, Loader2
 } from 'lucide-react';
-import { useTheme } from 'next-themes';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabase';
 
@@ -40,7 +39,6 @@ interface ResourceRow { id: string; session_id: string; title: string; url: stri
 interface Teacher { first_name: string; last_name: string; phone: string | null }
 
 export default function ConnectStudentDashboard() {
-  const { theme, setTheme } = useTheme();
   const { profile, signOut } = useAuth();
 
   const [loading, setLoading]       = useState(true);
@@ -104,20 +102,20 @@ export default function ConnectStudentDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#F0F2F5] dark:bg-[#080808] flex items-center justify-center">
-        <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+      <div className="min-h-screen bg-[#0A0C10] flex items-center justify-center">
+        <Loader2 className="w-7 h-7 text-[#BF0A30] animate-spin" />
       </div>
     );
   }
 
   if (!student || !cohort || !profile) {
     return (
-      <div className="min-h-screen bg-[#F0F2F5] dark:bg-[#080808] flex items-center justify-center">
+      <div className="min-h-screen bg-[#0A0C10] flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 bg-red-50 dark:bg-red-900/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 bg-red-900/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <BookOpen className="w-8 h-8 text-[#BF0A30]" />
           </div>
-          <h2 className="font-black text-gray-900 dark:text-white mb-2">No Enrollment Found</h2>
+          <h2 className="font-black text-white mb-2">No Enrollment Found</h2>
           <p className="text-gray-500 mb-6 text-sm">You are not enrolled in a Connect class yet.</p>
           <Link href="/connect/register" className="btn btn-primary gap-2">
             Register for Connect Class <ArrowRight className="w-4 h-4" />
@@ -139,37 +137,31 @@ export default function ConnectStudentDashboard() {
   const examMet       = student.average_exam_score >= cohort.min_exam_score;
 
   return (
-    <div className="min-h-screen bg-[#F0F2F5] dark:bg-[#080808]">
+    <div className="min-h-screen bg-[#0A0C10]">
 
-      {/* ── Header ──────────────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-30 bg-white/95 dark:bg-[#111]/98 backdrop-blur-xl border-b border-gray-200/80 dark:border-white/[0.06]">
+      {/* Header */}
+      <header className="sticky top-0 z-30 bg-[#0A0C10]/98 backdrop-blur-xl border-b border-white/[0.06]">
         <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#BF0A30] to-[#7D0018] flex items-center justify-center shadow-md shadow-[#BF0A30]/20">
               <img src="/brand/ruach-logo.png" alt="Ruach" className="w-6 h-6 rounded-full opacity-90" />
             </div>
             <div>
-              <p className="font-black text-gray-900 dark:text-white text-sm leading-tight tracking-tight">Connect Class</p>
+              <p className="font-black text-white text-sm leading-tight tracking-tight">Connect Class</p>
               <p className="text-[10px] text-gray-400 leading-tight">Student Portal</p>
             </div>
           </div>
           <div className="flex items-center gap-1.5">
-            <button
-              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-              className="p-2.5 rounded-xl text-gray-500 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors"
-            >
-              {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-            </button>
-            <button className="relative p-2.5 rounded-xl text-gray-500 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors">
+            <button className="relative p-2.5 rounded-xl text-gray-500 hover:bg-white/5 transition-colors">
               <Bell className="w-4 h-4" />
               {warnings.length > 0 && (
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#BF0A30] rounded-full ring-2 ring-white dark:ring-[#111]" />
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#BF0A30] rounded-full ring-2 ring-[#111]" />
               )}
             </button>
             <div className="ml-1 w-9 h-9 rounded-xl bg-gradient-to-br from-[#BF0A30] to-[#7D0018] flex items-center justify-center text-white text-xs font-black shadow-md shadow-[#BF0A30]/20">
               {profile.first_name?.[0]}{profile.last_name?.[0]}
             </div>
-            <button onClick={signOut} className="p-2.5 rounded-xl text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+            <button onClick={signOut} className="p-2.5 rounded-xl text-gray-500 hover:text-red-500 hover:bg-red-900/20 transition-colors">
               <LogOut className="w-4 h-4" />
             </button>
           </div>
@@ -178,7 +170,7 @@ export default function ConnectStudentDashboard() {
 
       <main className="max-w-5xl mx-auto px-4 py-6 space-y-5 animate-fade-in">
 
-        {/* ── Welcome Hero ─────────────────────────────────────────────────────── */}
+        {/* Welcome Hero */}
         <div className="relative bg-gradient-to-br from-[#BF0A30] via-[#A0021F] to-[#6B0015] rounded-2xl p-6 text-white overflow-hidden">
           <div className="absolute inset-0 opacity-[0.05]" style={{
             backgroundImage: 'repeating-linear-gradient(45deg, #fff 0, #fff 1px, transparent 0, transparent 50%)',
@@ -225,27 +217,27 @@ export default function ConnectStudentDashboard() {
           </div>
         </div>
 
-        {/* ── Warning Banner ───────────────────────────────────────────────────── */}
+        {/* Warning Banner */}
         {warnings.length > 0 && (
-          <div className="flex items-start gap-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl px-4 py-3">
+          <div className="flex items-start gap-3 bg-red-900/20 border border-red-800 rounded-xl px-4 py-3">
             <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
             <div>
-              <p className="font-bold text-red-800 dark:text-red-200 text-sm">Attention Required</p>
+              <p className="font-bold text-red-200 text-sm">Attention Required</p>
               {warnings.map(w => (
-                <p key={w.id} className="text-sm text-red-700 dark:text-red-300 mt-0.5">{w.message}</p>
+                <p key={w.id} className="text-sm text-red-300 mt-0.5">{w.message}</p>
               ))}
             </div>
           </div>
         )}
 
-        {/* ── Stats Row ────────────────────────────────────────────────────────── */}
+        {/* Stats Row */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             {
               label: 'Sessions Attended',
               value: `${attendedSessions}/${totalSessionsAttendable}`,
               icon: ClipboardList,
-              color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-900/20',
+              color: 'text-blue-600', bg: 'bg-blue-900/20',
               alert: false,
             },
             {
@@ -253,7 +245,7 @@ export default function ConnectStudentDashboard() {
               value: `${student.total_attendance_percent}%`,
               icon: Calendar,
               color: isAtRisk ? 'text-red-600' : 'text-green-600',
-              bg: isAtRisk ? 'bg-red-50 dark:bg-red-900/20' : 'bg-green-50 dark:bg-green-900/20',
+              bg: isAtRisk ? 'bg-red-900/20' : 'bg-green-900/20',
               alert: isAtRisk,
               sub: isAtRisk ? 'Min. 80% required' : undefined,
             },
@@ -261,7 +253,7 @@ export default function ConnectStudentDashboard() {
               label: 'Exams Taken',
               value: results.length,
               icon: BookOpen,
-              color: 'text-purple-600', bg: 'bg-purple-50 dark:bg-purple-900/20',
+              color: 'text-purple-600', bg: 'bg-purple-900/20',
               alert: false,
             },
             {
@@ -269,12 +261,12 @@ export default function ConnectStudentDashboard() {
               value: `${student.average_exam_score}%`,
               icon: Star,
               color: student.average_exam_score >= cohort.min_exam_score ? 'text-amber-600' : 'text-gray-600',
-              bg: 'bg-amber-50 dark:bg-amber-900/20',
+              bg: 'bg-amber-900/20',
               alert: false,
             },
           ].map(stat => (
-            <div key={stat.label} className={`bg-white dark:bg-[#1A1A1A] rounded-2xl border p-4 ${
-              stat.alert ? 'border-red-300 dark:border-red-800' : 'border-gray-200 dark:border-[#2D2D2D]'
+            <div key={stat.label} className={`bg-[#12151C] rounded-2xl border p-4 ${
+              stat.alert ? 'border-red-800' : 'border-white/[0.06]'
             }`}>
               <div className={`w-8 h-8 rounded-xl ${stat.bg} flex items-center justify-center mb-2`}>
                 <stat.icon className={`w-4 h-4 ${stat.color}`} />
@@ -286,11 +278,11 @@ export default function ConnectStudentDashboard() {
           ))}
         </div>
 
-        {/* ── Graduation Progress ──────────────────────────────────────────────── */}
+        {/* Graduation Progress */}
         <div className={`rounded-2xl border p-5 ${
           student.can_graduate
             ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white border-transparent'
-            : 'bg-white dark:bg-[#1A1A1A] border-gray-200 dark:border-[#2D2D2D]'
+            : 'bg-[#12151C] border-white/[0.06]'
         }`}>
           {student.can_graduate ? (
             <div className="flex items-center gap-4">
@@ -306,35 +298,35 @@ export default function ConnectStudentDashboard() {
           ) : (
             <>
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 bg-gray-100 dark:bg-[#252525] rounded-lg flex items-center justify-center">
+                <div className="w-8 h-8 bg-white/5 rounded-lg flex items-center justify-center">
                   <GraduationCap className="w-4 h-4 text-gray-500" />
                 </div>
-                <h3 className="font-bold text-gray-900 dark:text-white">Graduation Checklist</h3>
+                <h3 className="font-bold text-white">Graduation Checklist</h3>
               </div>
               <div className="grid sm:grid-cols-2 gap-3">
                 <div className={`flex items-center gap-3 p-3 rounded-xl border ${
                   attendanceMet
-                    ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-900/40'
-                    : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-900/40'
+                    ? 'bg-green-900/20 border-green-900/40'
+                    : 'bg-red-900/20 border-red-900/40'
                 }`}>
                   {attendanceMet
                     ? <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
                     : <XCircle className="w-5 h-5 text-red-500 flex-shrink-0" />}
                   <div>
-                    <p className={`text-sm font-bold ${attendanceMet ? 'text-green-800 dark:text-green-300' : 'text-red-800 dark:text-red-300'}`}>Attendance</p>
+                    <p className={`text-sm font-bold ${attendanceMet ? 'text-green-300' : 'text-red-300'}`}>Attendance</p>
                     <p className="text-xs text-gray-500">{student.total_attendance_percent}% / {cohort.min_attendance_percent}% required</p>
                   </div>
                 </div>
                 <div className={`flex items-center gap-3 p-3 rounded-xl border ${
                   examMet
-                    ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-900/40'
-                    : 'bg-gray-50 dark:bg-[#252525] border-gray-200 dark:border-[#333]'
+                    ? 'bg-green-900/20 border-green-900/40'
+                    : 'bg-white/[0.04] border-white/[0.06]'
                 }`}>
                   {examMet
                     ? <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
                     : <Clock className="w-5 h-5 text-gray-400 flex-shrink-0" />}
                   <div>
-                    <p className={`text-sm font-bold ${examMet ? 'text-green-800 dark:text-green-300' : 'text-gray-700 dark:text-gray-300'}`}>Exam Score</p>
+                    <p className={`text-sm font-bold ${examMet ? 'text-green-300' : 'text-white/70'}`}>Exam Score</p>
                     <p className="text-xs text-gray-500">{student.average_exam_score}% / {cohort.min_exam_score}% required</p>
                   </div>
                 </div>
@@ -343,16 +335,16 @@ export default function ConnectStudentDashboard() {
           )}
         </div>
 
-        {/* ── Next Session Card ─────────────────────────────────────────────────── */}
+        {/* Next Session Card */}
         {nextSession && (
-          <div className="bg-white dark:bg-[#1A1A1A] rounded-2xl border border-blue-200 dark:border-blue-900/40 p-5">
+          <div className="bg-[#12151C] rounded-2xl border border-blue-900/40 p-5">
             <div className="flex items-center gap-2 mb-3">
               <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-              <p className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">Next Session</p>
+              <p className="text-xs font-bold text-blue-400 uppercase tracking-wider">Next Session</p>
             </div>
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h3 className="font-black text-gray-900 dark:text-white text-base mb-1">{nextSession.title}</h3>
+                <h3 className="font-black text-white text-base mb-1">{nextSession.title}</h3>
                 <p className="text-sm text-gray-500">
                   {new Date(nextSession.date).toLocaleDateString('en-KE', { weekday: 'long', month: 'long', day: 'numeric' })}
                   {nextSession.start_time ? ` · ${nextSession.start_time}` : ''}{nextSession.end_time ? ` – ${nextSession.end_time}` : ''}
@@ -366,8 +358,8 @@ export default function ConnectStudentDashboard() {
               <div className="flex flex-col gap-2 flex-shrink-0">
                 <span className={`px-2.5 py-1 text-xs font-bold rounded-xl ${
                   nextSession.type === 'virtual'
-                    ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400'
-                    : 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+                    ? 'bg-purple-900/30 text-purple-400'
+                    : 'bg-blue-900/30 text-blue-400'
                 }`}>
                   {nextSession.type === 'virtual' ? 'Virtual' : 'In-person'}
                 </span>
@@ -384,28 +376,28 @@ export default function ConnectStudentDashboard() {
 
         <div className="grid lg:grid-cols-3 gap-5">
 
-          {/* ── Main: Sessions + Exams ─────────────────────────────────────────── */}
+          {/* Main: Sessions + Exams */}
           <div className="lg:col-span-2 space-y-5">
 
             {/* Session list */}
-            <div className="bg-white dark:bg-[#1A1A1A] rounded-2xl border border-gray-200 dark:border-[#2D2D2D] overflow-hidden">
-              <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-[#2D2D2D]">
+            <div className="bg-[#12151C] rounded-2xl border border-white/[0.06] overflow-hidden">
+              <div className="flex items-center justify-between p-5 border-b border-white/[0.04]">
                 <h2 className="section-title">Class Schedule</h2>
                 <span className="text-xs text-gray-400">{sessions.length} sessions</span>
               </div>
-              <div className="divide-y divide-gray-50 dark:divide-[#2D2D2D]">
+              <div className="divide-y divide-white/[0.04]">
                 {sessions.map(session => {
                   const rec        = attendance.find(a => a.session_id === session.id);
                   const isUpcoming = !session.is_completed;
                   return (
-                    <div key={session.id} className={`p-4 ${isUpcoming ? 'bg-blue-50/30 dark:bg-blue-900/5' : ''}`}>
+                    <div key={session.id} className={`p-4 ${isUpcoming ? 'bg-blue-900/5' : ''}`}>
                       <div className="flex items-start gap-3">
                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
                           isUpcoming
-                            ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600'
+                            ? 'bg-blue-900/30 text-blue-600'
                             : rec?.present
-                            ? 'bg-green-100 dark:bg-green-900/30 text-green-600'
-                            : 'bg-red-100 dark:bg-red-900/30 text-red-500'
+                            ? 'bg-green-900/30 text-green-600'
+                            : 'bg-red-900/30 text-red-500'
                         }`}>
                           {isUpcoming
                             ? <Clock className="w-5 h-5" />
@@ -416,11 +408,11 @@ export default function ConnectStudentDashboard() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-0.5">
-                            <h3 className="font-semibold text-gray-900 dark:text-white text-sm truncate">{session.title}</h3>
+                            <h3 className="font-semibold text-white text-sm truncate">{session.title}</h3>
                             <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0 ${
                               session.type === 'virtual'
-                                ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400'
-                                : 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+                                ? 'bg-purple-900/30 text-purple-400'
+                                : 'bg-blue-900/30 text-blue-400'
                             }`}>{session.type}</span>
                           </div>
                           <p className="text-xs text-gray-500">
@@ -438,7 +430,7 @@ export default function ConnectStudentDashboard() {
                               <Video className="w-3 h-3" /> Join <ExternalLink className="w-3 h-3" />
                             </a>
                           )}
-                          {session.venue && <p className="text-xs text-gray-400 mt-0.5">📍 {session.venue}</p>}
+                          {session.venue && <p className="text-xs text-gray-400 mt-0.5">{session.venue}</p>}
                         </div>
                       </div>
                     </div>
@@ -448,12 +440,12 @@ export default function ConnectStudentDashboard() {
             </div>
 
             {/* Exams */}
-            <div className="bg-white dark:bg-[#1A1A1A] rounded-2xl border border-gray-200 dark:border-[#2D2D2D] overflow-hidden">
-              <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-[#2D2D2D]">
+            <div className="bg-[#12151C] rounded-2xl border border-white/[0.06] overflow-hidden">
+              <div className="flex items-center justify-between p-5 border-b border-white/[0.04]">
                 <h2 className="section-title">Exams & Assignments</h2>
               </div>
               {exams.length > 0 ? (
-                <div className="divide-y divide-gray-50 dark:divide-[#2D2D2D]">
+                <div className="divide-y divide-white/[0.04]">
                   {exams.map(exam => {
                     const result      = results.find(r => r.exam_id === exam.id);
                     const now         = new Date();
@@ -465,7 +457,7 @@ export default function ConnectStudentDashboard() {
                     return (
                       <div key={exam.id} className="p-4 flex items-center justify-between gap-4">
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-gray-900 dark:text-white text-sm mb-0.5">{exam.title}</h3>
+                          <h3 className="font-semibold text-white text-sm mb-0.5">{exam.title}</h3>
                           <p className="text-xs text-gray-400">
                             {questionCount} questions · {exam.duration_minutes} min · Pass: {exam.passing_marks}/{exam.total_marks}
                           </p>
@@ -481,7 +473,7 @@ export default function ConnectStudentDashboard() {
                               Start <ChevronRight className="w-3.5 h-3.5" />
                             </Link>
                           ) : !canTakeExam ? (
-                            <span className="px-2.5 py-1 text-xs font-bold rounded-xl bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">
+                            <span className="px-2.5 py-1 text-xs font-bold rounded-xl bg-amber-900/30 text-amber-400">
                               Need 80% attendance
                             </span>
                           ) : (
@@ -496,7 +488,7 @@ export default function ConnectStudentDashboard() {
                 </div>
               ) : (
                 <div className="py-12 text-center">
-                  <div className="w-12 h-12 bg-gray-100 dark:bg-[#252525] rounded-2xl flex items-center justify-center mx-auto mb-3">
+                  <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center mx-auto mb-3">
                     <BookOpen className="w-6 h-6 text-gray-400" />
                   </div>
                   <p className="text-gray-500 text-sm font-medium">No exams available yet</p>
@@ -506,19 +498,19 @@ export default function ConnectStudentDashboard() {
             </div>
           </div>
 
-          {/* ── Sidebar ──────────────────────────────────────────────────────────── */}
+          {/* Sidebar */}
           <div className="space-y-4">
 
             {/* Teacher */}
             {teacher && (
-              <div className="bg-white dark:bg-[#1A1A1A] rounded-2xl border border-gray-200 dark:border-[#2D2D2D] p-5">
+              <div className="bg-[#12151C] rounded-2xl border border-white/[0.06] p-5">
                 <h2 className="section-title mb-4">Your Teacher</h2>
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#BF0A30] to-[#7D0018] flex items-center justify-center text-white font-black shadow-md shadow-[#BF0A30]/20">
                     {teacher.first_name?.[0]}{teacher.last_name?.[0]}
                   </div>
                   <div>
-                    <p className="font-bold text-gray-900 dark:text-white text-sm">{teacher.first_name} {teacher.last_name}</p>
+                    <p className="font-bold text-white text-sm">{teacher.first_name} {teacher.last_name}</p>
                     <p className="text-xs text-gray-500">{teacher.phone}</p>
                   </div>
                 </div>
@@ -526,19 +518,19 @@ export default function ConnectStudentDashboard() {
             )}
 
             {/* Cohort details */}
-            <div className="bg-white dark:bg-[#1A1A1A] rounded-2xl border border-gray-200 dark:border-[#2D2D2D] p-5">
+            <div className="bg-[#12151C] rounded-2xl border border-white/[0.06] p-5">
               <h2 className="section-title mb-4">Cohort Info</h2>
               <div className="space-y-2.5 text-sm">
                 {[
-                  { label: 'Start Date',      value: new Date(cohort.start_date).toLocaleDateString('en-KE') },
-                  { label: 'End Date',        value: new Date(cohort.end_date).toLocaleDateString('en-KE') },
+                  { label: 'Start Date',      value: cohort.start_date ? new Date(cohort.start_date).toLocaleDateString('en-KE') : '—' },
+                  { label: 'End Date',        value: cohort.end_date ? new Date(cohort.end_date).toLocaleDateString('en-KE') : '—' },
                   { label: 'Total Sessions',  value: sessions.length },
                   { label: 'Min. Attendance', value: `${cohort.min_attendance_percent}%` },
                   { label: 'Min. Exam Score', value: `${cohort.min_exam_score}%` },
                 ].map(({ label, value }) => (
                   <div key={label} className="flex justify-between items-center">
                     <span className="text-gray-500 text-xs">{label}</span>
-                    <span className="font-semibold text-gray-900 dark:text-white text-xs">{value}</span>
+                    <span className="font-semibold text-white text-xs">{value}</span>
                   </div>
                 ))}
               </div>
@@ -554,17 +546,17 @@ export default function ConnectStudentDashboard() {
             </div>
 
             {/* Resources */}
-            <div className="bg-white dark:bg-[#1A1A1A] rounded-2xl border border-gray-200 dark:border-[#2D2D2D] p-5">
+            <div className="bg-[#12151C] rounded-2xl border border-white/[0.06] p-5">
               <h2 className="section-title mb-4">Resources</h2>
               {resources.length > 0 ? (
                 <div className="space-y-2">
                   {resources.map(resource => (
                     <a key={resource.id} href={resource.url} target="_blank" rel="noopener noreferrer"
-                      className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-[#252525] rounded-xl hover:bg-gray-100 dark:hover:bg-[#2D2D2D] transition-colors">
-                      <div className="w-8 h-8 bg-red-50 dark:bg-red-900/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                      className="flex items-center gap-3 p-3 bg-white/[0.04] rounded-xl hover:bg-white/[0.08] transition-colors">
+                      <div className="w-8 h-8 bg-red-900/20 rounded-lg flex items-center justify-center flex-shrink-0">
                         <FileText className="w-4 h-4 text-[#BF0A30]" />
                       </div>
-                      <span className="text-sm text-gray-800 dark:text-gray-200 font-medium truncate">{resource.title}</span>
+                      <span className="text-sm text-white font-medium truncate">{resource.title}</span>
                     </a>
                   ))}
                 </div>

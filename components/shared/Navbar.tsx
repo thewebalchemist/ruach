@@ -356,11 +356,6 @@ export default function Navbar() {
 
             {/* ── Right CTAs ──────────────────────────────────────── */}
             <div className="flex items-center gap-2.5">
-              {/* Login dropdown — desktop only */}
-              <div className="hidden lg:block">
-                <LoginDropdown />
-              </div>
-
               <Link
                 href="/live"
                 className="hidden sm:flex items-center gap-1.5 text-[11px] font-black uppercase tracking-widest px-4 py-2.5 rounded-xl transition-all bg-[#BF0A30] hover:bg-[#9A0826] text-white shadow-lg shadow-[rgba(191,10,48,0.3)]"
@@ -455,25 +450,6 @@ export default function Navbar() {
 
             {/* Mobile CTAs */}
             <div className="px-4 pb-6 pt-2 space-y-2.5">
-              {/* Login section */}
-              <div className="rounded-2xl overflow-hidden border border-white/10">
-                <p className="px-4 py-2 text-[9px] font-black uppercase tracking-widest text-white/30 bg-white/[0.03]" style={H}>Sign in as</p>
-                {LOGIN_OPTIONS.map(opt => (
-                  <Link
-                    key={opt.href}
-                    href={opt.href}
-                    onClick={() => setOpen(false)}
-                    className="flex items-center justify-between px-4 py-3 hover:bg-white/5 border-t border-white/[0.06] transition-colors"
-                  >
-                    <div>
-                      <p className="text-[11px] font-black uppercase tracking-widest text-white/85" style={H}>{opt.label}</p>
-                      <p className="text-[10px] text-white/35 mt-0.5">{opt.desc}</p>
-                    </div>
-                    <LogIn className="w-3.5 h-3.5 text-white/30" />
-                  </Link>
-                ))}
-              </div>
-
               <Link
                 href="/give"
                 onClick={() => setOpen(false)}

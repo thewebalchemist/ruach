@@ -57,7 +57,7 @@ export default function DiscipleshipGraduatesPage() {
     <DiscipleshipLayout title="Graduates">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white">Graduates</h1>
+          <h1 className="text-xl font-bold text-white">Graduates</h1>
           <p className="text-gray-500">Students who have completed KDC levels</p>
         </div>
       </div>
@@ -93,7 +93,7 @@ export default function DiscipleshipGraduatesPage() {
             <input
               type="text"
               placeholder="Search graduates..."
-              className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg bg-transparent text-gray-900 dark:text-white"
+              className="w-full pl-10 pr-4 py-2.5 text-sm border border-white/10 dark:border-[#2D2D2D] rounded-lg bg-transparent text-white"
               value={search}
               onChange={e => setSearch(e.target.value)}
             />
@@ -106,7 +106,7 @@ export default function DiscipleshipGraduatesPage() {
                 className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
                   filterLevel === l
                     ? 'bg-[#BF0A30] text-white'
-                    : 'border border-gray-300 dark:border-[#2D2D2D] text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#252525]'
+                    : 'border border-white/10 dark:border-[#2D2D2D] text-white/70 hover:bg-white/[0.06]'
                 }`}
               >
                 {l === 'all' ? 'All Levels' : `Level ${l}`}
@@ -128,7 +128,7 @@ export default function DiscipleshipGraduatesPage() {
             const isIssuing = issuingId === student.id;
 
             return (
-              <div key={student.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 sm:p-5 hover:bg-gray-50 dark:hover:bg-[#252525]">
+              <div key={student.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 sm:p-5 hover:bg-white/[0.06]">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#BF0A30] to-[#8B0000] flex items-center justify-center text-white font-semibold flex-shrink-0">
                     {first ? `${first[0]}${last[0]}` : 'KD'}

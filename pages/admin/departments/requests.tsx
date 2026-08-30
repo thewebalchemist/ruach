@@ -32,31 +32,32 @@ export default function DepartmentRequestsPage() {
   const pending = requests.filter(r => r.status === 'pending');
   const processed = requests.filter(r => r.status !== 'pending');
 
-  async function decide(req: JoinRequest, approve: boolean) {
-    setProcessing(req.id);
-    const { data: { session } } = await supabase.auth.getSession();
+  async function handleAction(id: string, status: 'approved' | 'declined') {
+    setProcessing(id);
+    try {
+      const res = await fetch('/api/admin/department-requests', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, status }),
+      });
 
-    await supabase.from('department_join_requests').update({
-      status: approve ? 'approved' : 'declined',
-      reviewed_by: session?.user.id ?? null,
-      reviewed_at: new Date().toISOString(),
-    }).eq('id', req.id);
-
-    if (approve) {
-      await supabase.from('department_memberships').upsert({
-        user_id: req.user_id, department_id: req.department_id, sub_team_id: req.sub_team_id,
-        role: 'member', status: 'active',
-      }, { onConflict: 'user_id,department_id' });
+      if (res.ok) {
+        await load();
+      } else {
+        const err = await res.json();
+        alert(err.error || 'Action failed');
+      }
+    } catch {
+      alert('Network error');
+    } finally {
+      setProcessing(null);
     }
-
-    setProcessing(null);
-    load();
   }
 
   return (
     <AdminLayout title="Join Requests">
       <div className="mb-6">
-        <Link href="/admin/departments" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 mb-4">
+        <Link href="/admin/departments" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-white/70 mb-4">
           <ArrowLeft className="w-4 h-4" />Back to Departments
         </Link>
         <PageHeader title="Department Join Requests" subtitle={`${pending.length} pending requests`} />
@@ -103,10 +104,10 @@ export default function DepartmentRequestsPage() {
               )}
 
               <div className="flex gap-3">
-                <button onClick={() => decide(req, true)} disabled={processing === req.id} className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 disabled:opacity-50">
+                <button onClick={() => handleAction(req.id, 'approved')} disabled={processing === req.id} className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 disabled:opacity-50">
                   <Check className="w-4 h-4" />{processing === req.id ? 'Processing…' : 'Approve'}
                 </button>
-                <button onClick={() => decide(req, false)} disabled={processing === req.id} className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 border border-gray-300 dark:border-[#2D2D2D] text-gray-700 dark:text-gray-300 font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-[#252525] disabled:opacity-50">
+                <button onClick={() => handleAction(req.id, 'declined')} disabled={processing === req.id} className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 border border-gray-300 dark:border-[#2D2D2D] text-gray-700 dark:text-gray-300 font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-[#252525] disabled:opacity-50">
                   <X className="w-4 h-4" />Decline
                 </button>
               </div>
@@ -114,19 +115,18 @@ export default function DepartmentRequestsPage() {
           ))}
         </div>
       ) : (
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-12 text-center mb-8">
-          <div className="text-4xl mb-4">✨</div>
+        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-12 text-center mb-8">
           <p className="text-gray-500">No pending requests</p>
         </div>
       )}
 
       {processed.length > 0 && (
         <div>
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Recently Processed</h2>
-          <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] overflow-hidden">
+          <h2 className="text-lg font-semibold text-white mb-4">Recently Processed</h2>
+          <div className="bg-[#12151C] rounded-xl border border-white/[0.06] overflow-hidden">
             <table className="w-full">
               <thead>
-                <tr className="text-left text-xs font-semibold text-gray-500 uppercase bg-gray-50 dark:bg-[#252525]">
+                <tr className="text-left text-xs font-semibold text-gray-500 uppercase bg-white/[0.04]">
                   <th className="py-3 px-4">Member</th>
                   <th className="py-3 px-4">Department</th>
                   <th className="py-3 px-4">Date</th>

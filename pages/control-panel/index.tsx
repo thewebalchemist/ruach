@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { Video, Calendar, HelpCircle, Radio, Sparkles, ArrowRight, Users, Eye, MessageSquare, Clock } from 'lucide-react';
 import CPLayout, { CPStatCard } from '@/components/control-panel/CPLayout';
@@ -29,25 +28,13 @@ interface UpcomingEvent {
 }
 
 export default function ControlPanelDashboard() {
-  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<Stats>({ sermons: 0, series: 0, events: 0, faqs: 0, isLive: false });
   const [recentSermons, setRecentSermons] = useState<RecentSermon[]>([]);
   const [upcomingEvents, setUpcomingEvents] = useState<UpcomingEvent[]>([]);
 
-  useEffect(() => {
-    checkAuth();
-  }, []);
-
-  async function checkAuth() {
-    const { data } = await supabase.auth.getSession();
-    if (!data.session) { router.push('/auth/login?redirectTo=/control-panel'); return; }
-    const { data: profile } = await supabase.from('profiles').select('role').eq('id', data.session.user.id).single() as any;
-    if (!profile || !['admin', 'pastor'].includes(profile.role)) {
-      router.push('/'); return;
-    }
-    loadData();
-  }
+  // Auth + role gating handled centrally by CPLayout.
+  useEffect(() => { loadData(); }, []);
 
   async function loadData() {
     setLoading(true);

@@ -1,14 +1,14 @@
 // pages/admin/broadcast.tsx
 // Admin bulk communications — send in-app, SMS, or WhatsApp to segments
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import {
   Send, Bell, MessageSquare, Users, Calendar, CheckCircle,
   X, Clock, ChevronDown, ChevronUp, Smartphone
 } from 'lucide-react';
 import { AdminLayout, PageHeader } from '@/components/connect/AdminLayout';
-
-const MOCK_DATA = true;
+import { useAuth } from '@/context/AuthContext';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type Channel = 'in-app' | 'sms' | 'whatsapp';
@@ -115,6 +115,14 @@ function formatSentAt(dateStr: string) {
 }
 
 export default function BroadcastPage() {
+  const router = useRouter();
+  const { profile, loading: authLoading } = useAuth();
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (!profile || !['admin', 'pastor'].includes(profile.role)) router.push('/');
+  }, [authLoading, profile]);
+
   // Audience
   const [selectedSegments, setSelectedSegments] = useState<Set<string>>(new Set());
   const [selectedCohort, setSelectedCohort] = useState(CONNECT_COHORTS[0]);
@@ -198,9 +206,9 @@ export default function BroadcastPage() {
         <div className="lg:col-span-2 space-y-5">
 
           {/* Target Audience */}
-          <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-5">
+          <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-5">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+              <h2 className="font-semibold text-white flex items-center gap-2">
                 <Users className="w-5 h-5 text-[#BF0A30]" /> Target Audience
               </h2>
               {estimatedCount > 0 && (
@@ -213,7 +221,7 @@ export default function BroadcastPage() {
             <div className="space-y-2">
               {AUDIENCE_SEGMENTS.map(seg => (
                 <div key={seg.id}>
-                  <label className="flex items-center gap-3 p-3 rounded-xl cursor-pointer hover:bg-gray-50 dark:hover:bg-[#252525] transition-colors">
+                  <label className="flex items-center gap-3 p-3 rounded-xl cursor-pointer hover:bg-white/[0.06] transition-colors">
                     <input
                       type="checkbox"
                       checked={selectedSegments.has(seg.id)}
@@ -221,7 +229,7 @@ export default function BroadcastPage() {
                       className="w-4 h-4 accent-[#BF0A30]"
                     />
                     <div className="flex-1">
-                      <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">{seg.label}</span>
+                      <span className="text-sm font-semibold text-gray-800">{seg.label}</span>
                     </div>
                     <span className="text-xs text-gray-400 font-medium">
                       {seg.id === 'department' && selectedSegments.has('department')
@@ -260,8 +268,8 @@ export default function BroadcastPage() {
           </div>
 
           {/* Message Composer */}
-          <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-5 space-y-4">
-            <h2 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+          <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-5 space-y-4">
+            <h2 className="font-semibold text-white flex items-center gap-2">
               <MessageSquare className="w-5 h-5 text-[#BF0A30]" /> Message
             </h2>
 
@@ -299,8 +307,8 @@ export default function BroadcastPage() {
           </div>
 
           {/* Channel Selector */}
-          <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-5">
-            <h2 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+          <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-5">
+            <h2 className="font-semibold text-white mb-4 flex items-center gap-2">
               <Bell className="w-5 h-5 text-[#BF0A30]" /> Delivery Channels
             </h2>
             <div className="grid grid-cols-3 gap-3">
@@ -316,13 +324,13 @@ export default function BroadcastPage() {
                     className={`flex flex-col items-center gap-2 p-4 rounded-xl border transition-all ${
                       active
                         ? 'border-[#BF0A30] bg-red-50 dark:bg-red-900/20 shadow-sm'
-                        : 'border-gray-200 dark:border-[#2D2D2D] bg-gray-50 dark:bg-[#252525] hover:border-gray-300'
+                        : 'border-white/[0.06] bg-white/[0.04] hover:border-gray-300'
                     }`}
                   >
                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${active ? 'bg-[#BF0A30]' : cfg.bg}`}>
                       <Icon className={`w-5 h-5 ${active ? 'text-white' : cfg.color}`} />
                     </div>
-                    <span className={`text-xs font-bold ${active ? 'text-[#BF0A30]' : 'text-gray-600 dark:text-gray-400'}`}>{cfg.label}</span>
+                    <span className={`text-xs font-bold ${active ? 'text-[#BF0A30]' : 'text-white/50'}`}>{cfg.label}</span>
                     {active && <CheckCircle className="w-4 h-4 text-[#BF0A30]" />}
                   </button>
                 );
@@ -331,8 +339,8 @@ export default function BroadcastPage() {
           </div>
 
           {/* Schedule */}
-          <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-5">
-            <h2 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+          <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-5">
+            <h2 className="font-semibold text-white mb-4 flex items-center gap-2">
               <Clock className="w-5 h-5 text-[#BF0A30]" /> Schedule
             </h2>
             <div className="flex gap-3">
@@ -344,7 +352,7 @@ export default function BroadcastPage() {
                   className={`flex-1 py-3 rounded-xl text-sm font-bold border transition-all capitalize ${
                     scheduleMode === mode
                       ? 'bg-[#BF0A30] text-white border-[#BF0A30] shadow-md shadow-[#BF0A30]/25'
-                      : 'bg-gray-50 dark:bg-[#252525] text-gray-600 dark:text-gray-400 border-gray-200 dark:border-[#2D2D2D] hover:border-gray-300'
+                      : 'bg-white/[0.04] text-white/50 border-white/[0.06] hover:border-gray-300'
                   }`}
                 >
                   {mode === 'now' ? 'Send Now' : 'Schedule for Later'}
@@ -381,20 +389,20 @@ export default function BroadcastPage() {
         <div className="space-y-5">
 
           {/* Preview Panel */}
-          <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-5">
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-4 text-sm">Message Preview</h3>
+          <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-5">
+            <h3 className="font-semibold text-white mb-4 text-sm">Message Preview</h3>
 
             {/* In-App preview */}
             {channels.has('in-app') && (
               <div className="mb-4">
                 <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">In-App Notification</p>
-                <div className="bg-gray-50 dark:bg-[#252525] rounded-xl p-4 border border-gray-200 dark:border-[#3D3D3D]">
+                <div className="bg-white/[0.04] rounded-xl p-4 border border-white/[0.06] dark:border-[#3D3D3D]">
                   <div className="flex items-start gap-3">
                     <div className="w-8 h-8 rounded-lg bg-[#BF0A30]/10 flex items-center justify-center flex-shrink-0">
                       <Bell className="w-4 h-4 text-[#BF0A30]" />
                     </div>
                     <div>
-                      <p className="text-xs font-bold text-gray-900 dark:text-white">
+                      <p className="text-xs font-bold text-white">
                         {subject || 'Subject line here'}
                       </p>
                       <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">
@@ -411,8 +419,8 @@ export default function BroadcastPage() {
             {channels.has('sms') && (
               <div className="mb-4">
                 <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">SMS</p>
-                <div className="bg-gray-50 dark:bg-[#252525] rounded-xl p-4 border border-gray-200 dark:border-[#3D3D3D]">
-                  <p className="text-xs text-gray-700 dark:text-gray-300">
+                <div className="bg-white/[0.04] rounded-xl p-4 border border-white/[0.06] dark:border-[#3D3D3D]">
+                  <p className="text-xs text-white/70">
                     <span className="font-bold">Ruach:</span>{' '}
                     {subject ? `${subject}. ` : ''}{body ? body.slice(0, 140) : 'Message preview...'}
                     {body.length > 140 && '...'}
@@ -427,10 +435,10 @@ export default function BroadcastPage() {
               <div>
                 <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">WhatsApp</p>
                 <div className="bg-[#DCF8C6] dark:bg-[#1D3A27] rounded-xl p-4 border border-green-200 dark:border-green-900/40">
-                  <p className="text-xs font-bold text-gray-900 dark:text-white mb-1">
+                  <p className="text-xs font-bold text-white mb-1">
                     {subject || 'Subject'}
                   </p>
-                  <p className="text-xs text-gray-700 dark:text-gray-300">
+                  <p className="text-xs text-white/70">
                     {body || 'Your message body...'}
                   </p>
                   <p className="text-[10px] text-gray-400 mt-1.5">Ruach Assemblies · Just now</p>
@@ -446,14 +454,14 @@ export default function BroadcastPage() {
           </div>
 
           {/* Recent Broadcasts */}
-          <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D]">
-            <div className="p-4 border-b border-gray-200 dark:border-[#2D2D2D]">
-              <h3 className="font-semibold text-gray-900 dark:text-white text-sm">Recent Broadcasts</h3>
+          <div className="bg-[#12151C] rounded-xl border border-white/[0.06]">
+            <div className="p-4 border-b border-white/[0.06]">
+              <h3 className="font-semibold text-white text-sm">Recent Broadcasts</h3>
             </div>
-            <div className="divide-y divide-gray-100 dark:divide-[#2D2D2D]">
+            <div className="divide-y divide-white/[0.06]">
               {RECENT_BROADCASTS.map(bc => (
                 <div key={bc.id} className="p-4">
-                  <p className="text-sm font-semibold text-gray-900 dark:text-white leading-snug">{bc.subject}</p>
+                  <p className="text-sm font-semibold text-white leading-snug">{bc.subject}</p>
                   <p className="text-xs text-gray-500 mt-0.5">{bc.audience}</p>
                   <div className="flex items-center justify-between mt-2">
                     <div className="flex gap-1">
@@ -481,13 +489,13 @@ export default function BroadcastPage() {
       {/* ── Confirmation Modal ──────────────────────────────────────────────────── */}
       {showConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white dark:bg-[#1A1A1A] rounded-2xl border border-gray-200 dark:border-[#2D2D2D] p-6 w-full max-w-sm shadow-2xl animate-fade-in-scale">
+          <div className="bg-[#12151C] rounded-2xl border border-white/[0.06] p-6 w-full max-w-sm shadow-2xl animate-fade-in-scale">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-xl bg-[#BF0A30]/10 flex items-center justify-center">
                 <Send className="w-5 h-5 text-[#BF0A30]" />
               </div>
               <div>
-                <h3 className="font-bold text-gray-900 dark:text-white">Confirm Broadcast</h3>
+                <h3 className="font-bold text-white">Confirm Broadcast</h3>
                 <p className="text-xs text-gray-500">Review before sending</p>
               </div>
             </div>
@@ -495,7 +503,7 @@ export default function BroadcastPage() {
             <div className="space-y-2 mb-5">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Subject</span>
-                <span className="font-semibold text-gray-900 dark:text-white text-right max-w-[60%] line-clamp-1">{subject}</span>
+                <span className="font-semibold text-white text-right max-w-[60%] line-clamp-1">{subject}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Recipients</span>
@@ -503,13 +511,13 @@ export default function BroadcastPage() {
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Channels</span>
-                <span className="font-semibold text-gray-900 dark:text-white">
+                <span className="font-semibold text-white">
                   {[...channels].map(c => CHANNEL_CONFIG[c].label).join(', ')}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Schedule</span>
-                <span className="font-semibold text-gray-900 dark:text-white">
+                <span className="font-semibold text-white">
                   {scheduleMode === 'now' ? 'Send immediately' : `${scheduleDate} ${scheduleTime}`}
                 </span>
               </div>

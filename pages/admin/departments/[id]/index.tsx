@@ -121,7 +121,7 @@ export default function DepartmentDetailPage() {
       )}
 
       <div className="mb-6">
-        <Link href="/admin/departments" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 mb-4">
+        <Link href="/admin/departments" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-white/70 mb-4">
           <ArrowLeft className="w-4 h-4" />Back to Departments
         </Link>
 
@@ -129,7 +129,7 @@ export default function DepartmentDetailPage() {
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 rounded-2xl bg-[#BF0A30]/10 flex items-center justify-center text-[#BF0A30]"><DepartmentIcon name={department.icon} className="w-7 h-7" /></div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{department.name}</h1>
+              <h1 className="text-2xl font-bold text-white">{department.name}</h1>
               <p className="text-gray-500 mt-1">{department.description}</p>
             </div>
           </div>
@@ -173,7 +173,7 @@ export default function DepartmentDetailPage() {
               </button>
             </div>
             {members.length > 0 ? (
-              <div className="divide-y divide-gray-100 dark:divide-[#2D2D2D]">
+              <div className="divide-y divide-white/[0.06]">
                 {members.map(member => (
                   <div key={member.user_id} className="flex items-center justify-between p-4">
                     <div className="flex items-center gap-3">

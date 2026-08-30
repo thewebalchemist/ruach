@@ -64,14 +64,14 @@ export default function CrosspointDetailPage() {
   return (
     <AdminLayout title={crosspoint.name}>
       <div className="mb-6">
-        <Link href="/admin/crosspoints" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 mb-4">
+        <Link href="/admin/crosspoints" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-white/70 mb-4">
           <ArrowLeft className="w-4 h-4" />Back to Crosspoints
         </Link>
 
         <div className="flex items-start justify-between">
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{crosspoint.name}</h1>
+              <h1 className="text-2xl font-bold text-white">{crosspoint.name}</h1>
               <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${crosspoint.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'}`}>{crosspoint.status}</span>
             </div>
             <div className="flex items-center gap-4 text-sm text-gray-500">
@@ -106,7 +106,7 @@ export default function CrosspointDetailPage() {
               </Link>
             </div>
             {members.length > 0 ? (
-              <div className="divide-y divide-gray-100 dark:divide-[#2D2D2D]">
+              <div className="divide-y divide-white/[0.06]">
                 {members.map(member => (
                   <div key={member.user_id} className="flex items-center justify-between p-4">
                     <div className="flex items-center gap-3">
@@ -114,7 +114,9 @@ export default function CrosspointDetailPage() {
                         {member.profiles?.first_name?.[0]}{member.profiles?.last_name?.[0]}
                       </div>
                       <div>
-                        <p className="font-medium text-gray-900 dark:text-white">{member.profiles?.first_name} {member.profiles?.last_name}</p>
+                        <Link href={`/admin/members/${member.user_id}`} className="font-medium text-gray-900 dark:text-white hover:text-[#BF0A30]">
+                          {member.profiles?.first_name} {member.profiles?.last_name}
+                        </Link>
                         <p className="text-sm text-gray-500">{member.profiles?.phone}</p>
                       </div>
                     </div>

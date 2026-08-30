@@ -36,7 +36,7 @@ function generateSiteMap(
   ${sermons
     .map(
       (s) => `<url>
-    <loc>${BASE}/sermons/${s.slug}</loc>
+    <loc>${BASE}/${s.slug}</loc>
     <lastmod>${s.updated_at}</lastmod>
     <priority>0.8</priority>
     <changefreq>weekly</changefreq>

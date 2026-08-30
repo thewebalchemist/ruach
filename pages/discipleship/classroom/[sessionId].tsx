@@ -91,7 +91,7 @@ function TeacherPanel({ sessionId }: { sessionId: string }) {
         {students.map(s => {
           const p    = (s as any).profiles ?? {};
           const name = `${p.first_name ?? ''} ${p.last_name ?? ''}`.trim() || 'Student';
-          const online = participants.some(part => part.identity === s.user_id);
+          const online = participants.some((part: { identity?: string }) => part.identity === s.user_id);
           return (
             <div key={s.id} className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: 'rgba(255,255,255,0.04)' }}>
               <div className={`w-2 h-2 rounded-full flex-shrink-0 ${online ? 'bg-green-500' : 'bg-white/20'}`} />

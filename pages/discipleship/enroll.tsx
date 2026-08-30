@@ -102,7 +102,7 @@ export default function DiscipleshipEnroll() {
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-[#0F0F0F]">
+      <div className="min-h-screen flex items-center justify-center bg-[#0A0C10]">
         <Loader2 className="w-8 h-8 animate-spin text-[#BF0A30]" />
       </div>
     );
@@ -110,12 +110,12 @@ export default function DiscipleshipEnroll() {
 
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-[#0F0F0F] p-6">
+      <div className="min-h-screen flex items-center justify-center bg-[#0A0C10] p-6">
         <div className="max-w-md w-full text-center">
           <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle className="w-10 h-10 text-green-600" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">Enrolled Successfully!</h1>
+          <h1 className="text-2xl font-bold text-white mb-3">Enrolled Successfully!</h1>
           <p className="text-gray-500 mb-8">Check your email for enrollment confirmation and class details.</p>
           <Link href="/discipleship/student" className="inline-block py-3 px-8 bg-[#BF0A30] text-white rounded-xl font-semibold hover:bg-[#B00325]">
             Go to Discipleship Portal
@@ -134,20 +134,20 @@ export default function DiscipleshipEnroll() {
   const levelCohorts = cohorts.filter(c => c.level === selectedLevel);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#0F0F0F]">
-      <header className="bg-white dark:bg-[#1A1A1A] border-b border-gray-200 dark:border-[#2D2D2D]">
+    <div className="min-h-screen bg-[#0A0C10]">
+      <header className="bg-[#12151C] border-b border-white/[0.06]">
         <div className="max-w-3xl mx-auto px-4 py-4 flex items-center gap-4">
           <Link href="/member" className="flex items-center gap-2 text-gray-500 hover:text-[#BF0A30] text-sm">
             <ArrowLeft className="w-4 h-4" /> Member Dashboard
           </Link>
           <span className="text-gray-300 dark:text-[#3D3D3D]">/</span>
-          <span className="text-gray-900 dark:text-white font-semibold text-sm">Discipleship Enrollment</span>
+          <span className="text-white font-semibold text-sm">Discipleship Enrollment</span>
         </div>
       </header>
 
       <main className="max-w-3xl mx-auto px-4 py-8 space-y-8">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Kingdom Discipleship Classes</h1>
+          <h1 className="text-2xl font-bold text-white mb-2">Kingdom Discipleship Classes</h1>
           <p className="text-gray-500">A 3-level programme to deepen your faith, character, and calling.</p>
         </div>
 
@@ -162,11 +162,11 @@ export default function DiscipleshipEnroll() {
                 className={`rounded-xl border-2 p-4 text-left transition-all ${
                   isSelected  ? 'border-[#BF0A30] bg-[#BF0A30]/5' :
                   isCompleted ? 'border-green-300 bg-green-50 dark:bg-green-900/20' :
-                  isLocked    ? 'border-gray-200 dark:border-[#2D2D2D] opacity-50 cursor-not-allowed' :
-                  'border-gray-200 dark:border-[#2D2D2D] bg-white dark:bg-[#1A1A1A] hover:border-[#BF0A30]'
+                  isLocked    ? 'border-white/[0.06] opacity-50 cursor-not-allowed' :
+                  'border-white/[0.06] bg-[#12151C] hover:border-[#BF0A30]'
                 }`}>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-lg font-bold text-gray-900 dark:text-white">L{level}</span>
+                  <span className="text-lg font-bold text-white">L{level}</span>
                   {isCompleted && <CheckCircle className="w-5 h-5 text-green-600" />}
                   {isActive    && <span className="text-xs bg-blue-100 text-blue-700 rounded-full px-2 py-0.5">Active</span>}
                   {isLocked    && <span className="text-xs text-gray-400">🔒</span>}
@@ -190,7 +190,7 @@ export default function DiscipleshipEnroll() {
 
         {selectedLevel && !activeEnrollments.includes(selectedLevel) && !completedLevels.includes(selectedLevel) && (
           <div>
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            <h2 className="text-lg font-semibold text-white mb-4">
               Available Level {selectedLevel} Cohorts
             </h2>
 
@@ -207,10 +207,10 @@ export default function DiscipleshipEnroll() {
                     className={`w-full text-left rounded-xl border-2 p-4 transition-all ${
                       selectedId === c.id
                         ? 'border-[#BF0A30] bg-[#BF0A30]/5'
-                        : 'border-gray-200 dark:border-[#2D2D2D] bg-white dark:bg-[#1A1A1A] hover:border-[#BF0A30]'
+                        : 'border-white/[0.06] bg-[#12151C] hover:border-[#BF0A30]'
                     }`}>
                     <div className="flex items-center justify-between mb-1">
-                      <h3 className="font-semibold text-gray-900 dark:text-white">{c.name}</h3>
+                      <h3 className="font-semibold text-white">{c.name}</h3>
                       <span className="text-xs text-gray-500">{c.enrolled_count}/{c.max_capacity} enrolled</span>
                     </div>
                     <p className="text-sm text-gray-500">{c.schedule}</p>
@@ -223,11 +223,11 @@ export default function DiscipleshipEnroll() {
               </div>
             )}
 
-            <div className="mt-6 p-4 bg-gray-50 dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D]">
+            <div className="mt-6 p-4 bg-[#0A0C10] rounded-xl border border-white/[0.06]">
               <div className="flex items-start gap-3">
                 <BookOpen className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Already completed Discipleship before this system?</p>
+                  <p className="text-sm font-medium text-white/70">Already completed Discipleship before this system?</p>
                   <Link href="/discipleship/legacy-request" className="text-sm text-[#BF0A30] hover:underline">Submit a verification request →</Link>
                 </div>
               </div>

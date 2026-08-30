@@ -19,7 +19,6 @@ export function AdminLayout({ children, title, description, requirePermission }:
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { loading, isAdmin, hasPermission } = useAuth();
   const router = useRouter();
-  const pageTitle = `${title} | RuachConnect Admin`;
 
   // Coarse gate: middleware only guarantees *a* session for /admin/**, not
   // role — this closes that gap for every page that renders through here
@@ -62,9 +61,8 @@ export function AdminLayout({ children, title, description, requirePermission }:
   return (
     <>
       <Head>
-        <title>{pageTitle}</title>
+        <title>{title} | Ruach Admin</title>
         {description && <meta name="description" content={description} />}
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
 
       <div className="min-h-screen bg-gray-100 dark:bg-[#08090C]">
@@ -82,7 +80,6 @@ export function AdminLayout({ children, title, description, requirePermission }:
   );
 }
 
-// Stats Card Component
 interface StatCardProps {
   title: string;
   value: string | number;
@@ -100,7 +97,7 @@ export function StatCard({ title, value, subtitle, icon, trend }: StatCardProps)
           <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{value}</p>
           {subtitle && <p className="text-sm text-gray-500 mt-1">{subtitle}</p>}
           {trend && (
-            <p className={`text-sm mt-1 ${trend.isPositive ? 'text-green-600' : 'text-red-600'}`}>
+            <p className={`text-xs mt-1 ${trend.isPositive ? 'text-green-400' : 'text-red-400'}`}>
               {trend.isPositive ? '↑' : '↓'} {Math.abs(trend.value)}%
             </p>
           )}
@@ -115,7 +112,6 @@ export function StatCard({ title, value, subtitle, icon, trend }: StatCardProps)
   );
 }
 
-// Page Header with actions
 interface PageHeaderProps {
   title: string;
   subtitle?: string;
@@ -126,15 +122,14 @@ export function PageHeader({ title, subtitle, actions }: PageHeaderProps) {
   return (
     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
       <div>
-        <h1 className="page-title">{title}</h1>
-        {subtitle && <p className="page-subtitle">{subtitle}</p>}
+        <h1 className="text-xl sm:text-2xl font-bold text-white">{title}</h1>
+        {subtitle && <p className="text-sm text-white/40 mt-1">{subtitle}</p>}
       </div>
       {actions && <div className="flex gap-2">{actions}</div>}
     </div>
   );
 }
 
-// Empty State
 interface EmptyStateProps {
   icon?: ReactNode;
   title: string;
@@ -144,10 +139,10 @@ interface EmptyStateProps {
 
 export function EmptyState({ icon, title, description, action }: EmptyStateProps) {
   return (
-    <div className="empty-state">
-      {icon && <div className="text-gray-300 dark:text-gray-600 mb-4">{icon}</div>}
-      <h3 className="text-lg font-medium text-gray-900 dark:text-white">{title}</h3>
-      {description && <p className="text-gray-500 mt-1">{description}</p>}
+    <div className="text-center py-16">
+      {icon && <div className="text-white/20 mb-4 flex justify-center">{icon}</div>}
+      <h3 className="text-base font-medium text-white/70">{title}</h3>
+      {description && <p className="text-sm text-white/40 mt-1">{description}</p>}
       {action && <div className="mt-4">{action}</div>}
     </div>
   );

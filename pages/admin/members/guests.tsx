@@ -7,7 +7,7 @@ type FollowUpStatus = 'pending' | 'contacted' | 'converted' | 'declined';
 
 interface Guest {
   id: string; first_name: string; last_name: string; phone: string; email: string | null;
-  visit_date: string; source: string; follow_up_status: FollowUpStatus; notes: string | null;
+  visit_date: string; source: string; invited_by: string | null; follow_up_status: FollowUpStatus; notes: string | null;
 }
 
 export default function GuestsPage() {
@@ -17,13 +17,14 @@ export default function GuestsPage() {
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [form, setForm] = useState({ firstName: '', lastName: '', phone: '', email: '', source: 'walk-in' });
   const [noteDraftId, setNoteDraftId] = useState<string | null>(null);
   const [noteText, setNoteText] = useState('');
 
   const load = useCallback(async () => {
     setLoading(true);
-    const { data } = await supabase.from('guests').select('id, first_name, last_name, phone, email, visit_date, source, follow_up_status, notes').order('visit_date', { ascending: false });
+    const { data } = await supabase.from('guests').select('id, first_name, last_name, phone, email, visit_date, source, invited_by, follow_up_status, notes').order('visit_date', { ascending: false });
     setGuests(data ?? []);
     setLoading(false);
   }, []);
@@ -44,8 +45,10 @@ export default function GuestsPage() {
   };
 
   async function updateStatus(id: string, status: FollowUpStatus) {
+    setActionLoading(id);
     await supabase.from('guests').update({ follow_up_status: status }).eq('id', id);
-    load();
+    await load();
+    setActionLoading(null);
   }
 
   async function saveNote(id: string) {
@@ -77,19 +80,19 @@ export default function GuestsPage() {
       />
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-4">
+        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-4">
           <p className="text-sm text-gray-500">Total Guests</p>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total}</p>
+          <p className="text-2xl font-bold text-white">{stats.total}</p>
         </div>
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border-l-4 border-l-amber-500 border border-gray-200 dark:border-[#2D2D2D] p-4">
+        <div className="bg-[#12151C] rounded-xl border-l-4 border-l-amber-500 border border-white/[0.06] p-4">
           <p className="text-sm text-gray-500">Pending Follow-up</p>
           <p className="text-2xl font-bold text-amber-600">{stats.pending}</p>
         </div>
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border-l-4 border-l-blue-500 border border-gray-200 dark:border-[#2D2D2D] p-4">
+        <div className="bg-[#12151C] rounded-xl border-l-4 border-l-blue-500 border border-white/[0.06] p-4">
           <p className="text-sm text-gray-500">Contacted</p>
           <p className="text-2xl font-bold text-blue-600">{stats.contacted}</p>
         </div>
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border-l-4 border-l-green-500 border border-gray-200 dark:border-[#2D2D2D] p-4">
+        <div className="bg-[#12151C] rounded-xl border-l-4 border-l-green-500 border border-white/[0.06] p-4">
           <p className="text-sm text-gray-500">Converted</p>
           <p className="text-2xl font-bold text-green-600">{stats.converted}</p>
         </div>
@@ -99,7 +102,7 @@ export default function GuestsPage() {
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input type="text" placeholder="Search guests..." className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg" value={search} onChange={(e) => setSearch(e.target.value)} />
+            <input type="text" placeholder="Search guests..." className="w-full pl-10 pr-4 py-2.5 text-sm border border-white/10 dark:border-[#2D2D2D] rounded-lg" value={search} onChange={(e) => setSearch(e.target.value)} />
           </div>
           <select className="px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg" value={filter} onChange={(e) => setFilter(e.target.value as any)}>
             <option value="all">All Status</option>
@@ -116,7 +119,7 @@ export default function GuestsPage() {
       ) : (
       <div className="space-y-4">
         {filtered.map((guest) => (
-          <div key={guest.id} className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-5">
+          <div key={guest.id} className="bg-[#12151C] rounded-xl border border-white/[0.06] p-5">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-full bg-gray-200 dark:bg-[#2D2D2D] flex items-center justify-center text-gray-600 dark:text-gray-400 font-semibold">
@@ -138,14 +141,17 @@ export default function GuestsPage() {
               }`}>{guest.follow_up_status}</span>
             </div>
 
-            <div className="grid sm:grid-cols-2 gap-4 mb-4 text-sm">
+            <div className="grid sm:grid-cols-3 gap-4 mb-4 text-sm">
               <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400"><Calendar className="w-4 h-4" /><span>Visited: {new Date(guest.visit_date).toLocaleDateString()}</span></div>
               <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400"><UserPlus className="w-4 h-4" /><span>Source: {guest.source}</span></div>
+              {guest.invited_by && (
+                <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400"><span>Invited by member</span></div>
+              )}
             </div>
 
             {guest.notes && (
-              <div className="bg-gray-50 dark:bg-[#252525] rounded-lg p-3 mb-4">
-                <p className="text-sm text-gray-600 dark:text-gray-400">{guest.notes}</p>
+              <div className="bg-white/[0.04] rounded-lg p-3 mb-4">
+                <p className="text-sm text-white/50">{guest.notes}</p>
               </div>
             )}
 
@@ -162,13 +168,25 @@ export default function GuestsPage() {
             <div className="flex gap-2 pt-4 border-t border-gray-100 dark:border-[#2D2D2D]">
               {guest.follow_up_status === 'pending' && (
                 <>
-                  <button onClick={() => updateStatus(guest.id, 'contacted')} className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-[#BF0A30] text-white rounded-lg hover:bg-[#B00325]"><Phone className="w-4 h-4" />Mark Contacted</button>
+                  <button
+                    onClick={() => updateStatus(guest.id, 'contacted')}
+                    disabled={actionLoading === guest.id}
+                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-[#BF0A30] text-white rounded-lg hover:bg-[#B00325] disabled:opacity-50"
+                  >
+                    <Phone className="w-4 h-4" />{actionLoading === guest.id ? 'Updating...' : 'Mark Contacted'}
+                  </button>
                   <button onClick={() => { setNoteDraftId(guest.id); setNoteText(guest.notes ?? ''); }} className="flex items-center gap-2 px-4 py-2 text-sm font-medium border border-gray-300 dark:border-[#2D2D2D] rounded-lg hover:bg-gray-50 dark:hover:bg-[#252525]">Add Note</button>
                 </>
               )}
               {guest.follow_up_status === 'contacted' && (
                 <>
-                  <button onClick={() => updateStatus(guest.id, 'converted')} className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-green-600 text-white rounded-lg hover:bg-green-700"><Check className="w-4 h-4" />Convert to Attendee</button>
+                  <button
+                    onClick={() => updateStatus(guest.id, 'converted')}
+                    disabled={actionLoading === guest.id}
+                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+                  >
+                    <Check className="w-4 h-4" />{actionLoading === guest.id ? 'Updating...' : 'Convert to Attendee'}
+                  </button>
                   <button onClick={() => { setNoteDraftId(guest.id); setNoteText(guest.notes ?? ''); }} className="flex items-center gap-2 px-4 py-2 text-sm font-medium border border-gray-300 dark:border-[#2D2D2D] rounded-lg hover:bg-gray-50 dark:hover:bg-[#252525]"><Clock className="w-4 h-4" />Add Note</button>
                 </>
               )}

@@ -91,7 +91,7 @@ export default function ReportsPage() {
   const maxDept = Math.max(...stats.departmentStats.map(d => d.members), 1);
 
   return (
-    <AdminLayout title="Reports">
+    <AdminLayout title="Reports" requirePermission={{ moduleKey: 'reports', action: 'view' }}>
       <PageHeader title="Reports & Analytics" subtitle="Church growth and engagement metrics" />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -138,7 +138,7 @@ export default function ReportsPage() {
 
         <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-6">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="font-semibold text-gray-900 dark:text-white">Department Distribution</h2>
+            <h2 className="font-semibold text-white">Department Distribution</h2>
             <PieChart className="w-5 h-5 text-gray-400" />
           </div>
           {stats.departmentStats.length === 0 ? (
@@ -157,7 +157,7 @@ export default function ReportsPage() {
 
         <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-6">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="font-semibold text-gray-900 dark:text-white">Crosspoint Capacity</h2>
+            <h2 className="font-semibold text-white">Crosspoint Capacity</h2>
             <Home className="w-5 h-5 text-gray-400" />
           </div>
           {stats.crosspointCapacity.length === 0 ? (

@@ -1,48 +1,88 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
-import { Search, Plus, Download, Eye, Edit, Loader2 } from 'lucide-react';
+import { Search, Plus, Download, Eye, Edit, Loader2, Upload } from 'lucide-react';
 import { AdminLayout, PageHeader } from '@/components/connect/AdminLayout';
 import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/context/AuthContext';
 
-interface Member {
+interface MemberRow {
   id: string; first_name: string; last_name: string; member_id: string | null;
-  phone: string | null; email: string; occupation: string | null; role: string; status: string;
+  phone: string | null; email: string | null; occupation: string | null; role: string; status: string;
 }
 interface MembershipRow { user_id: string; crosspoints: { name: string } | null }
 
 export default function MembersPage() {
+  const { session } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [members, setMembers] = useState<MemberRow[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
-  const [members, setMembers] = useState<Member[]>([]);
   const [crosspointByUser, setCrosspointByUser] = useState<Record<string, string>>({});
-  const [loading, setLoading] = useState(true);
+  const [importStatus, setImportStatus] = useState<{ success: number; failed: number; errors: string[] } | null>(null);
+  const [importing, setImporting] = useState(false);
+  const csvInputRef = useRef<HTMLInputElement>(null);
 
-  const load = useCallback(async () => {
+  const loadMembers = useCallback(async () => {
     setLoading(true);
-    const [membersRes, membershipsRes] = await Promise.all([
-      supabase.from('profiles').select('id, first_name, last_name, member_id, phone, email, occupation, role, status').not('member_id', 'is', null).order('first_name'),
+
+    let query = supabase.from('profiles')
+      .select('id, first_name, last_name, member_id, phone, email, occupation, role, status')
+      .not('member_id', 'is', null)
+      .order('first_name');
+
+    if (search) {
+      query = query.or(`full_name.ilike.%${search}%,member_id.ilike.%${search}%,phone.ilike.%${search}%`);
+    }
+    if (roleFilter !== 'all') {
+      query = query.eq('role', roleFilter);
+    }
+
+    const [{ data, error }, membershipsRes, countRes] = await Promise.all([
+      query,
       supabase.from('crosspoint_memberships').select('user_id, crosspoints(name)').eq('status', 'active'),
+      supabase.from('profiles').select('id', { count: 'exact', head: true }).not('member_id', 'is', null),
     ]);
-    setMembers(membersRes.data ?? []);
+
+    if (!error) setMembers((data as any) ?? []);
+
     const map: Record<string, string> = {};
     ((membershipsRes.data as any as MembershipRow[]) ?? []).forEach(m => { if (m.crosspoints) map[m.user_id] = m.crosspoints.name; });
     setCrosspointByUser(map);
+
+    setTotalCount(countRes.count ?? 0);
     setLoading(false);
-  }, []);
+  }, [search, roleFilter]);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => { loadMembers(); }, [loadMembers]);
 
-  const filteredMembers = members.filter(member => {
-    const matchesSearch = `${member.first_name} ${member.last_name} ${member.member_id ?? ''} ${member.phone ?? ''}`.toLowerCase().includes(search.toLowerCase());
-    const matchesRole = roleFilter === 'all' || member.role === roleFilter;
-    return matchesSearch && matchesRole;
-  });
+  const handleCSVImport = async (file: File) => {
+    setImporting(true);
+    setImportStatus(null);
+    const text = await file.text();
+    const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+    const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/\s+/g, '_'));
+    const rows = lines.slice(1).map(line => {
+      const vals = line.split(',').map(v => v.trim().replace(/^"|"$/g, ''));
+      return Object.fromEntries(headers.map((h, i) => [h, vals[i] || '']));
+    });
+    const res = await fetch('/api/admin/members-import', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
+      body: JSON.stringify({ rows }),
+    });
+    const result = await res.json();
+    setImportStatus(result);
+    setImporting(false);
+    if (csvInputRef.current) csvInputRef.current.value = '';
+    loadMembers();
+  };
 
   function exportCsv() {
     const rows = [
       ['Name', 'Member ID', 'Phone', 'Email', 'Role', 'Crosspoint', 'Status'],
-      ...filteredMembers.map(m => [
-        `${m.first_name} ${m.last_name}`, m.member_id ?? '', m.phone ?? '', m.email,
+      ...members.map(m => [
+        `${m.first_name} ${m.last_name}`, m.member_id ?? '', m.phone ?? '', m.email ?? '',
         m.role, crosspointByUser[m.id] ?? '', m.status,
       ]),
     ];
@@ -60,22 +100,58 @@ export default function MembersPage() {
     <AdminLayout title="Members">
       <PageHeader
         title="Members"
-        subtitle={`${members.length} total members`}
+        subtitle={`${totalCount} total members`}
         actions={
           <div className="flex gap-2">
             <button onClick={exportCsv} className="flex items-center gap-2 px-3 py-2 text-sm font-medium border border-gray-300 dark:border-[#2D2D2D] rounded-lg hover:bg-gray-50 dark:hover:bg-[#252525]"><Download className="w-4 h-4" />Export</button>
+            <button
+              onClick={() => csvInputRef.current?.click()}
+              disabled={importing}
+              className="flex items-center gap-2 px-3 py-2 text-sm font-medium border border-gray-300 dark:border-[#2D2D2D] rounded-lg hover:bg-gray-50 dark:hover:bg-[#252525] disabled:opacity-50"
+            >
+              {importing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+              Import CSV
+            </button>
             <Link href="/admin/members/new" className="flex items-center gap-2 px-3 py-2 text-sm font-medium bg-[#BF0A30] text-white rounded-lg hover:bg-[#B00325]"><Plus className="w-4 h-4" />Add Member</Link>
+            <input
+              ref={csvInputRef}
+              type="file"
+              accept=".csv"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) handleCSVImport(file);
+              }}
+            />
           </div>
         }
       />
+
+      {importStatus && (
+        <div className={`rounded-xl border p-4 mb-6 ${importStatus.failed > 0 ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800' : 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'}`}>
+          <p className="font-semibold text-gray-900 dark:text-white text-sm">
+            Import complete: {importStatus.success} succeeded, {importStatus.failed} failed
+          </p>
+          {importStatus.errors.length > 0 && (
+            <ul className="mt-2 space-y-1">
+              {importStatus.errors.slice(0, 5).map((err, i) => (
+                <li key={i} className="text-xs text-amber-700 dark:text-amber-300">{err}</li>
+              ))}
+              {importStatus.errors.length > 5 && (
+                <li className="text-xs text-amber-600 dark:text-amber-400">...and {importStatus.errors.length - 5} more errors</li>
+              )}
+            </ul>
+          )}
+        </div>
+      )}
 
       <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-4 mb-6">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input type="text" placeholder="Search by name, ID, or phone..." className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg bg-white dark:bg-[#1A1A1A] focus:outline-none focus:ring-2 focus:ring-[#BF0A30]" value={search} onChange={(e) => setSearch(e.target.value)} />
+            <input type="text" placeholder="Search by name, ID, or phone..." className="w-full pl-10 pr-4 py-2.5 text-sm border border-white/10 rounded-lg bg-[#12151C] focus:outline-none focus:ring-2 focus:ring-[#BF0A30]" value={search} onChange={(e) => setSearch(e.target.value)} />
           </div>
-          <select className="px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg bg-white dark:bg-[#1A1A1A]" value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)}>
+          <select className="px-4 py-2.5 text-sm border border-white/10 rounded-lg bg-[#12151C]" value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)}>
             <option value="all">All Roles</option>
             <option value="member">Member</option>
             <option value="leader">Leader</option>
@@ -104,7 +180,7 @@ export default function MembersPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-[#2D2D2D]">
-              {filteredMembers.map((member) => (
+              {members.map((member) => (
                 <tr key={member.id} className="hover:bg-gray-50 dark:hover:bg-[#252525]">
                   <td className="py-3 px-4">
                     <div className="flex items-center gap-3">
@@ -117,7 +193,7 @@ export default function MembersPage() {
                   </td>
                   <td className="py-3 px-4 font-mono text-sm">{member.member_id}</td>
                   <td className="py-3 px-4">
-                    <p className="text-sm">{member.phone}</p>
+                    <p className="text-sm">{member.phone || '—'}</p>
                     <p className="text-xs text-gray-500">{member.email || '—'}</p>
                   </td>
                   <td className="py-3 px-4">
@@ -141,11 +217,11 @@ export default function MembersPage() {
           </table>
         </div>
         )}
-        {!loading && filteredMembers.length === 0 && <div className="p-12 text-center text-gray-500">No members found</div>}
+        {!loading && members.length === 0 && <div className="p-12 text-center text-gray-500">No members found</div>}
       </div>
 
       <div className="flex items-center justify-between mt-4">
-        <p className="text-sm text-gray-500">Showing {filteredMembers.length} of {members.length} members</p>
+        <p className="text-sm text-gray-500">Showing {members.length} of {totalCount} members</p>
       </div>
     </AdminLayout>
   );

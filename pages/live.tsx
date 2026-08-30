@@ -29,6 +29,15 @@ export default function LivePage() {
   const [streamData,   setStreamData]   = useState<StreamLink>({ url: '', isLive: false, updatedAt: '' });
   const [loading,      setLoading]      = useState(true);
   const [videoVisible, setVideoVisible] = useState(true);
+  const [navH,         setNavH]         = useState('4rem');
+
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 640px)');
+    const update = (e: { matches: boolean }) => setNavH(e.matches ? '6rem' : '4rem');
+    update(mq);
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
+  }, []);
 
   useEffect(() => {
     fetch('/api/stream/settings')
@@ -64,7 +73,7 @@ export default function LivePage() {
       />
 
       <Layout>
-        <div className="min-h-screen bg-[#0A0C10]">
+        <div className="min-h-screen bg-[#0A0C10] pt-16 sm:pt-24">
 
           {/* Live banner */}
           {streamData.isLive && (
@@ -178,7 +187,7 @@ export default function LivePage() {
           {/* ── Mobile layout ─────────────────────────────────────────────── */}
           <div className="lg:hidden">
             {/* Sticky video area */}
-            <div className="sticky top-16 z-30 bg-[#0A0C10]">
+            <div className="sticky top-16 sm:top-24 z-30 bg-[#0A0C10]">
               {videoVisible && (
                 <VideoPlayer streamUrl={streamData.url} isLive={streamData.isLive} />
               )}
@@ -199,7 +208,7 @@ export default function LivePage() {
             <div
               className="flex border-b border-white/[0.07] sticky z-20"
               style={{
-                top: videoVisible ? 'calc(4rem + 56.25vw + 32px)' : 'calc(4rem + 32px)',
+                top: videoVisible ? `calc(${navH} + 56.25vw + 32px)` : `calc(${navH} + 32px)`,
                 background: 'rgba(10,12,16,0.98)',
                 backdropFilter: 'blur(12px)',
               }}

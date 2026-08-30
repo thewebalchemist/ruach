@@ -98,7 +98,7 @@ export default function ExamDetailPage() {
 
   return (
     <ConnectLayout title={exam.title}>
-      <Link href="/connect/exams" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 mb-5 transition-colors">
+      <Link href="/connect/exams" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-white/70 dark:hover:text-gray-300 mb-5 transition-colors">
         <ArrowLeft className="w-4 h-4" /> Back to Exams
       </Link>
 
@@ -106,7 +106,7 @@ export default function ExamDetailPage() {
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-3 mb-1">
-              <h1 className="text-xl font-bold text-gray-900 dark:text-white">{exam.title}</h1>
+              <h1 className="text-xl font-bold text-white">{exam.title}</h1>
               <span className={`px-2.5 py-0.5 text-xs font-semibold rounded-full ${STATUS_COLOR[exam.status]}`}>
                 {STATUS_LABEL[exam.status]}
               </span>
@@ -120,7 +120,7 @@ export default function ExamDetailPage() {
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <Link href={`/connect/exams/new?edit=${exam.id}`} className="flex items-center gap-1.5 px-3 py-2 border border-gray-200 dark:border-white/[0.06] rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:border-[#BF0A30] hover:text-[#BF0A30] transition-colors">
+            <Link href={`/connect/exams/new?edit=${exam.id}`} className="flex items-center gap-1.5 px-3 py-2 border border-white/[0.06] rounded-xl text-sm font-medium text-white/50 hover:border-[#BF0A30] hover:text-[#BF0A30] transition-colors">
               <Pencil className="w-4 h-4" /> Edit
             </Link>
             {exam.status === 'draft' && (
@@ -155,12 +155,12 @@ export default function ExamDetailPage() {
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
         {[
-          { label: 'Submitted',     value: submitted,          color: 'text-gray-900 dark:text-white' },
+          { label: 'Submitted',     value: submitted,          color: 'text-white' },
           { label: 'Pending',       value: pending,            color: 'text-amber-600' },
           { label: 'Pass Rate',     value: results.length > 0 ? `${Math.round((passCount / results.length) * 100)}%` : '—', color: 'text-green-600' },
           { label: 'Avg Score',     value: results.length > 0 ? `${avgScore}%` : '—', color: 'text-blue-600' },
         ].map(({ label, value, color }) => (
-          <div key={label} className="bg-white dark:bg-[#141414] rounded-2xl border border-gray-200/70 dark:border-white/[0.05] p-4 shadow-sm text-center">
+          <div key={label} className="bg-[#12151C] rounded-2xl border border-white/[0.06]/70 p-4 shadow-sm text-center">
             <p className={`text-xl font-bold ${color}`}>{value}</p>
             <p className="text-xs text-gray-500 mt-0.5">{label}</p>
           </div>
@@ -188,7 +188,7 @@ export default function ExamDetailPage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-gray-100 dark:border-white/[0.04]">
+                    <tr className="border-b border-gray-100">
                       {['Student', 'Score', 'Percentage', 'Result', 'Submitted', ''].map(h => (
                         <th key={h} className="text-left text-xs font-medium text-gray-500 px-4 py-3">{h}</th>
                       ))}
@@ -238,7 +238,7 @@ export default function ExamDetailPage() {
             )}
 
             {pending > 0 && (
-              <div className="px-5 py-3 border-t border-gray-100 dark:border-white/[0.04] bg-amber-50 dark:bg-amber-900/10">
+              <div className="px-5 py-3 border-t border-white/[0.04] bg-amber-50 dark:bg-amber-900/10">
                 <p className="text-xs text-amber-700 dark:text-amber-300 font-medium">
                   {pending} student{pending !== 1 ? 's' : ''} haven't submitted yet
                 </p>
@@ -262,11 +262,11 @@ export default function ExamDetailPage() {
                 {questions.map((q, i) => (
                   <div key={q.id} className="px-5 py-3.5">
                     <div className="flex items-start gap-3">
-                      <span className="w-5 h-5 rounded-lg bg-gray-100 dark:bg-[#1A1A1A] text-gray-600 dark:text-gray-400 text-[10px] font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <span className="w-5 h-5 rounded-lg bg-white/5 text-white/50 text-[10px] font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
                         {i + 1}
                       </span>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm text-gray-800 dark:text-gray-200 leading-relaxed">{q.question}</p>
+                        <p className="text-sm text-white leading-relaxed">{q.question}</p>
                         <div className="flex items-center gap-2 mt-1">
                           <span className="text-[10px] text-gray-400 capitalize">{q.question_type.replace('-', ' ')}</span>
                           <span className="text-[10px] text-gray-400">· {q.marks} mark{q.marks !== 1 ? 's' : ''}</span>
@@ -280,10 +280,10 @@ export default function ExamDetailPage() {
           </div>
 
           {results.length > 0 && (
-            <div className="bg-white dark:bg-[#141414] rounded-2xl border border-gray-200/70 dark:border-white/[0.05] p-5 shadow-sm">
+            <div className="bg-[#12151C] rounded-2xl border border-white/[0.06]/70 p-5 shadow-sm">
               <div className="flex items-center gap-2 mb-4">
                 <TrendingUp className="w-4 h-4 text-gray-500" />
-                <p className="font-semibold text-gray-900 dark:text-white text-sm">Score Distribution</p>
+                <p className="font-semibold text-white text-sm">Score Distribution</p>
               </div>
               {[
                 { label: '90–100%', count: results.filter(r => r.percentage >= 90).length, color: 'bg-green-500' },
@@ -293,13 +293,13 @@ export default function ExamDetailPage() {
               ].map(({ label, count, color }) => (
                 <div key={label} className="flex items-center gap-3 mb-2.5 last:mb-0">
                   <span className="text-xs text-gray-500 w-20 flex-shrink-0">{label}</span>
-                  <div className="flex-1 h-2 bg-gray-100 dark:bg-[#1A1A1A] rounded-full overflow-hidden">
+                  <div className="flex-1 h-2 bg-white/5 rounded-full overflow-hidden">
                     <div
                       className={`h-full ${color} rounded-full`}
                       style={{ width: results.length > 0 ? `${(count / results.length) * 100}%` : '0%' }}
                     />
                   </div>
-                  <span className="text-xs font-medium text-gray-600 dark:text-gray-400 w-4 text-right">{count}</span>
+                  <span className="text-xs font-medium text-white/50 w-4 text-right">{count}</span>
                 </div>
               ))}
             </div>

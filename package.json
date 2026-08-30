@@ -19,6 +19,7 @@
     "@livekit/components-core": "^0.12.13",
     "@livekit/components-react": "^2.9.21",
     "@livekit/components-styles": "^1.2.0",
+    "@mistralai/mistralai": "^2.5.0",
     "@supabase/ssr": "^0.12.4",
     "@supabase/supabase-js": "^2.77.0",
     "groq-sdk": "^0.37.0",

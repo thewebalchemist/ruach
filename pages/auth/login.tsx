@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { Eye, EyeOff, Loader2, Mail, ChevronRight, ArrowLeft, Shield } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { usePhoneOtp } from '@/hooks/usePhoneOtp';
+import { friendlyAuthError } from '@/lib/auth-utils';
 
 type Step = 'method' | 'otp' | 'email-form';
 
@@ -31,16 +32,35 @@ export default function AdminLogin() {
     }
   }, [router.isReady, router.query.redirectTo]);
 
+  // Already signed in? Don't strand the user on the login form — forward them
+  // by role. This is what fixes the "bounced to login while still logged in"
+  // loop after cookies are cleared or a tab wakes up.
+  useEffect(() => {
+    let active = true;
+    supabase.auth.getSession().then(({ data }) => {
+      if (active && data.session?.user?.id) redirectByRole(data.session.user.id);
+    });
+    return () => { active = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // ── After a successful auth, redirect by role ──────────────────────────────
   async function redirectByRole(userId: string) {
     const { data } = await supabase.from('profiles').select('role, member_id').eq('id', userId).single();
     const role       = data?.role ?? '';
     const redirectTo = router.query.redirectTo as string | undefined;
 
-    if (['admin', 'pastor', 'teacher', 'leader'].includes(role)) {
+    if (['admin', 'pastor'].includes(role)) {
       const dest = (redirectTo?.startsWith('/admin') || redirectTo?.startsWith('/control-panel'))
         ? redirectTo
-        : '/admin';
+        : '/auth/portal-select';
+      await router.push(dest);
+    } else if (role === 'media') {
+      const dest = redirectTo?.startsWith('/control-panel') ? redirectTo : '/control-panel';
+      await router.push(dest);
+    } else if (['teacher', 'leader'].includes(role)) {
+      // teacher/leader can use the church-admin area but not the control panel
+      const dest = redirectTo?.startsWith('/admin') ? redirectTo : '/admin';
       await router.push(dest);
     } else if (data?.member_id) {
       await router.push('/member');
@@ -66,7 +86,7 @@ export default function AdminLogin() {
     try {
       const { data, error: ae } = await supabase.auth.signInWithPassword({ email, password });
       if (ae || !data.session) {
-        setEmailError(ae?.message ?? 'Invalid email or password.');
+        setEmailError(friendlyAuthError(ae?.message));
         return;
       }
       await redirectByRole(data.session.user.id);

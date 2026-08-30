@@ -89,12 +89,12 @@ export default function CrosspointModulesPage() {
           { label: 'Drafts', value: drafts, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50 dark:bg-amber-900/20' },
           { label: 'Active Crosspoints', value: activeCrosspoints, icon: Users, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-900/20' },
         ].map(stat => (
-          <div key={stat.label} className="bg-white dark:bg-[#1A1A1A] rounded-2xl border border-gray-200 dark:border-[#2D2D2D] p-4 flex items-center gap-3">
+          <div key={stat.label} className="bg-[#12151C] rounded-2xl border border-white/[0.06] p-4 flex items-center gap-3">
             <div className={`w-10 h-10 rounded-xl ${stat.bg} flex items-center justify-center flex-shrink-0`}>
               <stat.icon className={`w-5 h-5 ${stat.color}`} />
             </div>
             <div>
-              <p className="text-xl font-black text-gray-900 dark:text-white leading-none">{stat.value}</p>
+              <p className="text-xl font-black text-white leading-none">{stat.value}</p>
               <p className="text-xs text-gray-500 mt-0.5">{stat.label}</p>
             </div>
           </div>
@@ -131,7 +131,7 @@ export default function CrosspointModulesPage() {
             <p className="text-sm text-gray-400">Try adjusting the filter or search</p>
           </div>
         ) : (
-          <div className="divide-y divide-gray-100 dark:divide-[#2D2D2D]">
+          <div className="divide-y divide-white/[0.06]">
             {filtered.map(module => {
               const statusCfg = STATUS_CONFIG[module.status];
               const StatusIcon = statusCfg.icon;

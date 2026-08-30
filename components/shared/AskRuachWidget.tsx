@@ -1,15 +1,29 @@
 import { useState, useRef, useEffect } from 'react';
-import { Sparkles, X, Send, Loader2, AlertCircle, RotateCcw } from 'lucide-react';
+import { Sparkles, X, Send, Loader2, AlertCircle, RotateCcw, Play } from 'lucide-react';
 import { useRouter } from 'next/router';
+import Link from 'next/link';
 import { ChatMessage } from '@/types';
 
 const H = { fontFamily: 'Montserrat, sans-serif', fontWeight: 900 };
 
+interface SermonCard {
+  id: string; title: string; preacher: string | null; slug: string;
+  thumbnail_url: string | null; youtube_url: string | null;
+}
+function ytId(url?: string | null) {
+  return url?.match(/(?:v=|youtu\.be\/|embed\/)([A-Za-z0-9_-]{11})/)?.[1] ?? '';
+}
+function cardThumb(c: SermonCard) {
+  if (c.thumbnail_url) return c.thumbnail_url;
+  const id = ytId(c.youtube_url);
+  return id ? `https://img.youtube.com/vi/${id}/mqdefault.jpg` : '';
+}
+
 const SUGGESTIONS = [
   { icon: '📍', text: 'Where is Ruach Tabernacle located?' },
   { icon: '⏰', text: 'What time are Sunday services?' },
-  { icon: '📅', text: 'Are there any upcoming events?' },
-  { icon: '🙏', text: 'How do I submit a prayer request?' },
+  { icon: '🔥', text: 'What does it mean to be fruitful?' },
+  { icon: '🙏', text: 'What has the church taught about prayer?' },
 ];
 
 export default function AskRuachWidget() {
@@ -20,8 +34,9 @@ export default function AskRuachWidget() {
   const [isLoading, setIsLoading] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [cards, setCards] = useState<SermonCard[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const isAskPage = router.pathname === '/ask';
 
@@ -50,10 +65,15 @@ export default function AskRuachWidget() {
       created_at: new Date().toISOString(),
     };
 
-    setMessages(prev => [...prev, userMsg]);
+    const assistantId = `msg_${Date.now()}_ai`;
+    setMessages(prev => [...prev, userMsg, {
+      id: assistantId, role: 'assistant', content: '', created_at: new Date().toISOString(),
+    }]);
     setInputValue('');
+    if (inputRef.current) inputRef.current.style.height = 'auto';
     setIsLoading(true);
     setError(null);
+    setCards([]);
 
     try {
       const res = await fetch('/api/chat', {
@@ -65,22 +85,49 @@ export default function AskRuachWidget() {
           conversation_history: messages,
         }),
       });
-      const data = await res.json();
 
+      // Errors come back as JSON; success is a text/event-stream of deltas.
       if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
         setError(data.message || 'Something went wrong. Please try again.');
+        setMessages(prev => prev.filter(m => m.id !== assistantId));
         return;
       }
 
-      if (data.session_id && !sessionId) setSessionId(data.session_id);
-      setMessages(prev => [...prev, {
-        id: `msg_${Date.now()}_ai`,
-        role: 'assistant',
-        content: data.message,
-        created_at: new Date().toISOString(),
-      }]);
+      const reader = res.body!.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() ?? '';
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+          const raw = line.slice(6).trim();
+          if (!raw) continue;
+          try {
+            const event = JSON.parse(raw);
+            if (event.type === 'delta') {
+              setMessages(prev => prev.map(m =>
+                m.id === assistantId ? { ...m, content: m.content + event.content } : m
+              ));
+            } else if (event.type === 'done') {
+              if (event.session_id && !sessionId) setSessionId(event.session_id);
+              if (Array.isArray(event.relevant_sermons)) setCards(event.relevant_sermons);
+            } else if (event.type === 'error') {
+              setError(event.message);
+            }
+          } catch {
+            // ignore malformed SSE lines
+          }
+        }
+      }
     } catch {
       setError('Failed to send. Please check your connection.');
+      setMessages(prev => prev.filter(m => m.id !== assistantId));
     } finally {
       setIsLoading(false);
     }
@@ -142,7 +189,7 @@ export default function AskRuachWidget() {
               <div className="flex items-center gap-1">
                 {hasMessages && (
                   <button
-                    onClick={() => { setMessages([]); setSessionId(null); setError(null); }}
+                    onClick={() => { setMessages([]); setSessionId(null); setError(null); setCards([]); }}
                     className="w-8 h-8 rounded-xl flex items-center justify-center text-white/35 hover:text-white/70 hover:bg-white/5 transition-colors"
                     title="Clear chat"
                   >
@@ -232,6 +279,36 @@ export default function AskRuachWidget() {
                 </div>
               )}
 
+              {/* Related sermon cards — "Watch these" */}
+              {cards.length > 0 && (
+                <div className="space-y-2 pt-1">
+                  <p className="px-1 text-[10px] uppercase tracking-widest text-[#BF0A30]" style={H}>Watch these</p>
+                  {cards.map((c) => (
+                    <Link
+                      key={c.id}
+                      href={`/${c.slug}`}
+                      onClick={() => setOpen(false)}
+                      className="flex items-center gap-3 rounded-xl p-2 transition-colors hover:bg-white/[0.03]"
+                      style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
+                    >
+                      <div className="relative w-14 h-9 rounded-lg overflow-hidden flex-shrink-0 bg-[#BF0A30]/15 grid place-items-center">
+                        {cardThumb(c) && (
+                          <img src={cardThumb(c)} alt="" className="absolute inset-0 w-full h-full object-cover"
+                            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                        )}
+                        <span className="relative w-6 h-6 rounded-full bg-[#BF0A30]/90 flex items-center justify-center">
+                          <Play className="w-3 h-3 text-white fill-white ml-0.5" />
+                        </span>
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-xs font-semibold text-white">{c.title}</p>
+                        {c.preacher && <p className="text-[10px] text-white/40 truncate">{c.preacher}</p>}
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+
               {error && (
                 <div
                   className="flex items-start gap-2 px-4 py-3 rounded-2xl"
@@ -251,20 +328,21 @@ export default function AskRuachWidget() {
               style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
             >
               <div
-                className="flex items-center gap-2 rounded-2xl px-4 py-1.5"
+                className="flex items-end gap-2 rounded-2xl px-4 py-2 transition-colors focus-within:border-[#BF0A30]/50"
                 style={{
                   background: 'rgba(255,255,255,0.05)',
                   border: '1px solid rgba(255,255,255,0.09)',
                 }}
               >
-                <input
+                <textarea
                   ref={inputRef}
-                  type="text"
+                  rows={1}
                   value={inputValue}
                   onChange={e => setInputValue(e.target.value)}
-                  onKeyDown={e => { if (e.key === 'Enter') sendMessage(); }}
-                  placeholder="Ask anything about our church..."
-                  className="flex-1 bg-transparent border-none focus:outline-none text-white text-sm placeholder:text-white/20 py-2.5"
+                  onInput={e => { const t = e.currentTarget; t.style.height = 'auto'; t.style.height = Math.min(t.scrollHeight, 112) + 'px'; }}
+                  onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
+                  placeholder="Ask anything about our church…"
+                  className="flex-1 bg-transparent border-none focus:outline-none text-white text-sm placeholder:text-white/25 py-1.5 resize-none leading-relaxed max-h-[112px] scrollbar-thin"
                 />
                 <button
                   onClick={() => sendMessage()}

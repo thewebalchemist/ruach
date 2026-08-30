@@ -57,17 +57,17 @@ export default function AdminConnectCohortPage() {
     switch (status) {
       case 'completed': return 'bg-green-100 text-green-800';
       case 'in-progress': return 'bg-blue-100 text-blue-800';
-      case 'enrolled': return 'bg-gray-100 text-gray-700';
+      case 'enrolled': return 'bg-white/5 text-gray-700';
       case 'failed': return 'bg-red-100 text-red-800';
-      case 'dropped': return 'bg-gray-100 text-gray-400';
-      default: return 'bg-gray-100 text-gray-700';
+      case 'dropped': return 'bg-white/5 text-gray-400';
+      default: return 'bg-white/5 text-gray-700';
     }
   };
 
   return (
     <AdminLayout title={cohort.name}>
       <div className="mb-6">
-        <Link href="/admin/connect" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 mb-4">
+        <Link href="/admin/connect" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-white/70 mb-4">
           <ArrowLeft className="w-4 h-4" />Back to Connect
         </Link>
         <div className="flex items-start justify-between">
@@ -86,15 +86,15 @@ export default function AdminConnectCohortPage() {
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-4 text-center">
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{students.length}</p>
+        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-4 text-center">
+          <p className="text-2xl font-bold text-white">{students.length}</p>
           <p className="text-sm text-gray-500">Total Students</p>
         </div>
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-4 text-center">
+        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-4 text-center">
           <p className="text-2xl font-bold text-green-600">{passing.length}</p>
           <p className="text-sm text-gray-500">Can Graduate</p>
         </div>
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-4 text-center">
+        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-4 text-center">
           <p className="text-2xl font-bold text-amber-500">{atRisk.length}</p>
           <p className="text-sm text-gray-500">At Risk</p>
         </div>
@@ -126,7 +126,7 @@ export default function AdminConnectCohortPage() {
         {students.length > 0 ? (
           <table className="w-full">
             <thead>
-              <tr className="text-left text-xs font-semibold text-gray-500 uppercase bg-gray-50 dark:bg-[#252525]">
+              <tr className="text-left text-xs font-semibold text-gray-500 uppercase bg-white/[0.04]">
                 <th className="py-3 px-4">Student</th>
                 <th className="py-3 px-4">Admission #</th>
                 <th className="py-3 px-4">Attendance</th>

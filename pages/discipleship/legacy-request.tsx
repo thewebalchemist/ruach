@@ -73,7 +73,7 @@ export default function DiscipleshipLegacyRequest() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-[#0F0F0F]">
+      <div className="min-h-screen flex items-center justify-center bg-[#0A0C10]">
         <Loader2 className="w-8 h-8 animate-spin text-[#BF0A30]" />
       </div>
     );
@@ -81,13 +81,13 @@ export default function DiscipleshipLegacyRequest() {
 
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-[#0F0F0F] p-6">
+      <div className="min-h-screen flex items-center justify-center bg-[#0A0C10] p-6">
         <div className="max-w-md w-full text-center">
           <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle className="w-10 h-10 text-green-600" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">Request Submitted!</h1>
-          <p className="text-gray-500 dark:text-gray-400 mb-8">
+          <h1 className="text-2xl font-bold text-white mb-3">Request Submitted!</h1>
+          <p className="text-gray-500 mb-8">
             Our admin team will verify your Discipleship completion and update your profile within 3–5 business days.
             You'll receive a confirmation email once verified.
           </p>
@@ -99,27 +99,27 @@ export default function DiscipleshipLegacyRequest() {
     );
   }
 
-  const inputClass = "w-full px-4 py-3 bg-gray-50 dark:bg-[#1A1A1A] border border-gray-200 dark:border-[#2D2D2D] rounded-xl text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#BF0A30]";
-  const labelClass = "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5";
+  const inputClass = "w-full px-4 py-3 bg-[#0A0C10] border border-white/[0.06] rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-[#BF0A30]";
+  const labelClass = "block text-sm font-medium text-white/70 mb-1.5";
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#0F0F0F]">
-      <header className="bg-white dark:bg-[#1A1A1A] border-b border-gray-200 dark:border-[#2D2D2D]">
+    <div className="min-h-screen bg-[#0A0C10]">
+      <header className="bg-[#12151C] border-b border-white/[0.06]">
         <div className="max-w-2xl mx-auto px-4 py-4 flex items-center gap-4">
           <Link href="/discipleship/enroll" className="flex items-center gap-2 text-gray-500 hover:text-[#BF0A30] text-sm">
             <ArrowLeft className="w-4 h-4" /> Back to Enrollment
           </Link>
           <span className="text-gray-300 dark:text-[#3D3D3D]">/</span>
-          <span className="text-gray-900 dark:text-white font-semibold text-sm">Legacy Verification Request</span>
+          <span className="text-white font-semibold text-sm">Legacy Verification Request</span>
         </div>
       </header>
 
       <main className="max-w-2xl mx-auto px-4 py-8">
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-2xl border border-gray-200 dark:border-[#2D2D2D] p-8">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+        <div className="bg-[#12151C] rounded-2xl border border-white/[0.06] p-8">
+          <h1 className="text-2xl font-bold text-white mb-2">
             Legacy Discipleship Verification
           </h1>
-          <p className="text-gray-500 dark:text-gray-400 mb-8">
+          <p className="text-gray-500 mb-8">
             If you completed Discipleship Classes before this system was set up, submit the details below.
             An admin will verify your record and add the badge to your profile.
           </p>
@@ -136,7 +136,7 @@ export default function DiscipleshipLegacyRequest() {
                     className={`py-3 rounded-xl border-2 text-sm font-semibold transition-all ${
                       form.level === l
                         ? 'border-[#BF0A30] bg-[#BF0A30]/5 text-[#BF0A30]'
-                        : 'border-gray-200 dark:border-[#2D2D2D] text-gray-600 dark:text-gray-400 hover:border-[#BF0A30]'
+                        : 'border-white/[0.06] text-white/50 hover:border-[#BF0A30]'
                     }`}
                   >
                     Level {l}

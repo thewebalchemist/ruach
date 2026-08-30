@@ -230,7 +230,7 @@ export default function AdminDashboard({ onClose }: AdminDashboardProps) {
       preacher: sermon.preacher,
       youtube_url: sermon.youtube_url,
       service_date: sermon.service_date,
-      description: sermon.description,
+      description: sermon.description || '',
     });
     setEditingSermonId(sermon.id);
     // Scroll to form

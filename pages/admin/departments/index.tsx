@@ -12,13 +12,13 @@ interface Department {
 interface SubTeam { id: string; department_id: string; name: string }
 
 export default function DepartmentsPage() {
-  const [search, setSearch] = useState('');
   const [departments, setDepartments] = useState<Department[]>([]);
   const [memberCounts, setMemberCounts] = useState<Record<string, number>>({});
   const [subTeamsByDept, setSubTeamsByDept] = useState<Record<string, SubTeam[]>>({});
   const [pendingByDept, setPendingByDept] = useState<Record<string, number>>({});
   const [pendingTotal, setPendingTotal] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -78,15 +78,15 @@ export default function DepartmentsPage() {
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-4">
+        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-4">
           <p className="text-sm text-gray-500">Total Departments</p>
           <p className="text-2xl font-bold text-gray-900 dark:text-white">{departments.length}</p>
         </div>
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-4">
+        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-4">
           <p className="text-sm text-gray-500">Total Serving</p>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{totalServing}</p>
+          <p className="text-2xl font-bold text-white">{totalServing}</p>
         </div>
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-4">
+        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-4">
           <p className="text-sm text-gray-500">Pending Requests</p>
           <p className="text-2xl font-bold text-gray-900 dark:text-white">{pendingTotal}</p>
         </div>
@@ -95,7 +95,7 @@ export default function DepartmentsPage() {
       <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-4 mb-6">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input type="text" placeholder="Search departments..." className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg bg-white dark:bg-[#1A1A1A]" value={search} onChange={(e) => setSearch(e.target.value)} />
+          <input type="text" placeholder="Search departments..." className="w-full pl-10 pr-4 py-2.5 text-sm border border-white/10 dark:border-[#2D2D2D] rounded-lg bg-[#12151C]" value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
       </div>
 

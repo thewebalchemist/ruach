@@ -70,7 +70,7 @@ export default function MemberDetailPage() {
   return (
     <AdminLayout title={`${member.first_name} ${member.last_name}`}>
       <div className="mb-6">
-        <Link href="/admin/members" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 mb-4">
+        <Link href="/admin/members" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-white/70 mb-4">
           <ArrowLeft className="w-4 h-4" />Back to Members
         </Link>
 
@@ -86,7 +86,7 @@ export default function MemberDetailPage() {
                 <span className={`px-2 py-0.5 text-xs font-semibold rounded-full capitalize ${
                   member.role === 'pastor' ? 'bg-[#BF0A30] text-white' :
                   member.role === 'leader' ? 'bg-blue-100 text-blue-800' :
-                  'bg-gray-100 text-gray-700'
+                  'bg-white/5 text-gray-700'
                 }`}>{member.role}</span>
                 <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-green-100 text-green-800 capitalize">{member.status}</span>
               </div>
@@ -170,7 +170,7 @@ export default function MemberDetailPage() {
               <div>
                 <p className="font-medium text-gray-900 dark:text-white">{crosspoint.info.name}</p>
                 <p className="text-sm text-gray-500">{crosspoint.info.area}</p>
-                {crosspoint.info.meeting_day && <p className="text-sm text-gray-500 mt-1">{crosspoint.info.meeting_day}s at {crosspoint.info.meeting_time}</p>}
+                {crosspoint.info.meeting_day && crosspoint.info.meeting_time && <p className="text-sm text-gray-500 mt-1">{crosspoint.info.meeting_day}s at {crosspoint.info.meeting_time}</p>}
                 <div className="mt-3 pt-3 border-t border-gray-100 dark:border-[#2D2D2D]">
                   <span className={`px-2 py-0.5 text-xs font-semibold rounded-full capitalize ${crosspoint.role === 'leader' ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-700'}`}>{crosspoint.role}</span>
                 </div>

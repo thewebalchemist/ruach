@@ -6,8 +6,8 @@ import { supabase } from '@/lib/supabase';
 
 interface EventRow {
   id: string; title: string; description: string | null; type: string; status: string;
-  event_date: string; start_time: string | null; location: string | null; capacity: number | null;
-  requires_registration: boolean; registered_count: number;
+  event_date: string; start_time: string | null; end_time: string | null; location: string | null;
+  capacity: number | null; requires_registration: boolean; registered_count: number;
 }
 
 export default function EventsPage() {
@@ -17,7 +17,7 @@ export default function EventsPage() {
 
   const load = useCallback(async () => {
     setLoading(true);
-    const { data } = await supabase.from('events').select('id, title, description, type, status, event_date, start_time, location, capacity, requires_registration, registered_count').order('event_date', { ascending: false });
+    const { data } = await supabase.from('events').select('id, title, description, type, status, event_date, start_time, end_time, location, capacity, requires_registration, registered_count').order('event_date', { ascending: false });
     setEvents(data ?? []);
     setLoading(false);
   }, []);
@@ -42,15 +42,15 @@ export default function EventsPage() {
       />
 
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-4">
+        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-4">
           <p className="text-sm text-gray-500">Upcoming</p>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{upcoming}</p>
+          <p className="text-2xl font-bold text-white">{upcoming}</p>
         </div>
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-4">
+        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-4">
           <p className="text-sm text-gray-500">Church-wide</p>
           <p className="text-2xl font-bold text-gray-900 dark:text-white">{events.filter(e => e.type === 'church-wide').length}</p>
         </div>
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-4">
+        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-4">
           <p className="text-sm text-gray-500">Department</p>
           <p className="text-2xl font-bold text-gray-900 dark:text-white">{events.filter(e => e.type === 'department').length}</p>
         </div>
@@ -108,7 +108,7 @@ export default function EventsPage() {
                 {event.description && <p className="text-sm text-gray-500 mb-3 line-clamp-2">{event.description}</p>}
 
                 <div className="flex flex-wrap gap-4 text-sm text-gray-600 dark:text-gray-400">
-                  {event.start_time && <span className="flex items-center gap-1"><Clock className="w-4 h-4" />{event.start_time}</span>}
+                  {event.start_time && <span className="flex items-center gap-1"><Clock className="w-4 h-4" />{event.start_time}{event.end_time ? ` - ${event.end_time}` : ''}</span>}
                   {event.location && <span className="flex items-center gap-1"><MapPin className="w-4 h-4" />{event.location}</span>}
                   {event.capacity && <span className="flex items-center gap-1"><Users className="w-4 h-4" />{event.registered_count}/{event.capacity} registered</span>}
                 </div>

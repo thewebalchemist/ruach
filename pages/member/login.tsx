@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { Loader2, Shield, ArrowLeft, ChevronRight, Mail, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { usePhoneOtp } from '@/hooks/usePhoneOtp';
+import { friendlyAuthError } from '@/lib/auth-utils';
 
 type Step = 'login' | 'otp' | 'email-form';
 
@@ -51,7 +52,7 @@ export default function MemberLogin() {
     try {
       const { data, error: ae } = await supabase.auth.signInWithPassword({ email, password });
       if (ae || !data.session) {
-        setEmailError(ae?.message ?? 'Invalid email or password.');
+        setEmailError(friendlyAuthError(ae?.message));
         return;
       }
       await redirectIfMember(data.user.id);

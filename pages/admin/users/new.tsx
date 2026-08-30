@@ -24,7 +24,12 @@ interface NewUserForm {
   crosspointId: string;
   departmentId: string;
   sendWelcome:  boolean;
-  tempPassword: string;
+}
+
+interface Credentials {
+  email: string;
+  password: string;
+  loginUrl: string;
 }
 
 interface Option { id: string; name: string; area?: string }
@@ -64,29 +69,74 @@ const BRANCHES = [
   { id: 'ruach-rivers',     label: 'Ruach Rivers' },
 ];
 
+// Rejection-sampled so every character of `set` has exactly equal probability
+// (a plain `% set.length` on a crypto-random byte would bias toward the
+// low end of the set whenever set.length doesn't divide 256 evenly).
+function secureRandomIndex(max: number): number {
+  const bytes = new Uint8Array(1);
+  const limit = 256 - (256 % max);
+  let byte: number;
+  do {
+    crypto.getRandomValues(bytes);
+    byte = bytes[0];
+  } while (byte >= limit);
+  return byte % max;
+}
+
+function generateTempPassword(): string {
+  const upper  = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+  const lower  = 'abcdefghijkmnpqrstuvwxyz';
+  const digits = '23456789';
+  const syms   = '!@#';
+  const all    = upper + lower + digits + syms;
+  const rand   = (set: string) => set[secureRandomIndex(set.length)];
+  const base   = Array.from({ length: 12 }, () => rand(all));
+  // Guarantee at least one of each class
+  base[0] = rand(upper);
+  base[1] = rand(lower);
+  base[2] = rand(digits);
+  base[3] = rand(syms);
+  // Fisher-Yates shuffle with crypto-secure randomness (unlike
+  // `sort(() => Math.random() - 0.5)`, which is both weak and biased).
+  for (let i = base.length - 1; i > 0; i--) {
+    const j = secureRandomIndex(i + 1);
+    [base[i], base[j]] = [base[j], base[i]];
+  }
+  return base.join('');
+}
+
 export default function CreateUserPage() {
+  const [pageLoading, setPageLoading] = useState(true);
+  const [crosspoints, setCrosspoints] = useState<Option[]>([]);
+  const [departments, setDepartments] = useState<Option[]>([]);
   const [form, setForm] = useState<NewUserForm>({
     firstName: '', lastName: '', email: '', phone: '',
     role: 'teacher', gender: '', dateOfBirth: '',
     branch: 'ruach-tabernacle', crosspointId: '', departmentId: '',
-    sendWelcome: true, tempPassword: '',
+    sendWelcome: true,
   });
-  const [crosspoints, setCrosspoints] = useState<Option[]>([]);
-  const [departments, setDepartments] = useState<Option[]>([]);
   const [showPassword, setShowPassword] = useState(false);
   const [saving,       setSaving]       = useState(false);
   const [success,      setSuccess]      = useState(false);
+  const [credentials,  setCredentials]  = useState<Credentials | null>(null);
   const [errors,       setErrors]       = useState<Partial<Record<keyof NewUserForm, string>>>({});
-  const [submitError,  setSubmitError]  = useState('');
+  const [apiError,     setApiError]     = useState('');
 
   useEffect(() => {
-    supabase.from('crosspoints').select('id, name, area').eq('status', 'active').order('name').then(({ data }) => setCrosspoints(data ?? []));
-    supabase.from('departments').select('id, name').order('name').then(({ data }) => setDepartments(data ?? []));
+    Promise.all([
+      supabase.from('crosspoints').select('id, name, area').eq('status', 'active').order('name'),
+      supabase.from('departments').select('id, name').order('name'),
+    ]).then(([cpRes, deptRes]) => {
+      setCrosspoints(cpRes.data ?? []);
+      setDepartments(deptRes.data ?? []);
+      setPageLoading(false);
+    });
   }, []);
 
   function update(field: keyof NewUserForm, value: string | boolean) {
     setForm(prev => ({ ...prev, [field]: value }));
     if (errors[field]) setErrors(prev => ({ ...prev, [field]: undefined }));
+    setApiError('');
   }
 
   function validate(): boolean {
@@ -97,8 +147,6 @@ export default function CreateUserPage() {
       newErrors.email = 'Valid email is required';
     if (form.phone && !/^\+?[\d\s\-()]{10,}$/.test(form.phone))
       newErrors.phone = 'Enter a valid phone number';
-    if (!form.tempPassword || form.tempPassword.length < 8)
-      newErrors.tempPassword = 'Password must be at least 8 characters';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   }
@@ -106,34 +154,47 @@ export default function CreateUserPage() {
   async function handleCreate() {
     if (!validate()) return;
     setSaving(true);
-    setSubmitError('');
+    setApiError('');
+
+    const tempPassword = generateTempPassword();
     const { data: { session } } = await supabase.auth.getSession();
     const res = await fetch('/api/admin/create-staff-user', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
-      body: JSON.stringify(form),
+      body: JSON.stringify({ ...form, tempPassword }),
     });
     setSaving(false);
     if (!res.ok) {
       const body = await res.json().catch(() => ({}));
-      setSubmitError(body.error ?? 'Failed to create account.');
+      setApiError(body.error ?? 'Failed to create account.');
       return;
     }
+    setCredentials({ email: form.email, password: tempPassword, loginUrl: '/auth/login' });
     setSuccess(true);
   }
 
-  if (success) {
+  if (pageLoading) {
+    return (
+      <AdminLayout title="Create User">
+        <div className="flex items-center justify-center py-20">
+          <div className="w-8 h-8 border-4 border-[#BF0A30] border-t-transparent rounded-full animate-spin" />
+        </div>
+      </AdminLayout>
+    );
+  }
+
+  if (success && credentials) {
     return (
       <AdminLayout title="User Created">
         <div className="max-w-lg mx-auto text-center py-16">
           <div className="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle className="w-10 h-10 text-green-600" />
           </div>
-          <h1 className="text-2xl font-black text-gray-900 dark:text-white mb-2 tracking-tight">
+          <h1 className="text-2xl font-black text-white mb-2 tracking-tight">
             Account Created!
           </h1>
           <p className="text-gray-500 mb-1">
-            <strong className="text-gray-700 dark:text-gray-300">{form.firstName} {form.lastName}</strong> has been added as a <strong className="text-[#BF0A30]">{ROLE_CONFIG[form.role].label}</strong>
+            <strong className="text-white/70">{form.firstName} {form.lastName}</strong> has been added as a <strong className="text-[#BF0A30]">{ROLE_CONFIG[form.role].label}</strong>
           </p>
           {form.sendWelcome && (
             <p className="text-sm text-gray-500 mb-8">
@@ -146,11 +207,11 @@ export default function CreateUserPage() {
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Email</span>
-                <span className="font-medium text-gray-900 dark:text-white">{form.email}</span>
+                <span className="font-medium text-white">{credentials.email}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Temp. Password</span>
-                <span className="font-mono text-gray-900 dark:text-white">{form.tempPassword}</span>
+                <span className="font-mono text-white">{credentials.password}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Role</span>
@@ -161,7 +222,7 @@ export default function CreateUserPage() {
 
           <div className="flex gap-3">
             <Link href="/admin/members" className="btn btn-secondary flex-1">View All Users</Link>
-            <button onClick={() => { setSuccess(false); setForm({ firstName: '', lastName: '', email: '', phone: '', role: 'teacher', gender: '', dateOfBirth: '', branch: 'ruach-tabernacle', crosspointId: '', departmentId: '', sendWelcome: true, tempPassword: '' }); }}
+            <button onClick={() => { setSuccess(false); setCredentials(null); setForm({ firstName: '', lastName: '', email: '', phone: '', role: 'teacher', gender: '', dateOfBirth: '', branch: 'ruach-tabernacle', crosspointId: '', departmentId: '', sendWelcome: true }); }}
               className="btn btn-primary flex-1 gap-2">
               <UserPlus className="w-4 h-4" /> Create Another
             </button>
@@ -176,8 +237,8 @@ export default function CreateUserPage() {
       <div className="max-w-3xl mx-auto">
         <PageHeader title="Create New User" subtitle="Add a teacher, leader, or admin to the platform" />
 
-        {submitError && (
-          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4 mb-4 text-sm text-red-700 dark:text-red-300">{submitError}</div>
+        {apiError && (
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4 mb-4 text-sm text-red-700 dark:text-red-300">{apiError}</div>
         )}
 
         <div className="space-y-6">
@@ -189,9 +250,9 @@ export default function CreateUserPage() {
               {(Object.entries(ROLE_CONFIG) as [UserRole, typeof ROLE_CONFIG[UserRole]][]).map(([key, cfg]) => (
                 <button key={key} onClick={() => update('role', key)}
                   className={`p-4 text-left border-2 rounded-xl transition-all ${
-                    form.role === key ? cfg.bg + ' border-current ' + cfg.color : 'border-gray-200 dark:border-[#2D2D2D] hover:border-gray-300 dark:hover:border-[#3D3D3D]'
+                    form.role === key ? cfg.bg + ' border-current ' + cfg.color : 'border-white/[0.06] hover:border-white/10 dark:hover:border-[#3D3D3D]'
                   }`}>
-                  <p className={`font-bold text-sm mb-1 ${form.role === key ? cfg.color : 'text-gray-900 dark:text-white'}`}>{cfg.label}</p>
+                  <p className={`font-bold text-sm mb-1 ${form.role === key ? cfg.color : 'text-white'}`}>{cfg.label}</p>
                   <p className="text-xs text-gray-500 leading-relaxed">{cfg.description}</p>
                 </button>
               ))}
@@ -230,6 +291,7 @@ export default function CreateUserPage() {
 
           <div className="bg-white dark:bg-[#1A1A1A] rounded-2xl border border-gray-200 dark:border-[#2D2D2D] p-6">
             <h2 className="section-title mb-4">Contact & Login</h2>
+            <p className="text-sm text-gray-500 mb-4">A secure password will be generated automatically by the server</p>
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="form-group">
                 <label className="form-label">Email Address<span className="required">*</span></label>
@@ -240,29 +302,11 @@ export default function CreateUserPage() {
               <div className="form-group">
                 <label className="form-label">Phone Number</label>
                 <div className="flex">
-                  <div className="phone-prefix"><span>🇰🇪</span><span>+254</span></div>
+                  <div className="phone-prefix"><span>+254</span></div>
                   <input type="tel" value={form.phone} onChange={e => update('phone', e.target.value)}
                     placeholder="7XX XXX XXX" className={`input phone-input ${errors.phone ? 'error' : ''}`} />
                 </div>
                 {errors.phone && <p className="form-error">{errors.phone}</p>}
-              </div>
-              <div className="form-group sm:col-span-2">
-                <label className="form-label">Temporary Password<span className="required">*</span></label>
-                <div className="relative">
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    value={form.tempPassword}
-                    onChange={e => update('tempPassword', e.target.value)}
-                    placeholder="Minimum 8 characters"
-                    className={`input pr-12 ${errors.tempPassword ? 'error' : ''}`}
-                  />
-                  <button type="button" onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
-                {errors.tempPassword && <p className="form-error">{errors.tempPassword}</p>}
-                <p className="form-help">User will be prompted to change this on first login</p>
               </div>
             </div>
           </div>
@@ -304,7 +348,7 @@ export default function CreateUserPage() {
           <div className="bg-white dark:bg-[#1A1A1A] rounded-2xl border border-gray-200 dark:border-[#2D2D2D] p-5">
             <label className="flex items-center justify-between cursor-pointer">
               <div>
-                <p className="font-semibold text-gray-900 dark:text-white text-sm">Send Welcome Email</p>
+                <p className="font-semibold text-white text-sm">Send Welcome Email</p>
                 <p className="text-xs text-gray-500 mt-0.5">
                   Send login credentials and a welcome message to <span className="font-medium">{form.email || 'the new user'}</span>
                 </p>
@@ -313,7 +357,7 @@ export default function CreateUserPage() {
                 onClick={() => update('sendWelcome', !form.sendWelcome)}
                 className={`relative w-12 h-6 rounded-full transition-colors cursor-pointer flex-shrink-0 ${form.sendWelcome ? 'bg-[#BF0A30]' : 'bg-gray-300 dark:bg-gray-600'}`}
               >
-                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.sendWelcome ? 'translate-x-7' : 'translate-x-1'}`} />
+                <div className={`absolute top-1 w-4 h-4 bg-[#12151C] rounded-full shadow transition-transform ${form.sendWelcome ? 'translate-x-7' : 'translate-x-1'}`} />
               </div>
             </label>
           </div>
@@ -322,7 +366,7 @@ export default function CreateUserPage() {
             <Link href="/admin/members" className="btn btn-secondary flex-1">Cancel</Link>
             <button onClick={handleCreate} disabled={saving} className="btn btn-primary flex-1 gap-2">
               {saving
-                ? <><Loader2 className="w-4 h-4 animate-spin" /> Creating Account…</>
+                ? <><Loader2 className="w-4 h-4 animate-spin" /> Creating Account...</>
                 : <><UserPlus className="w-4 h-4" /> Create {ROLE_CONFIG[form.role].label}</>}
             </button>
           </div>

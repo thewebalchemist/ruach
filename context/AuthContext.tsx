@@ -4,7 +4,7 @@ import { useRouter } from 'next/router';
 import { Session } from '@supabase/supabase-js';
 import { supabase, type Profile } from '@/lib/supabase';
 
-export type UserRole = 'student' | 'member' | 'leader' | 'teacher' | 'admin' | 'pastor';
+export type UserRole = 'student' | 'member' | 'leader' | 'teacher' | 'admin' | 'pastor' | 'media';
 
 export interface AdminPermission {
   moduleKey:    string;
@@ -13,22 +13,23 @@ export interface AdminPermission {
 }
 
 interface AuthContextValue {
-  session:        Session | null;
-  profile:        Profile | null;
-  loading:        boolean;
-  role:           UserRole | null;
-  isMember:       boolean;
-  isTeacher:      boolean;
-  isAdmin:        boolean;
-  permissions:    AdminPermission[];
-  hasPermission:  (moduleKey: string, action: string) => boolean;
-  signOut:        () => Promise<void>;
-  refreshProfile: () => Promise<void>;
+  session:          Session | null;
+  profile:          Profile | null;
+  loading:          boolean;
+  role:             UserRole | null;
+  isMember:         boolean;
+  isTeacher:        boolean;
+  isAdmin:          boolean;
+  canManageContent: boolean;
+  permissions:      AdminPermission[];
+  hasPermission:    (moduleKey: string, action: string) => boolean;
+  signOut:          () => Promise<void>;
+  refreshProfile:   () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue>({
   session: null, profile: null, loading: true, role: null,
-  isMember: false, isTeacher: false, isAdmin: false,
+  isMember: false, isTeacher: false, isAdmin: false, canManageContent: false,
   permissions: [], hasPermission: () => false,
   signOut: async () => {}, refreshProfile: async () => {},
 });
@@ -109,10 +110,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     router.push(loginPage);
   }, [router]);
 
-  const role      = profile?.role as UserRole | null;
-  const isMember  = !!role && ['member', 'leader', 'teacher', 'admin', 'pastor'].includes(role);
-  const isTeacher = !!role && ['teacher', 'admin', 'pastor', 'leader'].includes(role);
-  const isAdmin   = !!role && ['admin', 'pastor'].includes(role);
+  const role             = profile?.role as UserRole | null;
+  const isMember         = !!role && ['member', 'leader', 'teacher', 'admin', 'pastor'].includes(role);
+  const isTeacher        = !!role && ['teacher', 'admin', 'pastor', 'leader'].includes(role);
+  const isAdmin          = !!role && ['admin', 'pastor'].includes(role);
+  const canManageContent = !!role && ['media', 'admin', 'pastor'].includes(role);
 
   // Pastor keeps the same unconditional trust is_admin()/has_permission()
   // give it server-side — mirrors lib/admin-auth.ts's hasPermission().
@@ -124,7 +126,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   return (
     <AuthContext.Provider value={{
       session, profile, loading, role,
-      isMember, isTeacher, isAdmin,
+      isMember, isTeacher, isAdmin, canManageContent,
       permissions, hasPermission,
       signOut, refreshProfile,
     }}>

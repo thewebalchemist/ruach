@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
 import { Save, Loader2, AlertCircle, CheckCircle, Plus, Trash2 } from 'lucide-react';
 import CPLayout from '@/components/control-panel/CPLayout';
 import { supabase } from '@/lib/supabase';
@@ -43,24 +42,14 @@ const inp = "w-full px-3 py-2.5 bg-gray-50 dark:bg-[#111] border border-gray-200
 const lbl = "block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide mb-1.5";
 
 export default function ChurchInfoCP() {
-  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
   const [info, setInfo] = useState<ChurchInfo>(EMPTY);
 
-  useEffect(() => {
-    checkAuth();
-  }, []);
-
-  async function checkAuth() {
-    const { data } = await supabase.auth.getSession();
-    if (!data.session) { router.push('/auth/login?redirectTo=/control-panel/church-info'); return; }
-    const { data: profile } = await supabase.from('profiles').select('role').eq('id', data.session.user.id).single() as any;
-    if (!profile || !['admin', 'pastor'].includes(profile.role)) { router.push('/'); return; }
-    loadData();
-  }
+  // Auth + role gating handled centrally by CPLayout (allow=admin,pastor).
+  useEffect(() => { loadData(); }, []);
 
   async function loadData() {
     const { data } = await (supabase.from('church_info') as any).select('*').single();
@@ -133,7 +122,7 @@ export default function ChurchInfoCP() {
   const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
   return (
-    <CPLayout title="Church Information" subtitle="This data feeds the Ask Ruach AI chatbot">
+    <CPLayout title="Church Information" subtitle="This data feeds the Ask Ruach AI chatbot" allow={['admin', 'pastor']}>
       {loading ? (
         <div className="flex justify-center py-16"><div className="w-8 h-8 border-2 border-[#BF0A30] border-t-transparent rounded-full animate-spin" /></div>
       ) : (

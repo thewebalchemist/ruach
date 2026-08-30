@@ -49,31 +49,41 @@ export default function PrayerRequestsPage() {
       guidance: 'bg-blue-100 text-blue-800',
       family: 'bg-green-100 text-green-800',
       thanksgiving: 'bg-purple-100 text-purple-800',
-      other: 'bg-gray-100 text-gray-800',
+      other: 'bg-white/5 text-gray-800',
     };
     return colors[cat] || colors.other;
   };
+
+  if (loading) {
+    return (
+      <AdminLayout title="Prayer Requests">
+        <div className="flex items-center justify-center py-20">
+          <div className="w-8 h-8 border-4 border-[#BF0A30] border-t-transparent rounded-full animate-spin" />
+        </div>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout title="Prayer Requests">
       <PageHeader title="Prayer Requests" subtitle="Manage and respond to prayer requests from the congregation" />
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-        <button onClick={() => setFilter('all')} className={`bg-white dark:bg-[#1A1A1A] rounded-xl border p-4 text-left transition-colors ${filter === 'all' ? 'border-[#BF0A30] ring-2 ring-[#BF0A30]/20' : 'border-gray-200 dark:border-[#2D2D2D]'}`}>
+        <button onClick={() => setFilter('all')} className={`bg-[#12151C] rounded-xl border p-4 text-left transition-colors ${filter === 'all' ? 'border-[#BF0A30] ring-2 ring-[#BF0A30]/20' : 'border-white/[0.06]'}`}>
           <p className="text-sm text-gray-500">Total</p>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total}</p>
+          <p className="text-2xl font-bold text-white">{stats.total}</p>
         </button>
-        <button onClick={() => setFilter('pending')} className={`bg-white dark:bg-[#1A1A1A] rounded-xl border-l-4 border-l-amber-500 border p-4 text-left transition-colors ${filter === 'pending' ? 'border-[#BF0A30] ring-2 ring-[#BF0A30]/20' : 'border-gray-200 dark:border-[#2D2D2D]'}`}>
+        <button onClick={() => setFilter('pending')} className={`bg-[#12151C] rounded-xl border-l-4 border-l-amber-500 border p-4 text-left transition-colors ${filter === 'pending' ? 'border-[#BF0A30] ring-2 ring-[#BF0A30]/20' : 'border-white/[0.06]'}`}>
           <p className="text-sm text-gray-500">Pending</p>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.pending}</p>
+          <p className="text-2xl font-bold text-white">{stats.pending}</p>
         </button>
-        <button onClick={() => setFilter('praying')} className={`bg-white dark:bg-[#1A1A1A] rounded-xl border-l-4 border-l-blue-500 border p-4 text-left transition-colors ${filter === 'praying' ? 'border-[#BF0A30] ring-2 ring-[#BF0A30]/20' : 'border-gray-200 dark:border-[#2D2D2D]'}`}>
+        <button onClick={() => setFilter('praying')} className={`bg-[#12151C] rounded-xl border-l-4 border-l-blue-500 border p-4 text-left transition-colors ${filter === 'praying' ? 'border-[#BF0A30] ring-2 ring-[#BF0A30]/20' : 'border-white/[0.06]'}`}>
           <p className="text-sm text-gray-500">Being Prayed For</p>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.praying}</p>
+          <p className="text-2xl font-bold text-white">{stats.praying}</p>
         </button>
-        <button onClick={() => setFilter('answered')} className={`bg-white dark:bg-[#1A1A1A] rounded-xl border-l-4 border-l-green-500 border p-4 text-left transition-colors ${filter === 'answered' ? 'border-[#BF0A30] ring-2 ring-[#BF0A30]/20' : 'border-gray-200 dark:border-[#2D2D2D]'}`}>
+        <button onClick={() => setFilter('answered')} className={`bg-[#12151C] rounded-xl border-l-4 border-l-green-500 border p-4 text-left transition-colors ${filter === 'answered' ? 'border-[#BF0A30] ring-2 ring-[#BF0A30]/20' : 'border-white/[0.06]'}`}>
           <p className="text-sm text-gray-500">Answered</p>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.answered}</p>
+          <p className="text-2xl font-bold text-white">{stats.answered}</p>
         </button>
       </div>
 
@@ -82,7 +92,7 @@ export default function PrayerRequestsPage() {
       ) : (
       <div className="space-y-4">
         {filtered.map((pr) => (
-          <div key={pr.id} className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-5">
+          <div key={pr.id} className="bg-[#12151C] rounded-xl border border-white/[0.06] p-5">
             <div className="flex items-start justify-between mb-3">
               <div className="flex items-center gap-3">
                 {pr.is_anonymous ? (
@@ -101,9 +111,9 @@ export default function PrayerRequestsPage() {
               </div>
             </div>
 
-            <p className="text-gray-700 dark:text-gray-300 mb-4">{pr.request}</p>
+            <p className="text-white/70 mb-4">{pr.request}</p>
 
-            <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-[#2D2D2D]">
+            <div className="flex items-center justify-between pt-4 border-t border-white/[0.04]">
               <div className="flex items-center gap-2">
                 {pr.status === 'pending' && <Clock className="w-4 h-4 text-amber-500" />}
                 {pr.status === 'praying' && <Heart className="w-4 h-4 text-blue-500" />}

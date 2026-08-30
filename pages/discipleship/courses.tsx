@@ -61,7 +61,7 @@ export default function DiscipleshipCoursesPage() {
     <DiscipleshipLayout title="Courses">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white">KDC Course Levels</h1>
+          <h1 className="text-xl font-bold text-white">KDC Course Levels</h1>
           <p className="text-gray-500">Kingdom Discipleship Classes - 3 progressive levels</p>
         </div>
       </div>
@@ -102,7 +102,7 @@ export default function DiscipleshipCoursesPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h2 className="text-lg font-bold text-gray-900 dark:text-white">{course.title}</h2>
+                    <h2 className="text-lg font-bold text-white">{course.title}</h2>
                     <span className={`px-2.5 py-0.5 text-xs font-semibold rounded-full ${colors.light}`}>Level {course.level}</span>
                   </div>
                   <p className="text-sm text-gray-500 mt-0.5">{course.description}</p>
@@ -129,7 +129,7 @@ export default function DiscipleshipCoursesPage() {
                   <div className="flex items-center gap-2 text-gray-500 text-xs mb-1">
                     <BarChart2 className="w-3.5 h-3.5" />Active Cohorts
                   </div>
-                  <p className="font-bold text-gray-900 dark:text-white">{activeCohorts.length}</p>
+                  <p className="font-bold text-white">{activeCohorts.length}</p>
                 </div>
                 <div className="p-4">
                   <div className="flex items-center gap-2 text-gray-500 text-xs mb-1">
@@ -140,11 +140,11 @@ export default function DiscipleshipCoursesPage() {
               </div>
 
               <div className="p-5">
-                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Topics Covered</h3>
+                <h3 className="text-sm font-semibold text-white/70 mb-3">Topics Covered</h3>
                 <div className="grid sm:grid-cols-2 gap-1.5">
                   {topics.map((topic, i) => (
-                    <div key={i} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                      <span className="w-5 h-5 rounded-full bg-gray-100 dark:bg-[#252525] flex items-center justify-center text-xs font-medium text-gray-500 flex-shrink-0">
+                    <div key={i} className="flex items-center gap-2 text-sm text-white/50">
+                      <span className="w-5 h-5 rounded-full bg-white/5 flex items-center justify-center text-xs font-medium text-gray-500 flex-shrink-0">
                         {i + 1}
                       </span>
                       {topic}
@@ -154,7 +154,7 @@ export default function DiscipleshipCoursesPage() {
                 <div className="flex gap-3 mt-5">
                   <Link
                     href={`/discipleship/cohorts?level=${course.level}`}
-                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium border border-gray-300 dark:border-[#2D2D2D] rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#252525]"
+                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium border border-white/10 dark:border-[#2D2D2D] rounded-lg text-white/70 hover:bg-white/[0.06]"
                   >
                     View Cohorts<ChevronRight className="w-4 h-4" />
                   </Link>

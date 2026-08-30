@@ -69,7 +69,7 @@ export default function SettingsPage() {
     <ConnectLayout title="Settings">
       <div className="flex items-center justify-between mb-5">
         <div>
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white">Settings</h1>
+          <h1 className="text-xl font-bold text-white">Settings</h1>
           <p className="text-sm text-gray-500 mt-0.5">Manage your teacher account and preferences</p>
         </div>
         {section === 'profile' && (
@@ -92,7 +92,7 @@ export default function SettingsPage() {
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-left transition-colors ${
                 section === key
                   ? 'bg-gradient-to-r from-[#BF0A30] to-[#A0021F] text-white'
-                  : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/[0.05] hover:text-gray-900 dark:hover:text-white'
+                  : 'text-white/50 hover:bg-white/5 dark:hover:bg-white/[0.05] hover:text-white dark:hover:text-white'
               }`}
             >
               <Icon className="w-4 h-4 flex-shrink-0" />
@@ -104,8 +104,8 @@ export default function SettingsPage() {
         <div className="lg:col-span-3">
 
           {section === 'profile' && (
-            <div className="bg-white dark:bg-[#141414] rounded-2xl border border-gray-200/70 dark:border-white/[0.05] p-6 shadow-sm">
-              <h2 className="font-semibold text-gray-900 dark:text-white mb-5">Profile Information</h2>
+            <div className="bg-[#12151C] rounded-2xl border border-white/[0.06]/70 p-6 shadow-sm">
+              <h2 className="font-semibold text-white mb-5">Profile Information</h2>
 
               <div className="flex items-center gap-4 mb-6 pb-6 border-b border-gray-100 dark:border-white/[0.04]">
                 <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#BF0A30] to-[#7D0018] flex items-center justify-center text-white text-xl font-bold shadow-lg shadow-[#BF0A30]/20">
@@ -121,20 +121,20 @@ export default function SettingsPage() {
 
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">First Name</label>
-                  <input value={firstName} onChange={e => setFirstName(e.target.value)} className="w-full px-4 py-2.5 border border-gray-200 dark:border-white/[0.06] rounded-xl bg-gray-50 dark:bg-[#1A1A1A] text-sm text-gray-900 dark:text-white focus:outline-none focus:border-[#BF0A30]" />
+                  <label className="block text-xs font-medium text-white/50 mb-1.5">First Name</label>
+                  <input value={firstName} onChange={e => setFirstName(e.target.value)} className="w-full px-4 py-2.5 border border-white/[0.06] rounded-xl bg-[#0A0C10] text-sm text-white focus:outline-none focus:border-[#BF0A30]" />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">Last Name</label>
-                  <input value={lastName} onChange={e => setLastName(e.target.value)} className="w-full px-4 py-2.5 border border-gray-200 dark:border-white/[0.06] rounded-xl bg-gray-50 dark:bg-[#1A1A1A] text-sm text-gray-900 dark:text-white focus:outline-none focus:border-[#BF0A30]" />
+                  <label className="block text-xs font-medium text-white/50 mb-1.5">Last Name</label>
+                  <input value={lastName} onChange={e => setLastName(e.target.value)} className="w-full px-4 py-2.5 border border-white/[0.06] rounded-xl bg-[#0A0C10] text-sm text-white focus:outline-none focus:border-[#BF0A30]" />
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">Email</label>
                   <input type="email" value={profile?.email ?? ''} disabled className="w-full px-4 py-2.5 border border-gray-200 dark:border-white/[0.06] rounded-xl bg-gray-100 dark:bg-white/5 text-sm text-gray-400" />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">Phone</label>
-                  <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} className="w-full px-4 py-2.5 border border-gray-200 dark:border-white/[0.06] rounded-xl bg-gray-50 dark:bg-[#1A1A1A] text-sm text-gray-900 dark:text-white focus:outline-none focus:border-[#BF0A30]" />
+                  <label className="block text-xs font-medium text-white/50 mb-1.5">Phone</label>
+                  <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} className="w-full px-4 py-2.5 border border-white/[0.06] rounded-xl bg-[#0A0C10] text-sm text-white focus:outline-none focus:border-[#BF0A30]" />
                 </div>
               </div>
             </div>

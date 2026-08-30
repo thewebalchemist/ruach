@@ -14,7 +14,7 @@ export default function NewNoticePage() {
   const [departments, setDepartments] = useState<Option[]>([]);
   const [crosspoints, setCrosspoints] = useState<Option[]>([]);
   const [formData, setFormData] = useState({
-    title: '', content: '', scope: 'all', targetId: '', priority: 'medium', expiresAt: '',
+    title: '', content: '', scope: 'all', target_id: '', priority: 'medium', expires_at: '',
   });
 
   useEffect(() => {
@@ -22,7 +22,7 @@ export default function NewNoticePage() {
     supabase.from('crosspoints').select('id, name').eq('status', 'active').order('name').then(({ data }) => setCrosspoints(data ?? []));
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent, asDraft = false) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
@@ -31,9 +31,9 @@ export default function NewNoticePage() {
       title: formData.title,
       content: formData.content,
       scope: formData.scope,
-      target_id: (formData.scope === 'department' || formData.scope === 'crosspoint') ? (formData.targetId || null) : null,
+      target_id: (formData.scope === 'department' || formData.scope === 'crosspoint') ? (formData.target_id || null) : null,
       priority: formData.priority,
-      expires_at: formData.expiresAt || null,
+      expires_at: formData.expires_at || null,
       author_id: session?.user.id ?? null,
     });
     setLoading(false);
@@ -48,7 +48,7 @@ export default function NewNoticePage() {
   return (
     <AdminLayout title="Create Notice">
       <div className="max-w-3xl">
-        <Link href="/admin/notices" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 mb-4">
+        <Link href="/admin/notices" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-white/70 mb-4">
           <ArrowLeft className="w-4 h-4" />Back to Notices
         </Link>
 
@@ -61,12 +61,12 @@ export default function NewNoticePage() {
             <h2 className="font-semibold text-gray-900 dark:text-white mb-4">Notice Content</h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Title *</label>
-                <input type="text" name="title" value={formData.title} onChange={handleChange} required placeholder="Notice title..." className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg" />
+                <label className="block text-sm font-medium text-white/70 mb-1">Title *</label>
+                <input type="text" name="title" value={formData.title} onChange={handleChange} required placeholder="Notice title..." className="w-full px-4 py-2.5 text-sm border border-white/10 dark:border-[#2D2D2D] rounded-lg" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Content *</label>
-                <textarea name="content" value={formData.content} onChange={handleChange} rows={5} required placeholder="Write your announcement here..." className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg resize-none" />
+                <label className="block text-sm font-medium text-white/70 mb-1">Content *</label>
+                <textarea name="content" value={formData.content} onChange={handleChange} rows={5} required placeholder="Write your announcement here..." className="w-full px-4 py-2.5 text-sm border border-white/10 dark:border-[#2D2D2D] rounded-lg resize-none" />
               </div>
             </div>
           </div>
@@ -75,8 +75,8 @@ export default function NewNoticePage() {
             <h2 className="font-semibold text-gray-900 dark:text-white mb-4">Audience</h2>
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Scope *</label>
-                <select name="scope" value={formData.scope} onChange={handleChange} className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg">
+                <label className="block text-sm font-medium text-white/70 mb-1">Scope *</label>
+                <select name="scope" value={formData.scope} onChange={handleChange} className="w-full px-4 py-2.5 text-sm border border-white/10 dark:border-[#2D2D2D] rounded-lg">
                   <option value="all">All (Church-wide)</option>
                   <option value="members">Members Only</option>
                   <option value="leaders">Leaders Only</option>
@@ -86,8 +86,8 @@ export default function NewNoticePage() {
               </div>
               {formData.scope === 'department' && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Department</label>
-                  <select name="targetId" value={formData.targetId} onChange={handleChange} className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg">
+                  <label className="block text-sm font-medium text-white/70 mb-1">Department</label>
+                  <select name="target_id" value={formData.target_id} onChange={handleChange} className="w-full px-4 py-2.5 text-sm border border-white/10 dark:border-[#2D2D2D] rounded-lg">
                     <option value="">Select department...</option>
                     {departments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
                   </select>
@@ -95,8 +95,8 @@ export default function NewNoticePage() {
               )}
               {formData.scope === 'crosspoint' && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Crosspoint</label>
-                  <select name="targetId" value={formData.targetId} onChange={handleChange} className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg">
+                  <label className="block text-sm font-medium text-white/70 mb-1">Crosspoint</label>
+                  <select name="target_id" value={formData.target_id} onChange={handleChange} className="w-full px-4 py-2.5 text-sm border border-white/10 dark:border-[#2D2D2D] rounded-lg">
                     <option value="">Select crosspoint...</option>
                     {crosspoints.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                   </select>
@@ -109,30 +109,30 @@ export default function NewNoticePage() {
             <h2 className="font-semibold text-gray-900 dark:text-white mb-4">Settings</h2>
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Priority</label>
-                <select name="priority" value={formData.priority} onChange={handleChange} className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg">
+                <label className="block text-sm font-medium text-white/70 mb-1">Priority</label>
+                <select name="priority" value={formData.priority} onChange={handleChange} className="w-full px-4 py-2.5 text-sm border border-white/10 dark:border-[#2D2D2D] rounded-lg">
                   <option value="low">Low</option>
                   <option value="medium">Medium</option>
                   <option value="high">High (Urgent)</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Expires On</label>
-                <input type="date" name="expiresAt" value={formData.expiresAt} onChange={handleChange} className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg" />
+                <label className="block text-sm font-medium text-white/70 mb-1">Expires On</label>
+                <input type="date" name="expires_at" value={formData.expires_at} onChange={handleChange} className="w-full px-4 py-2.5 text-sm border border-white/10 dark:border-[#2D2D2D] rounded-lg" />
                 <p className="text-xs text-gray-500 mt-1">Leave empty for no expiration</p>
               </div>
             </div>
           </div>
 
           {formData.title && (
-            <div className="bg-gray-50 dark:bg-[#252525] rounded-xl p-6">
+            <div className="bg-white/[0.04] rounded-xl p-6">
               <h3 className="text-sm font-medium text-gray-500 mb-3">Preview</h3>
-              <div className={`bg-white dark:bg-[#1A1A1A] rounded-lg p-4 border-l-4 ${formData.priority === 'high' ? 'border-l-red-500' : formData.priority === 'medium' ? 'border-l-amber-500' : 'border-l-gray-300'}`}>
+              <div className={`bg-[#12151C] rounded-lg p-4 border-l-4 ${formData.priority === 'high' ? 'border-l-red-500' : formData.priority === 'medium' ? 'border-l-amber-500' : 'border-l-gray-300'}`}>
                 <div className="flex items-center gap-2 mb-2">
                   <Bell className="w-4 h-4 text-[#BF0A30]" />
-                  <span className="font-semibold text-gray-900 dark:text-white">{formData.title}</span>
+                  <span className="font-semibold text-white">{formData.title}</span>
                 </div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-wrap">{formData.content}</p>
+                <p className="text-sm text-white/50 whitespace-pre-wrap">{formData.content}</p>
               </div>
             </div>
           )}

@@ -48,29 +48,29 @@ export default function FoodBankPage() {
   }
 
   return (
-    <AdminLayout title="Food Bank">
+    <AdminLayout title="Food Bank" requirePermission={{ moduleKey: 'food-bank', action: 'view' }}>
       <PageHeader title="Food Bank Requests" subtitle="Manage food assistance requests from crosspoints" />
 
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-6">
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-4">
+        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-4">
           <p className="text-sm text-gray-500">Total Requests</p>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total}</p>
+          <p className="text-2xl font-bold text-white">{stats.total}</p>
         </div>
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border-l-4 border-l-amber-500 border border-gray-200 dark:border-[#2D2D2D] p-4">
+        <div className="bg-[#12151C] rounded-xl border-l-4 border-l-amber-500 border border-white/[0.06] p-4">
           <p className="text-sm text-gray-500">Pending</p>
           <p className="text-2xl font-bold text-amber-600">{stats.pending}</p>
         </div>
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border-l-4 border-l-blue-500 border border-gray-200 dark:border-[#2D2D2D] p-4">
+        <div className="bg-[#12151C] rounded-xl border-l-4 border-l-blue-500 border border-white/[0.06] p-4">
           <p className="text-sm text-gray-500">Approved</p>
           <p className="text-2xl font-bold text-blue-600">{stats.approved}</p>
         </div>
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border-l-4 border-l-green-500 border border-gray-200 dark:border-[#2D2D2D] p-4">
+        <div className="bg-[#12151C] rounded-xl border-l-4 border-l-green-500 border border-white/[0.06] p-4">
           <p className="text-sm text-gray-500">Fulfilled</p>
           <p className="text-2xl font-bold text-green-600">{stats.fulfilled}</p>
         </div>
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-4">
+        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-4">
           <p className="text-sm text-gray-500">Beneficiaries</p>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.totalBeneficiaries}</p>
+          <p className="text-2xl font-bold text-white">{stats.totalBeneficiaries}</p>
         </div>
       </div>
 

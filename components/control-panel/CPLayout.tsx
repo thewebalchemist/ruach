@@ -1,19 +1,23 @@
-import { useState, ReactNode, useEffect } from 'react';
+import { useState, useEffect, ReactNode } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import {
-  LayoutDashboard, Video, Calendar, HelpCircle, Radio,
+  LayoutDashboard, Video, Calendar, Radio,
   Settings, ChevronRight, LogOut, Menu, X, Church,
-  Sparkles, FileText, Layers, Bell, ExternalLink, Users
+  Sparkles, Layers, ExternalLink, Users, UserPlus
 } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/context/AuthContext';
 
 interface CPLayoutProps {
   children: ReactNode;
   title: string;
   subtitle?: string;
   actions?: ReactNode;
+  /** Restrict this page to specific staff roles. Defaults to any content
+   *  manager (admin/pastor/media). Checked off the AuthContext profile — no
+   *  per-page getSession race. */
+  allow?: Array<'admin' | 'pastor' | 'media'>;
 }
 
 const NAV = [
@@ -24,26 +28,56 @@ const NAV = [
   { label: 'Events',      href: '/control-panel/events',     icon: Calendar },
   { label: 'Ask Ruach',   href: '/control-panel/ask-ruach',  icon: Sparkles },
   { label: 'Church Info', href: '/control-panel/church-info',icon: Church },
-  { label: 'FAQs',        href: '/control-panel/faqs',       icon: HelpCircle },
   { label: 'Settings',    href: '/control-panel/settings',   icon: Settings },
 ];
 
 const ADMIN_LINK = { label: 'Church Admin', href: '/admin', icon: Users };
+const TEAM_LINK  = { label: 'Team Members', href: '/control-panel/team', icon: UserPlus };
 
-export default function CPLayout({ children, title, subtitle, actions }: CPLayoutProps) {
+export default function CPLayout({ children, title, subtitle, actions, allow }: CPLayoutProps) {
   const router = useRouter();
+  const { profile, session, loading, signOut, isAdmin, canManageContent } = useAuth();
   const [open, setOpen] = useState(false);
-  const [userEmail, setUserEmail] = useState('');
+  const [timedOut, setTimedOut] = useState(false);
+  const userEmail = profile?.email ?? '';
+  const isMedia   = profile?.role === 'media';
+
+  // ── Single, reliable auth gate for the whole control panel ─────────────
+  // Uses the one AuthContext source of truth (no per-page getSession races).
+  // `allow` optionally narrows to specific roles (e.g. admin/pastor only).
+  const loginHref = `/auth/login?redirectTo=${encodeURIComponent(router.asPath)}`;
+  const roleOk = allow ? !!profile && allow.includes(profile.role as 'admin' | 'pastor' | 'media') : canManageContent;
+  const permitted = roleOk && profile?.status !== 'suspended';
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session?.user?.email) setUserEmail(data.session.user.email);
-    });
-  }, []);
+    if (loading) return;
+    if (!session) { router.replace(loginHref); return; }
+    if (profile && !permitted) router.replace('/'); // signed in but not permitted here
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, session, profile, permitted]);
 
-  async function handleLogout() {
-    await supabase.auth.signOut();
-    router.push('/auth/login');
+  // Safety net: if auth never resolves (e.g. a hung token refresh after the
+  // tab was asleep), stop the infinite spinner and send them to re-auth.
+  useEffect(() => {
+    if (!loading) { setTimedOut(false); return; }
+    const t = setTimeout(() => setTimedOut(true), 8000);
+    return () => clearTimeout(t);
+  }, [loading]);
+  useEffect(() => { if (timedOut) router.replace(loginHref); /* eslint-disable-next-line */ }, [timedOut]);
+
+  const ready = !loading && !!session && permitted;
+
+  if (!ready) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-gray-50 dark:bg-[#0F0F0F]">
+        <div className="w-8 h-8 border-2 border-[#BF0A30] border-t-transparent rounded-full animate-spin" />
+        {timedOut && (
+          <button onClick={() => router.replace(loginHref)} className="text-sm text-[#BF0A30] hover:underline">
+            Taking too long — sign in again
+          </button>
+        )}
+      </div>
+    );
   }
 
   const isActive = (href: string) =>
@@ -84,15 +118,31 @@ export default function CPLayout({ children, title, subtitle, actions }: CPLayou
           </Link>
         ))}
 
-        <div className="pt-3 mt-3 border-t border-gray-100 dark:border-[#1E1E1E]">
-          <Link
-            href={ADMIN_LINK.href}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-[#1A1A1A] hover:text-gray-900 dark:hover:text-white transition-colors"
-          >
-            <ADMIN_LINK.icon className="w-4 h-4 flex-shrink-0" />
-            {ADMIN_LINK.label}
-            <ExternalLink className="w-3 h-3 ml-auto opacity-50" />
-          </Link>
+        <div className="pt-3 mt-3 border-t border-gray-100 dark:border-[#1E1E1E] space-y-0.5">
+          {isAdmin && (
+            <Link
+              href={TEAM_LINK.href}
+              onClick={() => setOpen(false)}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+                isActive(TEAM_LINK.href)
+                  ? 'bg-[#BF0A30] text-white'
+                  : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-[#1A1A1A] hover:text-gray-900 dark:hover:text-white'
+              }`}
+            >
+              <TEAM_LINK.icon className="w-4 h-4 flex-shrink-0" />
+              {TEAM_LINK.label}
+            </Link>
+          )}
+          {!isMedia && (
+            <Link
+              href={ADMIN_LINK.href}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-[#1A1A1A] hover:text-gray-900 dark:hover:text-white transition-colors"
+            >
+              <ADMIN_LINK.icon className="w-4 h-4 flex-shrink-0" />
+              {ADMIN_LINK.label}
+              <ExternalLink className="w-3 h-3 ml-auto opacity-50" />
+            </Link>
+          )}
         </div>
       </div>
 
@@ -108,7 +158,7 @@ export default function CPLayout({ children, title, subtitle, actions }: CPLayou
           </div>
         </div>
         <button
-          onClick={handleLogout}
+          onClick={signOut}
           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-500 hover:bg-gray-100 dark:hover:bg-[#1A1A1A] hover:text-red-600 transition-colors"
         >
           <LogOut className="w-4 h-4" />

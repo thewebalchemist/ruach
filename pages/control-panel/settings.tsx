@@ -1,14 +1,11 @@
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
 import { Save, Loader2, CheckCircle, AlertCircle, ExternalLink, Shield } from 'lucide-react';
 import CPLayout from '@/components/control-panel/CPLayout';
-import { supabase } from '@/lib/supabase';
 
 const inp = "w-full px-3 py-2.5 bg-gray-50 dark:bg-[#111] border border-gray-200 dark:border-[#333] rounded-xl text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#BF0A30]";
 const lbl = "block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide mb-1.5";
 
 export default function ControlPanelSettings() {
-  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -23,17 +20,8 @@ export default function ControlPanelSettings() {
     maintenanceMode: false,
   });
 
-  useEffect(() => {
-    checkAuth();
-  }, []);
-
-  async function checkAuth() {
-    const { data } = await supabase.auth.getSession();
-    if (!data.session) { router.push('/auth/login?redirectTo=/control-panel/settings'); return; }
-    const { data: profile } = await supabase.from('profiles').select('role').eq('id', data.session.user.id).single() as any;
-    if (!profile || !['admin', 'pastor'].includes(profile.role)) { router.push('/'); return; }
-    setLoading(false);
-  }
+  // Auth + role gating handled centrally by CPLayout (allow=admin,pastor).
+  useEffect(() => { setLoading(false); }, []);
 
   async function handleSave() {
     setSaving(true);
@@ -66,7 +54,7 @@ export default function ControlPanelSettings() {
   ];
 
   return (
-    <CPLayout title="Settings" subtitle="Site-wide configuration">
+    <CPLayout title="Settings" subtitle="Site-wide configuration" allow={['admin', 'pastor']}>
       {loading ? (
         <div className="flex justify-center py-16"><div className="w-8 h-8 border-2 border-[#BF0A30] border-t-transparent rounded-full animate-spin" /></div>
       ) : (

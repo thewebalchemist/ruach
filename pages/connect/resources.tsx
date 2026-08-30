@@ -197,7 +197,7 @@ export default function ResourcesPage() {
                 className={`px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all capitalize ${
                   filterType === t
                     ? 'bg-[#BF0A30] text-white border-[#BF0A30]'
-                    : 'bg-white dark:bg-[#1A1A1A] text-gray-600 dark:text-gray-400 border-gray-200 dark:border-[#2D2D2D] hover:border-[#BF0A30]'
+                    : 'bg-[#12151C] text-white/50 border-white/[0.06] hover:border-[#BF0A30]'
                 }`}
               >{t}</button>
             ))}

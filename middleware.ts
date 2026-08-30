@@ -6,6 +6,16 @@ import type { NextRequest } from 'next/server';
 // page/API-side — see AUDIT_REPORT.md and the Batch 2/3 plan for why this
 // stays coarse: per-module permission checks at the edge would mean a DB
 // round trip on every navigation, and permissions can change mid-session).
+//
+// /admin and /control-panel ARE gated here, unlike an earlier version of
+// this file: that version couldn't safely do it because the client kept
+// its session in localStorage, unreadable from middleware, so it fell back
+// to a spoofable cookie sentinel and excluded these two areas in favor of
+// a client-side-only guard (AuthContext + CPLayout). Once lib/supabase.ts
+// moved to @supabase/ssr's cookie-based client, middleware can call the
+// real auth server via getUser() below for every gated area, including
+// these two — closing that gap rather than working around it. The
+// client-side guards stay in place as defense-in-depth, not as the only gate.
 const GATED_AREAS: { prefix: string; loginPage: string }[] = [
   { prefix: '/admin',         loginPage: '/auth/login' },
   { prefix: '/control-panel', loginPage: '/auth/login' },
@@ -71,7 +81,6 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     '/admin/:path*',
-    '/control-panel/:path*',
     '/member/:path*',
     '/connect/:path*',
     '/discipleship/:path*',

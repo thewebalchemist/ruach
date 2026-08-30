@@ -70,30 +70,40 @@ export default function SuggestionsPage() {
       case 'suggestion': return 'bg-blue-100 text-blue-800';
       case 'complaint': return 'bg-red-100 text-red-800';
       case 'feedback': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
+      default: return 'bg-white/5 text-gray-800';
     }
   };
 
+  if (loading) {
+    return (
+      <AdminLayout title="Suggestions" requirePermission={{ moduleKey: 'suggestions', action: 'view' }}>
+        <div className="flex items-center justify-center py-20">
+          <div className="w-8 h-8 border-4 border-[#BF0A30] border-t-transparent rounded-full animate-spin" />
+        </div>
+      </AdminLayout>
+    );
+  }
+
   return (
-    <AdminLayout title="Suggestions">
+    <AdminLayout title="Suggestions" requirePermission={{ moduleKey: 'suggestions', action: 'view' }}>
       <PageHeader title="Suggestions & Feedback" subtitle="View and respond to feedback from the congregation" />
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-        <button onClick={() => setFilter('all')} className={`bg-white dark:bg-[#1A1A1A] rounded-xl border p-4 text-left transition-colors ${filter === 'all' ? 'border-[#BF0A30] ring-2 ring-[#BF0A30]/20' : 'border-gray-200 dark:border-[#2D2D2D]'}`}>
+        <button onClick={() => setFilter('all')} className={`bg-[#12151C] rounded-xl border p-4 text-left transition-colors ${filter === 'all' ? 'border-[#BF0A30] ring-2 ring-[#BF0A30]/20' : 'border-white/[0.06]'}`}>
           <p className="text-sm text-gray-500">Total</p>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total}</p>
+          <p className="text-2xl font-bold text-white">{stats.total}</p>
         </button>
-        <button onClick={() => setFilter('pending')} className={`bg-white dark:bg-[#1A1A1A] rounded-xl border-l-4 border-l-amber-500 border p-4 text-left transition-colors ${filter === 'pending' ? 'border-[#BF0A30] ring-2 ring-[#BF0A30]/20' : 'border-gray-200 dark:border-[#2D2D2D]'}`}>
+        <button onClick={() => setFilter('pending')} className={`bg-[#12151C] rounded-xl border-l-4 border-l-amber-500 border p-4 text-left transition-colors ${filter === 'pending' ? 'border-[#BF0A30] ring-2 ring-[#BF0A30]/20' : 'border-white/[0.06]'}`}>
           <p className="text-sm text-gray-500">Pending</p>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.pending}</p>
+          <p className="text-2xl font-bold text-white">{stats.pending}</p>
         </button>
-        <button onClick={() => setFilter('reviewing')} className={`bg-white dark:bg-[#1A1A1A] rounded-xl border-l-4 border-l-blue-500 border p-4 text-left transition-colors ${filter === 'reviewing' ? 'border-[#BF0A30] ring-2 ring-[#BF0A30]/20' : 'border-gray-200 dark:border-[#2D2D2D]'}`}>
+        <button onClick={() => setFilter('reviewing')} className={`bg-[#12151C] rounded-xl border-l-4 border-l-blue-500 border p-4 text-left transition-colors ${filter === 'reviewing' ? 'border-[#BF0A30] ring-2 ring-[#BF0A30]/20' : 'border-white/[0.06]'}`}>
           <p className="text-sm text-gray-500">Reviewing</p>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.reviewing}</p>
+          <p className="text-2xl font-bold text-white">{stats.reviewing}</p>
         </button>
-        <button onClick={() => setFilter('resolved')} className={`bg-white dark:bg-[#1A1A1A] rounded-xl border-l-4 border-l-green-500 border p-4 text-left transition-colors ${filter === 'resolved' ? 'border-[#BF0A30] ring-2 ring-[#BF0A30]/20' : 'border-gray-200 dark:border-[#2D2D2D]'}`}>
+        <button onClick={() => setFilter('resolved')} className={`bg-[#12151C] rounded-xl border-l-4 border-l-green-500 border p-4 text-left transition-colors ${filter === 'resolved' ? 'border-[#BF0A30] ring-2 ring-[#BF0A30]/20' : 'border-white/[0.06]'}`}>
           <p className="text-sm text-gray-500">Resolved</p>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.resolved}</p>
+          <p className="text-2xl font-bold text-white">{stats.resolved}</p>
         </button>
       </div>
 
@@ -116,12 +126,12 @@ export default function SuggestionsPage() {
       ) : (
       <div className="space-y-4">
         {filtered.map((item) => (
-          <div key={item.id} className="bg-white dark:bg-[#1A1A1A] rounded-xl border border-gray-200 dark:border-[#2D2D2D] p-5">
+          <div key={item.id} className="bg-[#12151C] rounded-xl border border-white/[0.06] p-5">
             <div className="flex items-start justify-between mb-3">
               <div className="flex items-center gap-3">
                 {getTypeIcon(item.type)}
                 <div>
-                  <h3 className="font-semibold text-gray-900 dark:text-white">{item.subject}</h3>
+                  <h3 className="font-semibold text-white">{item.subject}</h3>
                   <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
                     <span>{item.is_anonymous ? 'Anonymous' : 'Member'}</span>
                     <span>•</span>
@@ -141,7 +151,7 @@ export default function SuggestionsPage() {
               </div>
             </div>
 
-            <p className="text-gray-700 dark:text-gray-300 mb-4">{item.message}</p>
+            <p className="text-white/70 mb-4">{item.message}</p>
 
             {item.admin_response && (
               <div className="bg-gray-50 dark:bg-[#252525] rounded-lg p-3 mb-4">

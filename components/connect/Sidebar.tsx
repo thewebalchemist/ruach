@@ -18,6 +18,9 @@ import {
   Radio,
   ShieldAlert,
   BookOpen,
+  Heart,
+  Utensils,
+  ShoppingCart,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
@@ -35,6 +38,7 @@ const navigation = [
     children: [
       { name: 'All Members', href: '/admin/members' },
       { name: 'Guests', href: '/admin/members/guests' },
+      { name: 'Create Staff', href: '/admin/users/new' },
     ],
   },
   {
@@ -51,11 +55,17 @@ const navigation = [
   { name: 'Discipleship', href: '/admin/discipleship', icon: GraduationCap, moduleKey: 'discipleship' },
   { name: 'Departments', href: '/admin/departments', icon: Building2, moduleKey: 'departments' },
   { name: 'Events', href: '/admin/events', icon: Calendar, moduleKey: 'events' },
-  { name: 'Food Bank', href: '/admin/food-bank', icon: MessageSquare, moduleKey: 'food-bank' },
-  { name: 'Prayer Requests', href: '/admin/prayer', icon: MessageSquare, moduleKey: 'prayer' },
+  // No dedicated 'procurement' admin_permissions module is seeded yet — tied
+  // to 'departments' for now so the page (which does exist) is at least
+  // reachable via nav rather than orphaned, until a real Procurement role
+  // module is seeded per the execution plan's Appendix A.
+  { name: 'Procurement', href: '/admin/procurement', icon: ShoppingCart, moduleKey: 'departments' },
+  { name: 'Food Bank', href: '/admin/food-bank', icon: Utensils, moduleKey: 'food-bank' },
+  { name: 'Prayer Requests', href: '/admin/prayer', icon: Heart, moduleKey: 'prayer' },
   { name: 'Suggestions', href: '/admin/suggestions', icon: MessageSquare, moduleKey: 'suggestions' },
   { name: 'Notices', href: '/admin/notices', icon: Bell, moduleKey: 'notices' },
   { name: 'Reports', href: '/admin/reports', icon: LayoutDashboard, moduleKey: 'reports' },
+  { name: 'Broadcast', href: '/admin/broadcast', icon: Radio, moduleKey: 'broadcast' },
   {
     name: 'Settings',
     icon: Settings,
@@ -68,10 +78,7 @@ const navigation = [
   { name: 'Streaming', href: '/control-panel', icon: Radio, moduleKey: 'stream' },
 ];
 
-interface SidebarProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
+interface SidebarProps { isOpen: boolean; onClose: () => void; }
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const router = useRouter();
@@ -117,8 +124,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             </div>
             <span className="font-bold text-gray-900 dark:text-white">RuachConnect</span>
           </Link>
-          <button onClick={onClose} className="lg:hidden p-1 text-gray-500">
-            <X className="w-5 h-5" />
+          <button onClick={onClose} className="lg:hidden p-1 text-white/40 hover:text-white">
+            <X className="w-4 h-4" />
           </button>
         </div>
 
@@ -135,25 +142,19 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             <div key={item.name}>
               {item.children ? (
                 <>
-                  <button
-                    onClick={() => toggleExpand(item.name)}
-                    className={`nav-item w-full justify-between ${isParentActive(item.children) ? 'active' : ''}`}
-                  >
-                    <span className="flex items-center gap-3">
-                      <item.icon className="w-5 h-5" />
+                  <button onClick={() => toggleExpand(item.name)}
+                    className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition-colors ${isParentActive(item.children) ? 'text-white bg-white/[0.06]' : 'text-white/50 hover:text-white/80 hover:bg-white/[0.04]'}`}>
+                    <span className="flex items-center gap-2.5">
+                      <item.icon className="w-4 h-4" />
                       {item.name}
                     </span>
-                    <ChevronDown className={`w-4 h-4 transition-transform ${expandedItems.includes(item.name) ? 'rotate-180' : ''}`} />
+                    <ChevronDown className={`w-3.5 h-3.5 transition-transform ${expandedItems.includes(item.name) ? 'rotate-180' : ''}`} />
                   </button>
                   {expandedItems.includes(item.name) && (
-                    <div className="ml-8 mt-1 space-y-1">
-                      {item.children.map((child) => (
-                        <Link
-                          key={child.href}
-                          href={child.href}
-                          className={`nav-item text-sm ${isActive(child.href) ? 'active' : ''}`}
-                          onClick={onClose}
-                        >
+                    <div className="ml-7 mt-0.5 space-y-0.5 border-l border-white/[0.06] pl-3">
+                      {item.children.map(child => (
+                        <Link key={child.href} href={child.href} onClick={onClose}
+                          className={`block px-2.5 py-1.5 rounded-md text-[11px] font-medium transition-colors ${isActive(child.href) ? 'text-[#BF0A30] bg-[#BF0A30]/10' : 'text-white/40 hover:text-white/70'}`}>
                           {child.name}
                         </Link>
                       ))}
@@ -161,12 +162,9 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                   )}
                 </>
               ) : (
-                <Link
-                  href={item.href}
-                  className={`nav-item ${isActive(item.href) ? 'active' : ''}`}
-                  onClick={onClose}
-                >
-                  <item.icon className="w-5 h-5" />
+                <Link href={item.href} onClick={onClose}
+                  className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${isActive(item.href) ? 'text-[#BF0A30] bg-[#BF0A30]/10' : 'text-white/50 hover:text-white/80 hover:bg-white/[0.04]'}`}>
+                  <item.icon className="w-4 h-4" />
                   {item.name}
                 </Link>
               )}
@@ -184,7 +182,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
               <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
                 {profile?.first_name} {profile?.last_name}
               </p>
-              <p className="text-xs text-gray-500 truncate">{profile?.member_id ?? profile?.email}</p>
+              <p className="text-xs text-gray-500 truncate">{profile?.role} · {profile?.member_id ?? profile?.email}</p>
             </div>
             <button onClick={signOut} className="p-2 text-gray-400 hover:text-gray-600" title="Sign out">
               <LogOut className="w-4 h-4" />

@@ -26,7 +26,7 @@ export interface Sermon {
   title: string;
   preacher: string;
   youtube_url: string;
-  description: string;
+  description: string | null;
   service_date: string;
   thumbnail_url: string | null;
   created_at: string;
@@ -37,7 +37,10 @@ export interface Sermon {
   scripture_ref?: string | null;
   view_count?: number;
   tags?: string[];
-  // Joined relationships
+  notes?: string | null;
+  transcript?: string | null;
+  spotify_url?: string | null;
+  category?: string | null;
   series?: Series | null;
 }
 
@@ -301,7 +304,7 @@ export interface KnowledgeBase {
 }
 
 export interface SermonSummary {
-  id: number;
+  id: string;
   slug: string;
   title: string;
   preacher: string;
@@ -309,6 +312,8 @@ export interface SermonSummary {
   description?: string | null;
   scripture_ref?: string | null;
   tags?: string[] | null;
+  notes?: string | null;
+  youtube_url?: string | null;
 }
 
 // =============================================
