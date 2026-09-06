@@ -3,8 +3,9 @@ import { ArrowRight } from 'lucide-react';
 import Layout from '@/components/shared/Layout';
 import ExpectGallery from '@/components/shared/ExpectGallery';
 
-const H = { fontFamily: 'Montserrat, sans-serif', fontWeight: 900 };
-const serif = { fontFamily: '"Playfair Display", Georgia, serif', fontStyle: 'italic' as const };
+// Font test: Sora — accent voice is a lighter weight, no italics
+const H = { fontFamily: 'Sora, sans-serif', fontWeight: 700 };
+const serif = { fontFamily: 'Sora, sans-serif', fontWeight: 600 };
 
 export default function NewHerePage() {
   return (
@@ -30,7 +31,7 @@ export default function NewHerePage() {
         {/* Watermark */}
         <div className="absolute inset-0 flex items-center overflow-hidden pointer-events-none select-none">
           <span
-            className="text-[100px] md:text-[160px] italic text-white/5 whitespace-nowrap leading-none"
+            className="text-[100px] md:text-[160px] text-white/5 whitespace-nowrap leading-none"
             style={H}
           >
             Welcome Home. &nbsp; Welcome Home.
@@ -238,7 +239,7 @@ export default function NewHerePage() {
               <span
                 key={`a${i}`}
                 className="marquee-stroke text-[80px] md:text-[100px] tracking-tight flex-shrink-0 whitespace-nowrap"
-                style={{ ...H, fontStyle: 'italic' }}
+                style={{ ...H }}
               >
                 Connect.
               </span>
@@ -249,7 +250,7 @@ export default function NewHerePage() {
               <span
                 key={`b${i}`}
                 className="marquee-stroke text-[80px] md:text-[100px] tracking-tight flex-shrink-0 whitespace-nowrap"
-                style={{ ...H, fontStyle: 'italic' }}
+                style={{ ...H }}
               >
                 Connect.
               </span>
@@ -341,7 +342,7 @@ export default function NewHerePage() {
                   Founder &amp; Overseer
                 </p>
                 <p className="text-white font-black text-lg mb-5" style={H}>Rev. Julian Kyula</p>
-                <blockquote className="text-[#8B95A8] leading-relaxed text-sm" style={{ ...serif, fontStyle: 'italic' }}>
+                <blockquote className="text-[#8B95A8] leading-relaxed text-sm" style={{ ...serif }}>
                   &ldquo;We started with a simple belief: that every person carries a God-given purpose.
                   Ruach exists to help you discover, develop, and deploy that purpose — in your family,
                   your work, and your community. We are so glad you are here.&rdquo;
@@ -365,7 +366,7 @@ export default function NewHerePage() {
                   Senior Pastor
                 </p>
                 <p className="text-white font-black text-lg mb-5" style={H}>Pst. Ekelemu Ewomazino</p>
-                <blockquote className="text-[#8B95A8] leading-relaxed text-sm" style={{ ...serif, fontStyle: 'italic' }}>
+                <blockquote className="text-[#8B95A8] leading-relaxed text-sm" style={{ ...serif }}>
                   &ldquo;Whether you are searching for answers, healing, or simply looking for a place to belong —
                   you have found it. Ruach is a family built on faith, rooted in love, and committed to
                   walking with you every step of the way. Welcome home.&rdquo;

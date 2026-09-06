@@ -4,8 +4,6 @@ import { ArrowRight, ChevronDown, Volume2, VolumeX, CalendarDays, MapPin } from 
 import Layout from '@/components/shared/Layout';
 import ExpectGallery from '@/components/shared/ExpectGallery';
 import ThemeHero from '@/components/streaming/ThemeHero';
-import Countdown from '@/components/rhema/Countdown';
-import { RHEMA_FEAST_2026 as RF } from '@/lib/rhema-feast';
 import { supabase } from '@/lib/supabase';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import type { GetStaticProps } from 'next';
@@ -15,8 +13,9 @@ interface UpcomingEvent { id: string; title: string; description: string | null;
 interface PageProps { recentSermons: HomeSermon[]; isLive: boolean; upcomingEvents: UpcomingEvent[]; }
 
 // Font styles
-const H = { fontFamily: 'Montserrat, sans-serif', fontWeight: 900 };
-const serif = { fontFamily: '"Playfair Display", Georgia, serif', fontStyle: 'italic' as const };
+// Font test: Bricolage Grotesque — accent voice is a lighter weight, no italics
+const H = { fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 800 };
+const serif = { fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 600 };
 
 const FAQS = [
   { q: 'What are your services like?', a: 'We provide an inviting atmosphere where everyone is welcome. Our services are a little over an hour long — filled with powerful worship, practical teachings that will help grow your faith in God, and a community of people that want to do life with you.' },
@@ -177,16 +176,7 @@ export default function HomePage({ recentSermons, isLive, upcomingEvents = [] }:
 
         {/* Content */}
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-24 sm:py-32 w-full">
-          {/* Rhema Feast 2026 — countdown banner linking to the dedicated page */}
-          <Link href={RF.href}
-            className="group inline-flex items-center gap-3 mb-6 rounded-full border border-[#D4AF37]/40 bg-black/40 backdrop-blur px-4 py-2 hover:border-[#D4AF37] transition-colors">
-            <span className="text-[#D4AF37] text-[10px] font-black uppercase tracking-widest whitespace-nowrap" style={H}>Rhema Feast 2026</span>
-            <span className="hidden sm:inline text-white/20">·</span>
-            <span className="hidden sm:inline"><Countdown target={RF.target} variant="compact" /></span>
-            <ArrowRight className="w-3.5 h-3.5 text-white/60 group-hover:translate-x-0.5 transition-transform" />
-          </Link>
-
-          {/* Mixed typography headline — Montserrat + Playfair Display italic */}
+          {/* Mixed typography headline */}
           <h1 className="text-white leading-[0.95] tracking-tight mb-6 sm:mb-8">
             <span className="block text-[50px] sm:text-6xl md:text-7xl lg:text-[96px]" style={H}>Raising</span>
             <span className="block text-[50px] sm:text-6xl md:text-7xl lg:text-[96px]" style={serif}>Kingdom</span>
@@ -364,7 +354,7 @@ export default function HomePage({ recentSermons, isLive, upcomingEvents = [] }:
               <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-4" style={H}>Watch Sermons</p>
               <div className="flex-1">
                 {recentSermons[0] && (
-                  <p className="text-white/80 text-sm leading-snug mb-2" style={{ ...serif, fontStyle: 'italic' }}>
+                  <p className="text-white/80 text-sm leading-snug mb-2" style={{ ...serif }}>
                     &ldquo;{recentSermons[0].title}&rdquo;
                   </p>
                 )}
@@ -429,14 +419,14 @@ export default function HomePage({ recentSermons, isLive, upcomingEvents = [] }:
         <div className="flex">
           <div className="flex-shrink-0 flex items-center gap-10 animate-[marquee_30s_linear_infinite]" aria-hidden>
             {Array.from({ length: 7 }, (_, i) => (
-              <span key={`a${i}`} className="marquee-stroke text-[80px] md:text-[100px] tracking-tight flex-shrink-0 whitespace-nowrap" style={{ ...H, fontStyle: 'italic' }}>
+              <span key={`a${i}`} className="marquee-stroke text-[80px] md:text-[100px] tracking-tight flex-shrink-0 whitespace-nowrap" style={{ ...H }}>
                 You&apos;re Family.
               </span>
             ))}
           </div>
           <div className="flex-shrink-0 flex items-center gap-10 animate-[marquee_30s_linear_infinite]" aria-hidden>
             {Array.from({ length: 7 }, (_, i) => (
-              <span key={`b${i}`} className="marquee-stroke text-[80px] md:text-[100px] tracking-tight flex-shrink-0 whitespace-nowrap" style={{ ...H, fontStyle: 'italic' }}>
+              <span key={`b${i}`} className="marquee-stroke text-[80px] md:text-[100px] tracking-tight flex-shrink-0 whitespace-nowrap" style={{ ...H }}>
                 You&apos;re Family.
               </span>
             ))}

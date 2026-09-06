@@ -6,8 +6,9 @@ import Layout from '@/components/shared/Layout';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { eventCoversDay } from '@/lib/event-dates';
 
-const H     = { fontFamily: 'Montserrat, sans-serif', fontWeight: 900 } as const;
-const serif = { fontFamily: '"Playfair Display", Georgia, serif', fontStyle: 'italic' as const };
+// Font test: Outfit — accent voice is a lighter weight, no italics
+const H     = { fontFamily: 'Outfit, sans-serif', fontWeight: 700 } as const;
+const serif = { fontFamily: 'Outfit, sans-serif', fontWeight: 600 } as const;
 
 interface Event {
   id:          string;
@@ -196,7 +197,7 @@ export default function REventsPage({ events }: Props) {
         <div className="spirit-orb spirit-breathe absolute w-[500px] h-[500px] bg-[#BF0A30]"
           style={{ top: '5%', right: '-5%', filter: 'blur(150px)', opacity: 0.09, ['--spirit-dur' as string]: '11s' }} />
         <div className="absolute inset-0 flex items-center overflow-hidden pointer-events-none select-none">
-          <span className="text-[110px] md:text-[170px] italic text-white/5 whitespace-nowrap leading-none" style={H}>
+          <span className="text-[110px] md:text-[170px] text-white/5 whitespace-nowrap leading-none" style={H}>
             Events. &nbsp; Events. &nbsp; Events.
           </span>
         </div>

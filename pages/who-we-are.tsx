@@ -4,8 +4,9 @@ import { ChevronDown, ArrowRight, Copy, Check } from 'lucide-react';
 import Layout from '@/components/shared/Layout';
 import ExpectGallery from '@/components/shared/ExpectGallery';
 
-const H = { fontFamily: 'Montserrat, sans-serif', fontWeight: 900 };
-const serif = { fontFamily: '"Playfair Display", Georgia, serif', fontStyle: 'italic' as const };
+// Font test: Space Grotesk — accent voice is a lighter weight, no italics
+const H = { fontFamily: '"Space Grotesk", sans-serif', fontWeight: 700 };
+const serif = { fontFamily: '"Space Grotesk", sans-serif', fontWeight: 500 };
 
 const STATEMENT_TEXT = `I am a winner and not a loser.
 I am a victor and not a victim.
@@ -181,7 +182,7 @@ export default function WhoWeArePage() {
           <div className="absolute inset-0 bg-gradient-to-r from-[#0A0C10]/70 to-transparent" />
         </div>
         <div className="absolute inset-0 flex items-center overflow-hidden pointer-events-none select-none">
-          <span className="text-[120px] md:text-[180px] italic text-white/5 whitespace-nowrap leading-none" style={H}>
+          <span className="text-[120px] md:text-[180px] text-white/5 whitespace-nowrap leading-none" style={H}>
             Who We Are. &nbsp; Who We Are.
           </span>
         </div>
@@ -294,7 +295,7 @@ export default function WhoWeArePage() {
               </span>
               <div className="relative pt-8 space-y-2">
                 {STATEMENT_TEXT.split('\n').map((line, i) => (
-                  <p key={i} className="text-white text-base leading-loose" style={{ ...serif, fontStyle: 'italic' }}>
+                  <p key={i} className="text-white text-base leading-loose" style={{ ...serif }}>
                     {line}
                   </p>
                 ))}
@@ -474,7 +475,7 @@ export default function WhoWeArePage() {
               <span
                 key={`a${i}`}
                 className="marquee-stroke text-[80px] md:text-[100px] tracking-tight flex-shrink-0 whitespace-nowrap"
-                style={{ ...H, fontStyle: 'italic' }}
+                style={{ ...H }}
               >
                 What We Believe.
               </span>
@@ -485,7 +486,7 @@ export default function WhoWeArePage() {
               <span
                 key={`b${i}`}
                 className="marquee-stroke text-[80px] md:text-[100px] tracking-tight flex-shrink-0 whitespace-nowrap"
-                style={{ ...H, fontStyle: 'italic' }}
+                style={{ ...H }}
               >
                 What We Believe.
               </span>
@@ -573,7 +574,7 @@ export default function WhoWeArePage() {
                   Founder &amp; Overseer
                 </p>
                 <p className="text-white font-black text-lg mb-5" style={H}>Rev. Julian Kyula</p>
-                <blockquote className="text-[#8B95A8] leading-relaxed text-sm" style={{ ...serif, fontStyle: 'italic' }}>
+                <blockquote className="text-[#8B95A8] leading-relaxed text-sm" style={{ ...serif }}>
                   &ldquo;Originally established as The Purpose Centre Church in 2007, The Ruach Assemblies
                   is a growing network of church plants passionate about transforming lives — empowering
                   individuals to live out their God-given purpose and make a lasting impact in their
@@ -606,7 +607,7 @@ export default function WhoWeArePage() {
                   Senior Pastor
                 </p>
                 <p className="text-white font-black text-lg mb-5" style={H}>Pst. Ekelemu Ewomazino</p>
-                <blockquote className="text-[#8B95A8] leading-relaxed text-sm" style={{ ...serif, fontStyle: 'italic' }}>
+                <blockquote className="text-[#8B95A8] leading-relaxed text-sm" style={{ ...serif }}>
                   &ldquo;RUACH is an acronym for Rhema United Assemblies of Christ. We carry a God-given
                   mandate: Raising Kingdom Champions — men and women who are intentional about pursuing
                   their divine purpose in every sphere of influence, whether in ministry or the

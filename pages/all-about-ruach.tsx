@@ -4,8 +4,9 @@ import { ChevronDown, ArrowRight } from 'lucide-react';
 import Layout from '@/components/shared/Layout';
 import ExpectGallery from '@/components/shared/ExpectGallery';
 
-const H = { fontFamily: 'Montserrat, sans-serif', fontWeight: 900 };
-const serif = { fontFamily: '"Playfair Display", Georgia, serif', fontStyle: 'italic' as const };
+// Font test: Fraunces (upright serif) — no italics
+const H = { fontFamily: 'Fraunces, Georgia, serif', fontWeight: 700 };
+const serif = { fontFamily: 'Fraunces, Georgia, serif', fontWeight: 600 };
 
 const FAQS = [
   { q: 'What does "Ruach" actually mean? Is it an acronym?', a: 'The word Ruach is a Hebrew term traditionally translated as "breath," "wind," or "spirit." In a biblical context, it refers to the life-giving breath of God found in Genesis. However, at our church, it serves a dual purpose as an acronym: Rhema United Assemblies of Christ. This reflects our commitment to the "Rhema" (the spoken, revealed Word of God) and our unity as a body of believers.' },
