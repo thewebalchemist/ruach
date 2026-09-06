@@ -1,137 +1,208 @@
 // pages/connect/messages.tsx
 // Messaging — Teachers communicate with individual students or entire cohorts
 
-import { useState, useRef, useEffect } from 'react';
-import { Send, Search, Users, User, Bell, BellOff, Pin, ChevronRight, Clock, CheckCheck, Loader2 } from 'lucide-react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { Send, Search, Users, Bell, Pin, ChevronRight, CheckCheck, Loader2 } from 'lucide-react';
 import { ConnectLayout } from '@/components/connect/ConnectLayout';
-import { mockConnectStudents, mockConnectCohorts, getUserById } from '@/data/connect';
+import { useAuth } from '@/context/AuthContext';
+import { supabase } from '@/lib/supabase';
 
-interface Message {
-  id:         string;
-  senderId:   string;
-  senderName: string;
-  senderRole: 'teacher' | 'student';
-  content:    string;
-  time:       string;
-  isRead:     boolean;
+interface MessageRow {
+  id: string; cohort_id: string; student_id: string | null;
+  sender_id: string; sender_role: 'teacher' | 'student'; content: string; created_at: string;
 }
+interface StudentRow {
+  id: string; user_id: string; cohort_id: string;
+  profiles: { first_name: string; last_name: string } | null;
+}
+interface CohortRow { id: string; name: string }
+interface StateRow { cohort_id: string; student_id: string | null; pinned: boolean; last_read_at: string }
 
 interface Conversation {
-  id:           string;
-  type:         'direct' | 'cohort';
-  name:         string;
-  initials:     string;
-  lastMessage:  string;
-  lastTime:     string;
-  unread:       number;
-  pinned:       boolean;
-  cohortId?:    string;
-  studentId?:   string;
-  messages:     Message[];
+  id: string; // `${cohortId}` for the group thread, `${cohortId}:${studentId}` for a DM
+  type: 'cohort' | 'direct';
+  name: string;
+  initials: string;
+  cohortId: string;
+  studentId: string | null;
+  messages: MessageRow[];
+  pinned: boolean;
+  lastReadAt: string;
 }
 
-// ── Mock conversations ────────────────────────────────────────────────────────
-const INITIAL_CONVOS: Conversation[] = [
-  {
-    id: 'cohort-cc-2026-01', type: 'cohort', name: 'Cohort 1 2026 (Group)', initials: 'C1',
-    lastMessage: 'Session 3 is on Saturday. Please be present 🙏',
-    lastTime: '09:15', unread: 0, pinned: true, cohortId: 'cc-2026-01',
-    messages: [
-      { id: 'm1', senderId: 'teacher-001', senderName: 'Ps. James', senderRole: 'teacher', content: 'Good morning everyone! Welcome to Connect Class Cohort 1 2026.', time: '08:00', isRead: true },
-      { id: 'm2', senderId: 'user-new-001', senderName: 'John', senderRole: 'student', content: 'Good morning Pastor James! Excited to be here.', time: '08:05', isRead: true },
-      { id: 'm3', senderId: 'teacher-001', senderName: 'Ps. James', senderRole: 'teacher', content: 'Please make sure you have your Bibles ready for Session 1. See you Sunday!', time: '08:10', isRead: true },
-      { id: 'm4', senderId: 'user-new-002', senderName: 'Mary', senderRole: 'student', content: 'Will the session be recorded for those who can\'t attend physically?', time: '08:30', isRead: true },
-      { id: 'm5', senderId: 'teacher-001', senderName: 'Ps. James', senderRole: 'teacher', content: 'Yes! We\'ll have the virtual option running as well. Join via the Classroom link.', time: '08:35', isRead: true },
-      { id: 'm6', senderId: 'teacher-001', senderName: 'Ps. James', senderRole: 'teacher', content: 'Session 3 is on Saturday. Please be present 🙏', time: '09:15', isRead: true },
-    ],
-  },
-  {
-    id: 'student-cs-002', type: 'direct', name: 'Mary Wanjiku', initials: 'MW',
-    lastMessage: 'I missed Session 2 due to illness. Is there a way to catch up?',
-    lastTime: 'Yesterday', unread: 1, pinned: false, studentId: 'cs-002',
-    messages: [
-      { id: 'm7', senderId: 'user-new-002', senderName: 'Mary', senderRole: 'student', content: 'Hello Pastor James, I missed Session 2 due to illness. Is there a way to catch up?', time: '2026-02-09 14:30', isRead: false },
-    ],
-  },
-  {
-    id: 'student-cs-001', type: 'direct', name: 'John Kamau', initials: 'JK',
-    lastMessage: 'Thank you for the resources Pastor!',
-    lastTime: 'Mon', unread: 0, pinned: false, studentId: 'cs-001',
-    messages: [
-      { id: 'm8', senderId: 'teacher-001', senderName: 'Ps. James', senderRole: 'teacher', content: 'Hi John, how are you finding the class so far?', time: 'Mon 10:00', isRead: true },
-      { id: 'm9', senderId: 'user-new-001', senderName: 'John', senderRole: 'student', content: 'It\'s been life-changing! I\'ve learnt so much about salvation.', time: 'Mon 10:30', isRead: true },
-      { id: 'm10', senderId: 'teacher-001', senderName: 'Ps. James', senderRole: 'teacher', content: 'That\'s wonderful to hear! Keep engaging with the material.', time: 'Mon 11:00', isRead: true },
-      { id: 'm11', senderId: 'user-new-001', senderName: 'John', senderRole: 'student', content: 'Thank you for the resources Pastor!', time: 'Mon 11:05', isRead: true },
-    ],
-  },
-  {
-    id: 'student-cs-003', type: 'direct', name: 'Peter Ochieng', initials: 'PO',
-    lastMessage: 'Looking forward to Saturday\'s session!',
-    lastTime: 'Sun', unread: 0, pinned: false, studentId: 'cs-003',
-    messages: [
-      { id: 'm12', senderId: 'user-new-003', senderName: 'Peter', senderRole: 'student', content: 'Looking forward to Saturday\'s session!', time: 'Sun 16:00', isRead: true },
-    ],
-  },
-];
+function initialsOf(first?: string, last?: string) {
+  return `${first?.[0] ?? ''}${last?.[0] ?? ''}`.toUpperCase() || '?';
+}
 
 export default function MessagesPage() {
-  const [conversations, setConversations] = useState<Conversation[]>(INITIAL_CONVOS);
-  const [activeConvoId, setActiveConvoId]   = useState('cohort-cc-2026-01');
-  const [messageInput,  setMessageInput]    = useState('');
-  const [searchQuery,   setSearchQuery]     = useState('');
-  const [sending,       setSending]         = useState(false);
-  const [isMobileChat,  setIsMobileChat]    = useState(false);
+  const { profile } = useAuth();
+
+  const [loading,       setLoading]       = useState(true);
+  const [cohorts,       setCohorts]       = useState<CohortRow[]>([]);
+  const [students,      setStudents]      = useState<StudentRow[]>([]);
+  const [messages,      setMessages]      = useState<MessageRow[]>([]);
+  const [convoState,    setConvoState]    = useState<StateRow[]>([]);
+  const [activeConvoId, setActiveConvoId] = useState<string | null>(null);
+  const [messageInput,  setMessageInput]  = useState('');
+  const [searchQuery,   setSearchQuery]   = useState('');
+  const [sending,       setSending]       = useState(false);
+  const [isMobileChat,  setIsMobileChat]  = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
-  const activeConvo = conversations.find(c => c.id === activeConvoId);
+  const load = useCallback(async () => {
+    if (!profile?.id) return;
+    setLoading(true);
 
-  const filteredConvos = conversations.filter(c =>
-    c.name.toLowerCase().includes(searchQuery.toLowerCase())
-  ).sort((a, b) => {
-    if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
-    return b.unread - a.unread;
-  });
+    const { data: cohortData } = await supabase
+      .from('connect_cohorts').select('id, name').eq('teacher_id', profile.id);
+    const cohortIds = (cohortData ?? []).map(c => c.id);
+    setCohorts((cohortData ?? []) as CohortRow[]);
+
+    if (cohortIds.length === 0) { setLoading(false); return; }
+
+    const [{ data: studentData }, { data: messageData }, { data: stateData }] = await Promise.all([
+      (supabase as any).from('connect_students')
+        .select('id, user_id, cohort_id, profiles(first_name, last_name)')
+        .in('cohort_id', cohortIds),
+      (supabase as any).from('connect_messages')
+        .select('id, cohort_id, student_id, sender_id, sender_role, content, created_at')
+        .in('cohort_id', cohortIds)
+        .order('created_at', { ascending: true }),
+      supabase.from('connect_conversation_state')
+        .select('cohort_id, student_id, pinned, last_read_at')
+        .eq('user_id', profile.id),
+    ]);
+
+    setStudents((studentData ?? []) as StudentRow[]);
+    setMessages((messageData ?? []) as MessageRow[]);
+    setConvoState((stateData ?? []) as StateRow[]);
+    setLoading(false);
+  }, [profile?.id]);
+
+  useEffect(() => { load(); }, [load]);
+
+  // Build one conversation per cohort (group thread) plus one per enrolled
+  // student (DM thread), even for students with zero messages yet — so a
+  // teacher can always start a new thread.
+  const conversations = useMemo<Conversation[]>(() => {
+    const list: Conversation[] = [];
+    for (const cohort of cohorts) {
+      const groupState = convoState.find(s => s.cohort_id === cohort.id && s.student_id === null);
+      list.push({
+        id: cohort.id,
+        type: 'cohort',
+        name: `${cohort.name} (Group)`,
+        initials: '',
+        cohortId: cohort.id,
+        studentId: null,
+        messages: messages.filter(m => m.cohort_id === cohort.id && m.student_id === null),
+        pinned: groupState?.pinned ?? false,
+        lastReadAt: groupState?.last_read_at ?? '1970-01-01',
+      });
+      for (const student of students.filter(s => s.cohort_id === cohort.id)) {
+        const dmState = convoState.find(s => s.cohort_id === cohort.id && s.student_id === student.id);
+        list.push({
+          id: `${cohort.id}:${student.id}`,
+          type: 'direct',
+          name: `${student.profiles?.first_name ?? ''} ${student.profiles?.last_name ?? ''}`.trim() || 'Student',
+          initials: initialsOf(student.profiles?.first_name, student.profiles?.last_name),
+          cohortId: cohort.id,
+          studentId: student.id,
+          messages: messages.filter(m => m.cohort_id === cohort.id && m.student_id === student.id),
+          pinned: dmState?.pinned ?? false,
+          lastReadAt: dmState?.last_read_at ?? '1970-01-01',
+        });
+      }
+    }
+    return list;
+  }, [cohorts, students, messages, convoState]);
+
+  const unreadCountOf = useCallback((c: Conversation) =>
+    c.messages.filter(m => m.sender_role !== 'teacher' && m.created_at > c.lastReadAt).length,
+  []);
+
+  const activeConvo = conversations.find(c => c.id === activeConvoId) ?? null;
+
+  const filteredConvos = conversations
+    .filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    .sort((a, b) => {
+      if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
+      const aUnread = unreadCountOf(a), bUnread = unreadCountOf(b);
+      if (aUnread !== bUnread) return bUnread - aUnread;
+      const aLast = a.messages.at(-1)?.created_at ?? '';
+      const bLast = b.messages.at(-1)?.created_at ?? '';
+      return bLast.localeCompare(aLast);
+    });
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [activeConvoId, conversations]);
+  }, [activeConvoId, messages]);
 
-  function openConvo(id: string) {
-    setActiveConvoId(id);
+  async function markRead(c: Conversation) {
+    if (!profile?.id) return;
+    const now = new Date().toISOString();
+    setConvoState(prev => {
+      const exists = prev.some(s => s.cohort_id === c.cohortId && s.student_id === c.studentId);
+      return exists
+        ? prev.map(s => s.cohort_id === c.cohortId && s.student_id === c.studentId ? { ...s, last_read_at: now } : s)
+        : [...prev, { cohort_id: c.cohortId, student_id: c.studentId, pinned: false, last_read_at: now }];
+    });
+    await supabase.from('connect_conversation_state').upsert(
+      { user_id: profile.id, cohort_id: c.cohortId, student_id: c.studentId, last_read_at: now },
+      { onConflict: c.studentId ? 'user_id,cohort_id,student_id' : 'user_id,cohort_id' },
+    );
+  }
+
+  function openConvo(c: Conversation) {
+    setActiveConvoId(c.id);
     setIsMobileChat(true);
-    // Mark messages read
-    setConversations(prev => prev.map(c =>
-      c.id === id ? { ...c, unread: 0, messages: c.messages.map(m => ({ ...m, isRead: true })) } : c
-    ));
+    markRead(c);
   }
 
   async function sendMessage() {
-    if (!messageInput.trim() || !activeConvo) return;
+    if (!messageInput.trim() || !activeConvo || !profile?.id) return;
     setSending(true);
-    await new Promise(r => setTimeout(r, 400));
-    const msg: Message = {
-      id:         Date.now().toString(),
-      senderId:   'teacher-001',
-      senderName: 'Ps. James',
-      senderRole: 'teacher',
-      content:    messageInput.trim(),
-      time:       new Date().toLocaleTimeString('en-KE', { hour: '2-digit', minute: '2-digit' }),
-      isRead:     true,
-    };
-    setConversations(prev => prev.map(c =>
-      c.id === activeConvoId
-        ? { ...c, messages: [...c.messages, msg], lastMessage: msg.content, lastTime: msg.time }
-        : c
-    ));
+    const content = messageInput.trim();
+    const { data } = await (supabase as any).from('connect_messages').insert({
+      cohort_id: activeConvo.cohortId,
+      student_id: activeConvo.studentId,
+      sender_id: profile.id,
+      sender_role: 'teacher',
+      content,
+    }).select('id, cohort_id, student_id, sender_id, sender_role, content, created_at').single();
+    if (data) setMessages(prev => [...prev, data as MessageRow]);
     setMessageInput('');
     setSending(false);
+    markRead(activeConvo);
   }
 
-  function togglePin(id: string) {
-    setConversations(prev => prev.map(c => c.id === id ? { ...c, pinned: !c.pinned } : c));
+  async function togglePin(c: Conversation) {
+    if (!profile?.id) return;
+    const nextPinned = !c.pinned;
+    setConvoState(prev => {
+      const exists = prev.some(s => s.cohort_id === c.cohortId && s.student_id === c.studentId);
+      return exists
+        ? prev.map(s => s.cohort_id === c.cohortId && s.student_id === c.studentId ? { ...s, pinned: nextPinned } : s)
+        : [...prev, { cohort_id: c.cohortId, student_id: c.studentId, pinned: nextPinned, last_read_at: new Date().toISOString() }];
+    });
+    await supabase.from('connect_conversation_state').upsert(
+      { user_id: profile.id, cohort_id: c.cohortId, student_id: c.studentId, pinned: nextPinned },
+      { onConflict: c.studentId ? 'user_id,cohort_id,student_id' : 'user_id,cohort_id' },
+    );
   }
 
-  const totalUnread = conversations.reduce((s, c) => s + c.unread, 0);
+  const totalUnread = conversations.reduce((sum, c) => sum + unreadCountOf(c), 0);
+  const activeStudentCount = activeConvo?.type === 'cohort'
+    ? students.filter(s => s.cohort_id === activeConvo.cohortId).length
+    : 0;
+
+  if (loading) {
+    return (
+      <ConnectLayout title="Messages">
+        <div className="flex justify-center py-24"><Loader2 className="w-6 h-6 animate-spin text-gray-400" /></div>
+      </ConnectLayout>
+    );
+  }
 
   return (
     <ConnectLayout title="Messages" notificationCount={totalUnread}>
@@ -160,50 +231,56 @@ export default function MessagesPage() {
 
           {/* Conversation list */}
           <div className="flex-1 overflow-y-auto">
-            {filteredConvos.map(convo => (
-              <button key={convo.id} onClick={() => openConvo(convo.id)}
-                className={`w-full flex items-center gap-3 px-4 py-3.5 hover:bg-[#0A0C10] dark:hover:bg-white/[0.03] transition-colors text-left border-b border-gray-50 dark:border-white/[0.03] ${
-                  activeConvoId === convo.id ? 'bg-[#BF0A30]/5 dark:bg-[#BF0A30]/10' : ''
-                }`}>
-                {/* Avatar */}
-                <div className={`w-11 h-11 rounded-full flex items-center justify-center font-bold text-white flex-shrink-0 text-sm relative ${
-                  convo.type === 'cohort' ? 'bg-gradient-to-br from-[#BF0A30] to-[#7D0018]' : 'bg-gradient-to-br from-gray-600 to-gray-800'
-                }`}>
-                  {convo.type === 'cohort' ? <Users className="w-5 h-5" /> : convo.initials}
-                  {convo.pinned && (
-                    <div className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-amber-400 rounded-full flex items-center justify-center">
-                      <Pin className="w-2.5 h-2.5 text-white" />
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between mb-0.5">
-                    <span className={`text-sm font-semibold truncate ${convo.unread ? 'text-white' : 'text-white/70'}`}>
-                      {convo.name}
-                    </span>
-                    <span className="text-xs text-gray-400 flex-shrink-0 ml-2">{convo.lastTime}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <p className={`text-xs truncate ${convo.unread ? 'text-white font-medium' : 'text-gray-500'}`}>
-                      {convo.lastMessage}
-                    </p>
-                    {convo.unread > 0 && (
-                      <span className="ml-2 w-5 h-5 bg-[#BF0A30] text-white text-[10px] rounded-full flex items-center justify-center font-bold flex-shrink-0">
-                        {convo.unread}
-                      </span>
+            {filteredConvos.length === 0 && (
+              <p className="text-center text-sm text-gray-500 py-10 px-4">
+                {cohorts.length === 0 ? 'You have no cohorts assigned yet.' : 'No conversations match your search.'}
+              </p>
+            )}
+            {filteredConvos.map(convo => {
+              const unread = unreadCountOf(convo);
+              const last = convo.messages.at(-1);
+              return (
+                <button key={convo.id} onClick={() => openConvo(convo)}
+                  className={`w-full flex items-center gap-3 px-4 py-3.5 hover:bg-[#0A0C10] dark:hover:bg-white/[0.03] transition-colors text-left border-b border-gray-50 dark:border-white/[0.03] ${
+                    activeConvoId === convo.id ? 'bg-[#BF0A30]/5 dark:bg-[#BF0A30]/10' : ''
+                  }`}>
+                  {/* Avatar */}
+                  <div className={`w-11 h-11 rounded-full flex items-center justify-center font-bold text-white flex-shrink-0 text-sm relative ${
+                    convo.type === 'cohort' ? 'bg-gradient-to-br from-[#BF0A30] to-[#7D0018]' : 'bg-gradient-to-br from-gray-600 to-gray-800'
+                  }`}>
+                    {convo.type === 'cohort' ? <Users className="w-5 h-5" /> : convo.initials}
+                    {convo.pinned && (
+                      <div className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-amber-400 rounded-full flex items-center justify-center">
+                        <Pin className="w-2.5 h-2.5 text-white" />
+                      </div>
                     )}
                   </div>
-                </div>
-              </button>
-            ))}
-          </div>
 
-          {/* New broadcast */}
-          <div className="p-3 border-t border-gray-100">
-            <button className="btn btn-primary w-full btn-sm gap-2">
-              <Bell className="w-3.5 h-3.5" /> Broadcast to Cohort
-            </button>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-0.5">
+                      <span className={`text-sm font-semibold truncate ${unread ? 'text-white' : 'text-white/70'}`}>
+                        {convo.name}
+                      </span>
+                      {last && (
+                        <span className="text-xs text-gray-400 flex-shrink-0 ml-2">
+                          {new Date(last.created_at).toLocaleTimeString('en-KE', { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <p className={`text-xs truncate ${unread ? 'text-white font-medium' : 'text-gray-500'}`}>
+                        {last?.content ?? 'No messages yet'}
+                      </p>
+                      {unread > 0 && (
+                        <span className="ml-2 w-5 h-5 bg-[#BF0A30] text-white text-[10px] rounded-full flex items-center justify-center font-bold flex-shrink-0">
+                          {unread}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -224,12 +301,10 @@ export default function MessagesPage() {
                 <div className="flex-1">
                   <p className="font-semibold text-white text-sm">{activeConvo.name}</p>
                   <p className="text-xs text-gray-500">
-                    {activeConvo.type === 'cohort'
-                      ? `${mockConnectStudents.filter(s => s.cohortId === activeConvo.cohortId).length} students`
-                      : 'Direct message'}
+                    {activeConvo.type === 'cohort' ? `${activeStudentCount} students` : 'Direct message'}
                   </p>
                 </div>
-                <button onClick={() => togglePin(activeConvo.id)}
+                <button onClick={() => togglePin(activeConvo)}
                   className={`p-2 rounded-xl transition-colors ${activeConvo.pinned ? 'text-amber-500 bg-amber-50 dark:bg-amber-900/20' : 'text-gray-400 hover:bg-gray-100'}`}
                   title={activeConvo.pinned ? 'Unpin' : 'Pin'}>
                   <Pin className="w-4 h-4" />
@@ -238,13 +313,20 @@ export default function MessagesPage() {
 
               {/* Messages */}
               <div className="flex-1 overflow-y-auto p-5 space-y-4">
+                {activeConvo.messages.length === 0 && (
+                  <p className="text-center text-sm text-gray-500 py-10">No messages yet — say hello!</p>
+                )}
                 {activeConvo.messages.map(msg => {
-                  const isOwn = msg.senderRole === 'teacher';
+                  const isOwn = msg.sender_role === 'teacher';
+                  const sender = !isOwn && activeConvo.type === 'cohort'
+                    ? students.find(s => s.user_id === msg.sender_id)?.profiles
+                    : null;
                   return (
                     <div key={msg.id} className={`flex flex-col ${isOwn ? 'items-end' : 'items-start'}`}>
-                      {/* Sender name (only for group messages) */}
-                      {activeConvo.type === 'cohort' && !isOwn && (
-                        <span className="text-[11px] text-gray-500 mb-1 px-1 font-semibold">{msg.senderName}</span>
+                      {sender && (
+                        <span className="text-[11px] text-gray-500 mb-1 px-1 font-semibold">
+                          {sender.first_name} {sender.last_name}
+                        </span>
                       )}
                       <div className={`max-w-[70%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
                         isOwn
@@ -254,8 +336,10 @@ export default function MessagesPage() {
                         {msg.content}
                       </div>
                       <div className="flex items-center gap-1 mt-1 px-1">
-                        <span className="text-[10px] text-gray-400">{msg.time}</span>
-                        {isOwn && msg.isRead && <CheckCheck className="w-3 h-3 text-blue-400" />}
+                        <span className="text-[10px] text-gray-400">
+                          {new Date(msg.created_at).toLocaleTimeString('en-KE', { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                        {isOwn && <CheckCheck className="w-3 h-3 text-blue-400" />}
                       </div>
                     </div>
                   );
@@ -282,7 +366,7 @@ export default function MessagesPage() {
                 </div>
                 {activeConvo.type === 'cohort' && (
                   <p className="text-xs text-gray-400 mt-2 text-center">
-                    This message will be sent to all {mockConnectStudents.filter(s => s.cohortId === activeConvo.cohortId).length} students in the cohort
+                    This message will be sent to all {activeStudentCount} students in the cohort
                   </p>
                 )}
               </div>
