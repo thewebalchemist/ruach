@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 
-const H = { fontFamily: 'Montserrat, sans-serif', fontWeight: 900 };
-const serif = { fontFamily: '"Playfair Display", Georgia, serif', fontStyle: 'italic' as const };
+const H = { fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 800 };
+const serif = { fontFamily: 'Fraunces, Georgia, serif', fontWeight: 600 };
 
 const PHOTOS = [
   '/church-photos/worship1.jpg',

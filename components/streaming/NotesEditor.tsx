@@ -10,7 +10,7 @@ interface Note {
   user_id?: string;
 }
 
-const H = { fontFamily: 'Montserrat, sans-serif', fontWeight: 900 };
+const H = { fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 800 };
 
 export default function NotesEditor() {
   const [user, setUser]                   = useState<any>(null);

@@ -2,8 +2,8 @@ import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import Layout from '@/components/shared/Layout';
 
-const H = { fontFamily: 'Montserrat, sans-serif', fontWeight: 900 };
-const serif = { fontFamily: '"Playfair Display", Georgia, serif', fontStyle: 'italic' as const };
+const H = { fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 800 };
+const serif = { fontFamily: 'Fraunces, Georgia, serif', fontWeight: 600 };
 
 const LEADERSHIP = [
   {
@@ -116,7 +116,7 @@ export default function OurTeamPage() {
           <div className="absolute inset-0 bg-gradient-to-r from-[#0A0C10]/70 to-transparent" />
         </div>
         <div className="absolute inset-0 flex items-center overflow-hidden pointer-events-none select-none">
-          <span className="text-[100px] md:text-[160px] italic text-white/5 whitespace-nowrap leading-none" style={H}>
+          <span className="text-[100px] md:text-[160px] text-white/5 whitespace-nowrap leading-none" style={H}>
             Meet the Team. &nbsp; Meet the Team.
           </span>
         </div>
@@ -236,14 +236,14 @@ export default function OurTeamPage() {
         <div className="flex">
           <div className="flex-shrink-0 flex items-center gap-10 animate-[marquee_30s_linear_infinite]" aria-hidden>
             {Array.from({ length: 7 }, (_, i) => (
-              <span key={`a${i}`} className="marquee-stroke text-[80px] md:text-[100px] tracking-tight flex-shrink-0 whitespace-nowrap" style={{ ...H, fontStyle: 'italic' }}>
+              <span key={`a${i}`} className="marquee-stroke text-[80px] md:text-[100px] tracking-tight flex-shrink-0 whitespace-nowrap" style={H}>
                 Our Pastors.
               </span>
             ))}
           </div>
           <div className="flex-shrink-0 flex items-center gap-10 animate-[marquee_30s_linear_infinite]" aria-hidden>
             {Array.from({ length: 7 }, (_, i) => (
-              <span key={`b${i}`} className="marquee-stroke text-[80px] md:text-[100px] tracking-tight flex-shrink-0 whitespace-nowrap" style={{ ...H, fontStyle: 'italic' }}>
+              <span key={`b${i}`} className="marquee-stroke text-[80px] md:text-[100px] tracking-tight flex-shrink-0 whitespace-nowrap" style={H}>
                 Our Pastors.
               </span>
             ))}

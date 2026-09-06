@@ -2,8 +2,8 @@ import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import Layout from '@/components/shared/Layout';
 
-const H = { fontFamily: 'Montserrat, sans-serif', fontWeight: 900 } as const;
-const serif = { fontFamily: '"Playfair Display", Georgia, serif', fontStyle: 'italic' as const };
+const H = { fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 800 } as const;
+const serif = { fontFamily: 'Fraunces, Georgia, serif', fontWeight: 600 };
 
 export default function RCrosspointsPage() {
   return (
@@ -33,7 +33,7 @@ export default function RCrosspointsPage() {
 
         {/* Watermark */}
         <div className="absolute inset-0 flex items-center overflow-hidden pointer-events-none select-none">
-          <span className="text-[100px] md:text-[160px] italic text-white/5 whitespace-nowrap leading-none" style={H}>
+          <span className="text-[100px] md:text-[160px] text-white/5 whitespace-nowrap leading-none" style={H}>
             Crosspoints. &nbsp; Crosspoints.
           </span>
         </div>
@@ -152,7 +152,7 @@ export default function RCrosspointsPage() {
                 <span
                   key={i}
                   className="marquee-stroke text-[80px] md:text-[100px] tracking-tight flex-shrink-0 whitespace-nowrap"
-                  style={{ ...H, fontStyle: 'italic' }}
+                  style={H}
                 >
                   Find Your Crosspoint.
                 </span>

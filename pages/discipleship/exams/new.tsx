@@ -34,7 +34,7 @@ const BLANK = (n: number): DraftQuestion => ({
   expanded:       true,
 });
 
-const H = { fontFamily: 'Montserrat, sans-serif', fontWeight: 900 };
+const H = { fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 800 };
 
 export default function NewDiscipleshipExamPage() {
   const router = useRouter();

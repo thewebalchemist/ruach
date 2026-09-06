@@ -3,8 +3,8 @@ import { useState } from 'react';
 import { ArrowRight, ChevronDown, Copy, Check } from 'lucide-react';
 import Layout from '@/components/shared/Layout';
 
-const H = { fontFamily: 'Montserrat, sans-serif', fontWeight: 900 };
-const serif = { fontFamily: '"Playfair Display", Georgia, serif', fontStyle: 'italic' as const };
+const H = { fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 800 };
+const serif = { fontFamily: 'Fraunces, Georgia, serif', fontWeight: 600 };
 
 const FAQS = [
   { q: 'Is giving mandatory to attend Ruach?', a: 'No. Giving is a personal act of worship and is entirely voluntary. You are welcome at Ruach regardless of whether or how much you give.' },
@@ -54,7 +54,7 @@ export default function GivePage() {
         <div className="spirit-orb spirit-breathe absolute w-[500px] h-[500px] bg-[#BF0A30]"
           style={{ top: '0%', right: '5%', filter: 'blur(140px)', opacity: 0.10, ['--spirit-dur' as string]: '11s' }} />
         <div className="absolute inset-0 flex items-center overflow-hidden pointer-events-none select-none">
-          <span className="text-[120px] md:text-[180px] italic text-white/[0.03] whitespace-nowrap leading-none" style={H}>
+          <span className="text-[120px] md:text-[180px] text-white/[0.03] whitespace-nowrap leading-none" style={H}>
             Give. &nbsp; Give. &nbsp; Give.
           </span>
         </div>
@@ -66,7 +66,7 @@ export default function GivePage() {
           <h1 className="text-[38px] sm:text-5xl md:text-[58px] text-white leading-tight tracking-tight mb-5" style={H}>
             Give to the<br /><span style={serif}>Work of God</span>
           </h1>
-          <blockquote className="text-[#8B95A8] text-base italic max-w-lg leading-relaxed" style={serif}>
+          <blockquote className="text-[#8B95A8] text-base max-w-lg leading-relaxed" style={serif}>
             &ldquo;Each of you should give what you have decided in your heart to give, not reluctantly or under compulsion, for God loves a cheerful giver.&rdquo;
             <cite className="not-italic block text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mt-2" style={H}>2 Corinthians 9:7</cite>
           </blockquote>
@@ -81,7 +81,7 @@ export default function GivePage() {
               {['Give', 'Tithe', 'Offering', 'Sow', 'Prosper', 'Worship'].map((word, i) => (
                 <span key={i} className="flex items-center">
                   <span className="text-[13px] uppercase tracking-[0.2em] px-6"
-                    style={{ ...H, color: i % 3 === 0 ? '#BF0A30' : i % 3 === 1 ? 'white' : '#BF0A30', fontStyle: i % 3 === 1 ? 'italic' : 'normal', fontFamily: i % 3 === 1 ? '"Playfair Display", Georgia, serif' : undefined }}>
+                    style={{ ...H, color: i % 3 === 0 ? '#BF0A30' : i % 3 === 1 ? 'white' : '#BF0A30', fontFamily: i % 3 === 1 ? 'Fraunces, Georgia, serif' : undefined }}>
                     {word}
                   </span>
                   <span className="text-[#BF0A30] text-xs opacity-60">·</span>

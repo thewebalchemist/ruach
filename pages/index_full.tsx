@@ -13,9 +13,9 @@ interface UpcomingEvent { id: string; title: string; description: string | null;
 interface PageProps { recentSermons: HomeSermon[]; isLive: boolean; upcomingEvents: UpcomingEvent[]; }
 
 // Font styles
-// Font test: Bricolage Grotesque — accent voice is a lighter weight, no italics
+// Headline voice: Bricolage Grotesque; accent voice: Fraunces (upright serif)
 const H = { fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 800 };
-const serif = { fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 600 };
+const serif = { fontFamily: 'Fraunces, Georgia, serif', fontWeight: 600 };
 
 const FAQS = [
   { q: 'What are your services like?', a: 'We provide an inviting atmosphere where everyone is welcome. Our services are a little over an hour long — filled with powerful worship, practical teachings that will help grow your faith in God, and a community of people that want to do life with you.' },

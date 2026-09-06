@@ -4,8 +4,8 @@ import { ChevronDown, ArrowRight } from 'lucide-react';
 import Layout from '@/components/shared/Layout';
 import ExpectGallery from '@/components/shared/ExpectGallery';
 
-// Font test: Fraunces (upright serif) — no italics
-const H = { fontFamily: 'Fraunces, Georgia, serif', fontWeight: 700 };
+// Headline voice: Bricolage Grotesque; accent voice: Fraunces (upright serif)
+const H = { fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 800 };
 const serif = { fontFamily: 'Fraunces, Georgia, serif', fontWeight: 600 };
 
 const FAQS = [

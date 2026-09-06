@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Tv2, LayoutDashboard } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
-const H = { fontFamily: 'Montserrat, sans-serif', fontWeight: 900 } as const;
+const H = { fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 800 } as const;
 
 export default function PortalSelect() {
   const router = useRouter();

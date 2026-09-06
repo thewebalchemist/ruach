@@ -14,7 +14,7 @@ export default function AnnouncementBar() {
           target="_blank"
           rel="noopener noreferrer"
           className="flex-shrink-0 bg-white/20 hover:bg-white/30 text-white font-bold text-[10px] uppercase tracking-wider px-3 py-1 rounded-full transition-colors border border-white/40"
-          style={{ fontFamily: 'Montserrat, sans-serif' }}
+          style={{ fontFamily: '"Bricolage Grotesque", sans-serif' }}
         >
           See Directions →
         </a>

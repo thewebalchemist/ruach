@@ -4,9 +4,9 @@ import { ChevronDown, ArrowRight, Copy, Check } from 'lucide-react';
 import Layout from '@/components/shared/Layout';
 import ExpectGallery from '@/components/shared/ExpectGallery';
 
-// Font test: Space Grotesk — accent voice is a lighter weight, no italics
-const H = { fontFamily: '"Space Grotesk", sans-serif', fontWeight: 700 };
-const serif = { fontFamily: '"Space Grotesk", sans-serif', fontWeight: 500 };
+// Headline voice: Bricolage Grotesque; accent voice: Fraunces (upright serif)
+const H = { fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 800 };
+const serif = { fontFamily: 'Fraunces, Georgia, serif', fontWeight: 600 };
 
 const STATEMENT_TEXT = `I am a winner and not a loser.
 I am a victor and not a victim.

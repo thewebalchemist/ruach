@@ -13,7 +13,7 @@ import PastServices from '@/components/streaming/PastServices';
 import ScheduleView from '@/components/streaming/ScheduleView';
 import { StreamLink } from '@/types';
 
-const H = { fontFamily: 'Montserrat, sans-serif', fontWeight: 900 };
+const H = { fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 800 };
 
 type LiveTab = 'notes' | 'bible' | 'past' | 'schedule';
 

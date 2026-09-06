@@ -1,4 +1,4 @@
-const H = { fontFamily: 'Montserrat, sans-serif', fontWeight: 900 };
+const H = { fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 800 };
 
 interface MarqueeProps {
   text?: string;
@@ -24,7 +24,7 @@ export default function Marquee({
       <div className="flex">
         <div
           className={`flex-shrink-0 flex items-center gap-16 ${textColor}`}
-          style={{ animation, fontStyle: 'italic', whiteSpace: 'nowrap' }}
+          style={{ animation, whiteSpace: 'nowrap' }}
           aria-hidden
         >
           {Array.from({ length: 7 }, (_, i) => (
@@ -35,7 +35,7 @@ export default function Marquee({
         </div>
         <div
           className={`flex-shrink-0 flex items-center gap-16 ${textColor}`}
-          style={{ animation, fontStyle: 'italic', whiteSpace: 'nowrap' }}
+          style={{ animation, whiteSpace: 'nowrap' }}
           aria-hidden
         >
           {Array.from({ length: 7 }, (_, i) => (

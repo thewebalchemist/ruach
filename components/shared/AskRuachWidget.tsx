@@ -4,7 +4,7 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { ChatMessage } from '@/types';
 
-const H = { fontFamily: 'Montserrat, sans-serif', fontWeight: 900 };
+const H = { fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 800 };
 
 interface SermonCard {
   id: string; title: string; preacher: string | null; slug: string;

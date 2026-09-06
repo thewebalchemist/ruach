@@ -1,6 +1,6 @@
 import Layout from '@/components/shared/Layout';
 
-const H = { fontFamily: 'Montserrat, sans-serif', fontWeight: 900 };
+const H = { fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 800 };
 
 export default function PrivacyPolicyPage() {
   return (

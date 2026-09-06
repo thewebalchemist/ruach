@@ -3,8 +3,8 @@ import Link from 'next/link';
 import { MapPin, Clock, Mail, Phone, ArrowRight, ExternalLink } from 'lucide-react';
 import Layout from '@/components/shared/Layout';
 
-const H = { fontFamily: 'Montserrat, sans-serif', fontWeight: 900 };
-const serif = { fontFamily: '"Playfair Display", Georgia, serif', fontStyle: 'italic' as const };
+const H = { fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 800 };
+const serif = { fontFamily: 'Fraunces, Georgia, serif', fontWeight: 600 };
 
 const LOCATIONS = [
   {
@@ -114,7 +114,7 @@ export default function ContactPage() {
                 <span key={i} className="flex items-center">
                   <span
                     className="text-[13px] uppercase tracking-[0.2em] px-6"
-                    style={{ ...H, color: i % 3 === 0 ? '#BF0A30' : i % 3 === 1 ? 'white' : '#BF0A30', fontStyle: i % 3 === 1 ? 'italic' : 'normal', fontFamily: i % 3 === 1 ? '"Playfair Display", Georgia, serif' : undefined }}
+                    style={{ ...H, color: i % 3 === 0 ? '#BF0A30' : i % 3 === 1 ? 'white' : '#BF0A30', fontFamily: i % 3 === 1 ? 'Fraunces, Georgia, serif' : undefined }}
                   >
                     {word}
                   </span>

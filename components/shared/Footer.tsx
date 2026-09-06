@@ -148,7 +148,7 @@ export default function Footer() {
         <p
           className="leading-[0.82] font-black tracking-tighter text-center text-white"
           style={{
-            fontFamily: 'Montserrat, sans-serif',
+            fontFamily: '"Bricolage Grotesque", sans-serif',
             fontWeight: 900,
             fontSize: 'clamp(96px, 20vw, 320px)',
           }}

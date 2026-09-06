@@ -21,7 +21,7 @@ import { supabase } from '@/lib/supabase';
 import { Sermon } from '@/types';
 import { getYouTubeThumbnail, getCurrentUser } from '@/lib/utils';
 
-const H = { fontFamily: 'Montserrat, sans-serif', fontWeight: 900 } as const;
+const H = { fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 800 } as const;
 
 interface SermonPageProps {
   sermon: Sermon | null;

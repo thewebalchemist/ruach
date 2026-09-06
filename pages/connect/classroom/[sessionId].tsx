@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 
-const H = { fontFamily: 'Montserrat, sans-serif', fontWeight: 900 };
+const H = { fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 800 };
 const MIN_ATTENDANCE_MINUTES = 30;
 
 // ── Auto-attendance tracker (runs inside LiveKitRoom) ─────────────────────────

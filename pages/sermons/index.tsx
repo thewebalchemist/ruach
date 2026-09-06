@@ -9,9 +9,9 @@ import ThemeHero from '@/components/streaming/ThemeHero';
 
 // Series + preacher filtering only — no categories
 
-// Font test: Archivo — accent voice is a lighter weight, no italics
-const H = { fontFamily: 'Archivo, sans-serif', fontWeight: 800 } as const;
-const serif = { fontFamily: 'Archivo, sans-serif', fontWeight: 600 } as const;
+// Headline voice: Bricolage Grotesque; accent voice: Fraunces (upright serif)
+const H = { fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 800 } as const;
+const serif = { fontFamily: 'Fraunces, Georgia, serif', fontWeight: 600 } as const;
 
 const FEATURED_VIDEOS = [
   { id: 'nznXwkJlJ44', title: 'Greater Glory', preacher: 'Ruach Tabernacle' },

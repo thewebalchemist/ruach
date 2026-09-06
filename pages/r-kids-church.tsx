@@ -2,8 +2,8 @@ import Link from 'next/link';
 import { ArrowRight, Shield } from 'lucide-react';
 import Layout from '@/components/shared/Layout';
 
-const H = { fontFamily: 'Montserrat, sans-serif', fontWeight: 900 };
-const serif = { fontFamily: '"Playfair Display", Georgia, serif', fontStyle: 'italic' as const };
+const H = { fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 800 };
+const serif = { fontFamily: 'Fraunces, Georgia, serif', fontWeight: 600 };
 
 const PROGRAMS = [
   {
@@ -60,7 +60,7 @@ export default function RKidsChurchPage() {
         <div className="absolute inset-0 flex items-center overflow-hidden pointer-events-none">
           <span
             className="text-[100px] md:text-[160px] text-white/[0.04] whitespace-nowrap leading-none select-none"
-            style={{ ...H, fontStyle: 'italic' }}
+            style={H}
           >
             R-Kids. &nbsp; R-Kids. &nbsp; R-Kids.
           </span>
@@ -172,7 +172,7 @@ export default function RKidsChurchPage() {
                 <span
                   key={i}
                   className="marquee-stroke text-[80px] md:text-[100px] tracking-tight flex-shrink-0 whitespace-nowrap"
-                  style={{ ...H, fontStyle: 'italic' }}
+                  style={H}
                 >
                   Kids Church.
                 </span>

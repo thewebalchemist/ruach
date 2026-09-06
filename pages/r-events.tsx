@@ -6,9 +6,9 @@ import Layout from '@/components/shared/Layout';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { eventCoversDay } from '@/lib/event-dates';
 
-// Font test: Outfit — accent voice is a lighter weight, no italics
-const H     = { fontFamily: 'Outfit, sans-serif', fontWeight: 700 } as const;
-const serif = { fontFamily: 'Outfit, sans-serif', fontWeight: 600 } as const;
+// Headline voice: Bricolage Grotesque; accent voice: Fraunces (upright serif)
+const H     = { fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 800 } as const;
+const serif = { fontFamily: 'Fraunces, Georgia, serif', fontWeight: 600 } as const;
 
 interface Event {
   id:          string;

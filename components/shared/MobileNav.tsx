@@ -8,7 +8,7 @@ import {
   Handshake, Globe, Film, Info, LogIn,
 } from 'lucide-react';
 
-const H = { fontFamily: 'Montserrat, sans-serif', fontWeight: 900 } as const;
+const H = { fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 800 } as const;
 
 const QUICK_CARDS = [
   { label: "New Here?", href: '/new-here',  icon: UserPlus,    bg: 'rgba(255,255,255,0.06)' },

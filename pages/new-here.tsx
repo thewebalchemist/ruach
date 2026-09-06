@@ -3,9 +3,9 @@ import { ArrowRight } from 'lucide-react';
 import Layout from '@/components/shared/Layout';
 import ExpectGallery from '@/components/shared/ExpectGallery';
 
-// Font test: Sora — accent voice is a lighter weight, no italics
-const H = { fontFamily: 'Sora, sans-serif', fontWeight: 700 };
-const serif = { fontFamily: 'Sora, sans-serif', fontWeight: 600 };
+// Headline voice: Bricolage Grotesque; accent voice: Fraunces (upright serif)
+const H = { fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 800 };
+const serif = { fontFamily: 'Fraunces, Georgia, serif', fontWeight: 600 };
 
 export default function NewHerePage() {
   return (

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { Play, ChevronDown, ArrowRight } from 'lucide-react';
 
-const H = { fontFamily: 'Montserrat, sans-serif', fontWeight: 900 } as const;
+const H = { fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 800 } as const;
 const AUTO_MS = 7000;
 const FALLBACK_IMG = '/church-photos/IMG_1716.jpg';
 

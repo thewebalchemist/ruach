@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import { useState, useEffect, useRef } from 'react';
 import { Menu, X, ChevronDown, Heart, LogIn } from 'lucide-react';
 
-const H = { fontFamily: 'Montserrat, sans-serif', fontWeight: 900 };
+const H = { fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 800 };
 
 /* ─── Nav structure ──────────────────────────────────────────────── */
 /* Standalone link rendered before the dropdown group */

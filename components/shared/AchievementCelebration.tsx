@@ -102,7 +102,7 @@ export function AchievementCelebrationProvider({ children }: { children: ReactNo
             {/* Label */}
             <div
               className="text-[#BF0A30] text-[10px] font-black uppercase tracking-[0.2em]"
-              style={{ fontFamily: 'Montserrat, sans-serif' }}
+              style={{ fontFamily: '"Bricolage Grotesque", sans-serif' }}
             >
               Achievement Unlocked
             </div>
@@ -110,7 +110,7 @@ export function AchievementCelebrationProvider({ children }: { children: ReactNo
             {/* Title */}
             <h2
               className="text-white text-2xl font-black text-center leading-tight"
-              style={{ fontFamily: 'Montserrat, sans-serif' }}
+              style={{ fontFamily: '"Bricolage Grotesque", sans-serif' }}
             >
               {current.title}
             </h2>
@@ -126,7 +126,7 @@ export function AchievementCelebrationProvider({ children }: { children: ReactNo
               style={{ background: 'rgba(191,10,48,0.2)', border: '1px solid rgba(191,10,48,0.35)' }}
             >
               <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-              <span className="text-white font-black text-sm" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+              <span className="text-white font-black text-sm" style={{ fontFamily: '"Bricolage Grotesque", sans-serif' }}>
                 +{current.points} pts
               </span>
             </div>

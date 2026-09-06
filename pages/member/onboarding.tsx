@@ -11,7 +11,7 @@ import {
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
 
-const H     = { fontFamily: 'Montserrat, sans-serif', fontWeight: 900 };
+const H     = { fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 800 };
 const TOTAL = 6;
 
 // ── Shared input style ────────────────────────────────────────────────────────

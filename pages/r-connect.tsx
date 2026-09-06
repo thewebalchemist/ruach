@@ -3,8 +3,8 @@ import { ArrowRight, ChevronDown, ArrowUpRight } from 'lucide-react';
 import { useState } from 'react';
 import Layout from '@/components/shared/Layout';
 
-const H = { fontFamily: 'Montserrat, sans-serif', fontWeight: 900 } as const;
-const serif = { fontFamily: '"Playfair Display", Georgia, serif', fontStyle: 'italic' as const };
+const H = { fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 800 } as const;
+const serif = { fontFamily: 'Fraunces, Georgia, serif', fontWeight: 600 };
 
 const FAQS = [
   { q: 'What are your services like?', a: 'We provide an inviting atmosphere where everyone is welcome. Our services are a little over an hour long — filled with powerful worship, practical teachings that will help grow your faith in God, and a community of people that want to do life with you.' },
@@ -60,7 +60,7 @@ export default function RConnectPage() {
 
         {/* Watermark */}
         <div className="absolute inset-0 flex items-center overflow-hidden pointer-events-none select-none">
-          <span className="text-[110px] md:text-[170px] italic text-white/5 whitespace-nowrap leading-none" style={H}>
+          <span className="text-[110px] md:text-[170px] text-white/5 whitespace-nowrap leading-none" style={H}>
             R-Connect. &nbsp; R-Connect.
           </span>
         </div>
@@ -199,7 +199,7 @@ export default function RConnectPage() {
                 <span
                   key={i}
                   className="marquee-stroke text-[80px] md:text-[100px] tracking-tight flex-shrink-0 whitespace-nowrap"
-                  style={{ ...H, fontStyle: 'italic' }}
+                  style={H}
                 >
                   You&apos;re Family.
                 </span>
@@ -293,7 +293,7 @@ export default function RConnectPage() {
               style={{ background: 'rgba(18,21,28,0.9)', border: '1px solid rgba(255,255,255,0.08)' }}
             >
               <p className="text-6xl text-[#BF0A30] leading-none mb-4" style={H}>&ldquo;</p>
-              <p className="text-white text-2xl leading-snug" style={{ ...H, fontStyle: 'italic' }}>
+              <p className="text-white text-2xl leading-snug" style={H}>
                 We believe the greatest leadership is service to others.
               </p>
             </div>
