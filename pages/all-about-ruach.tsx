@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { ChevronDown, ArrowRight } from 'lucide-react';
 import Layout from '@/components/shared/Layout';
 import ExpectGallery from '@/components/shared/ExpectGallery';
+import { Reveal, RiseLine } from '@/components/shared/Reveal';
 
 // Headline voice: Bricolage Grotesque; accent voice: Fraunces (upright serif)
 const H = { fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 800 };
@@ -65,42 +66,45 @@ export default function AllAboutRuachPage() {
         <div className="spirit-orb spirit-breathe absolute w-[500px] h-[500px] bg-[#BF0A30]"
           style={{ top: '10%', right: '0%', filter: 'blur(150px)', opacity: 0.10, ['--spirit-dur' as string]: '11s' }} />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 pb-20 pt-32 w-full">
-          <div
+          <Reveal
+            variant="fade"
             className="inline-flex items-center gap-2 text-[#F87171] text-[10px] font-bold uppercase tracking-widest px-4 py-2 rounded-full mb-6"
             style={{ background: 'rgba(191,10,48,0.2)', border: '1px solid rgba(191,10,48,0.35)' }}
           >
             <span style={H}>All About Ruach</span>
-          </div>
-          <h1 className="text-[38px] sm:text-5xl md:text-[58px] text-white leading-tight tracking-tight mb-5" style={H}>
-            Everything You<br /><span style={serif}>Want to Know</span>
-          </h1>
-          <p className="text-[#8B95A8] text-lg max-w-md">
+          </Reveal>
+          <Reveal variant="none" as="h1" className="text-[38px] sm:text-5xl md:text-[58px] text-white leading-tight tracking-tight mb-5" style={H}>
+            <RiseLine index={0}>Everything You</RiseLine>
+            <RiseLine index={1} style={serif}>Want to Know</RiseLine>
+          </Reveal>
+          <Reveal variant="blur" delay={450} as="p" className="text-[#8B95A8] text-lg max-w-md">
             Your questions answered — who we are, where we came from, and where we&apos;re going.
-          </p>
+          </Reveal>
         </div>
       </section>
 
       {/* ── BRANCHES ──────────────────────────────────────────────── */}
       <section className="bg-[#0A0C10] py-20 border-t border-white/5">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-14">
+          <Reveal variant="none" className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-14">
             <div>
               <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-3" style={H}>
                 Our Locations
               </p>
               <h2 className="text-4xl md:text-5xl text-white leading-tight" style={H}>
-                5 Assemblies.<br />
-                <span style={serif}>One family.</span>
+                <RiseLine index={0}>5 Assemblies.</RiseLine>
+                <RiseLine index={1} style={serif}>One family.</RiseLine>
               </h2>
             </div>
-            <p className="text-[#8B95A8] max-w-xs text-sm leading-relaxed">
+            <Reveal variant="blur" delay={300} as="p" className="text-[#8B95A8] max-w-xs text-sm leading-relaxed">
               We have established several assemblies across Nairobi to bring the church closer to you.
-            </p>
-          </div>
+            </Reveal>
+          </Reveal>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             {/* Flagship — spans 2 cols */}
-            <div
+            <Reveal
+              variant="up"
               className="lg:col-span-2 rounded-3xl relative overflow-hidden min-h-[220px] flex flex-col justify-between p-8"
               style={{ background: 'linear-gradient(135deg, #BF0A30 0%, #7A0020 100%)' }}
             >
@@ -123,7 +127,7 @@ export default function AllAboutRuachPage() {
                   Every Sunday · 8AM · 10AM · 12:30PM
                 </p>
               </div>
-            </div>
+            </Reveal>
 
             {/* Other assemblies */}
             {[
@@ -131,9 +135,11 @@ export default function AllAboutRuachPage() {
               { name: 'Ruach East',   sub: 'ICD Road, off Mombasa Road',              n: '03' },
               { name: 'Ruach South',  sub: 'Waterfront Mall, Karen',                  n: '04' },
               { name: 'Ruach Rivers', sub: 'Havilah Ranch, Northern Bypass',          n: '05' },
-            ].map((b) => (
-              <div
+            ].map((b, bi) => (
+              <Reveal
                 key={b.name}
+                variant="up"
+                delay={(bi + 1) * 100}
                 className="rounded-3xl p-7 flex flex-col justify-between min-h-[180px]"
                 style={{
                   background: 'rgba(18,21,28,0.9)',
@@ -151,7 +157,7 @@ export default function AllAboutRuachPage() {
                   className="mt-5 h-px w-8"
                   style={{ background: 'rgba(191,10,48,0.4)' }}
                 />
-              </div>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -160,15 +166,20 @@ export default function AllAboutRuachPage() {
       {/* ── MAIN FAQ ──────────────────────────────────────────────── */}
       <section className="bg-[#0A0C10] py-24">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-12">
-          <div className="text-center mb-14">
+          <Reveal variant="none" className="text-center mb-14">
             <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-3" style={H}>Got Questions?</p>
             <h2 className="text-4xl md:text-5xl text-white mb-4" style={H}>
-              Frequently Asked<br /><span style={serif}>Questions</span>
+              <RiseLine index={0}>Frequently Asked</RiseLine>
+              <RiseLine index={1} style={serif}>Questions</RiseLine>
             </h2>
-            <p className="text-[#8B95A8] text-sm">Everything you want to know about Ruach — answered.</p>
-          </div>
+            <Reveal variant="blur" delay={250} as="p" className="text-[#8B95A8] text-sm">Everything you want to know about Ruach — answered.</Reveal>
+          </Reveal>
           <div className="space-y-3">
-            {FAQS.map((f, i) => <FaqItem key={i} q={f.q} a={f.a} />)}
+            {FAQS.map((f, i) => (
+              <Reveal key={i} variant="up" delay={(i % 4) * 60}>
+                <FaqItem q={f.q} a={f.a} />
+              </Reveal>
+            ))}
           </div>
         </div>
       </section>
@@ -178,11 +189,13 @@ export default function AllAboutRuachPage() {
       {/* ── CTA ───────────────────────────────────────────────────── */}
       <section className="bg-[#BF0A30] py-16 text-center">
         <div className="max-w-2xl mx-auto px-8">
-          <p className="text-red-200 text-[10px] font-bold uppercase tracking-widest mb-4" style={H}>Ready to visit?</p>
-          <h2 className="text-4xl text-white mb-5" style={H}>
-            Your seat<br /><span style={serif}>is waiting.</span>
-          </h2>
-          <p className="text-red-100 text-sm mb-8">Every Sunday at 8AM, 10AM, and 12:30PM — along the Northern Bypass, next to Shell Windsor.</p>
+          <Reveal variant="fade" as="p" className="text-red-200 text-[10px] font-bold uppercase tracking-widest mb-4" style={H}>Ready to visit?</Reveal>
+          <Reveal variant="none" as="h2" className="text-4xl text-white mb-5" style={H}>
+            <RiseLine index={0}>Your seat</RiseLine>
+            <RiseLine index={1} style={serif}>is waiting.</RiseLine>
+          </Reveal>
+          <Reveal variant="blur" delay={250} as="p" className="text-red-100 text-sm mb-8">Every Sunday at 8AM, 10AM, and 12:30PM — along the Northern Bypass, next to Shell Windsor.</Reveal>
+          <Reveal variant="up" delay={400}>
           <Link
             href="/new-here"
             className="inline-flex items-center gap-2 bg-white text-[#BF0A30] hover:bg-red-50 font-black text-xs uppercase tracking-widest px-7 py-4 rounded-2xl transition-all"
@@ -190,6 +203,7 @@ export default function AllAboutRuachPage() {
           >
             Plan a Visit <ArrowRight className="w-3.5 h-3.5" />
           </Link>
+          </Reveal>
         </div>
       </section>
 

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import Layout from '@/components/shared/Layout';
+import { Reveal, RiseLine } from '@/components/shared/Reveal';
 import { supabase } from '@/lib/supabase';
 
 interface PublicPrayer {
@@ -43,19 +44,21 @@ export default function PrayPage() {
   return (
     <Layout title="Prayer Wall">
       <div className="max-w-3xl mx-auto px-6 pt-12 pb-24">
-        <div className="mb-10 text-center">
+        <Reveal variant="none" className="mb-10 text-center">
           <p className="text-[#BF0A30] text-sm font-bold uppercase tracking-widest mb-3">
             Prayer Wall
           </p>
-          <h1 className="text-4xl font-extrabold text-white mb-4">Share Your Request</h1>
-          <p className="text-[#8B95A8] leading-relaxed max-w-lg mx-auto">
+          <h1 className="text-4xl font-extrabold text-white mb-4">
+            <RiseLine index={0}>Share Your Request</RiseLine>
+          </h1>
+          <Reveal variant="blur" delay={250} as="p" className="text-[#8B95A8] leading-relaxed max-w-lg mx-auto">
             We believe in the power of collective prayer. Share your request and know that our
             community is standing with you.
-          </p>
-        </div>
+          </Reveal>
+        </Reveal>
 
         {/* Submit form */}
-        <div className="glass-card p-8 mb-12">
+        <Reveal variant="up" delay={200} className="glass-card p-8 mb-12">
           {submitted ? (
             <div className="text-center py-6">
               <div className="w-14 h-14 rounded-full bg-[#10B981]/20 flex items-center justify-center mx-auto mb-4">
@@ -105,25 +108,25 @@ export default function PrayPage() {
               </button>
             </form>
           )}
-        </div>
+        </Reveal>
 
         {/* Encouragement */}
         {prayers.length === 0 && (
-          <div className="text-center py-12">
+          <Reveal variant="blur" delay={150} className="text-center py-12">
             <p className="text-[#BF0A30] text-4xl mb-4">🙏</p>
             <p className="text-[#8B95A8] leading-relaxed">
               &ldquo;The prayer of a righteous person is powerful and effective.&rdquo;
             </p>
             <p className="text-[#4A5568] text-sm mt-2">James 5:16</p>
-          </div>
+          </Reveal>
         )}
 
         {prayers.length > 0 && (
           <div>
-            <h2 className="text-white text-xl font-bold mb-6">Community Requests</h2>
+            <Reveal variant="fade" as="h2" className="text-white text-xl font-bold mb-6">Community Requests</Reveal>
             <div className="space-y-4">
-              {prayers.map((p) => (
-                <div key={p.id} className="glass-card p-5">
+              {prayers.map((p, pi) => (
+                <Reveal key={p.id} variant="up" delay={(pi % 5) * 90} className="glass-card p-5">
                   <div className="flex items-center gap-3 mb-2">
                     <div className="avatar avatar-sm">{p.name?.[0] ?? 'A'}</div>
                     <div>
@@ -134,7 +137,7 @@ export default function PrayPage() {
                     </div>
                   </div>
                   <p className="text-[#8B95A8] text-sm leading-relaxed">{p.message}</p>
-                </div>
+                </Reveal>
               ))}
             </div>
           </div>

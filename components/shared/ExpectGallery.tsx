@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
+import { Reveal, RiseLine } from '@/components/shared/Reveal';
 
 const H = { fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 800 };
 const serif = { fontFamily: 'Fraunces, Georgia, serif', fontWeight: 600 };
@@ -27,23 +28,25 @@ export default function ExpectGallery() {
 
       <div className="relative z-10 max-w-7xl mx-auto px-8 lg:px-16">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+        <Reveal variant="none" className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
           <div>
             <p className="text-[#BF0A30] text-xs font-bold uppercase tracking-widest mb-3" style={H}>Life at Ruach —</p>
             <h2 className="text-4xl md:text-5xl text-white leading-tight" style={H}>
-              Here&apos;s What<br />
-              <span style={serif}>to Expect.</span>
+              <RiseLine index={0}>Here&apos;s What</RiseLine>
+              <RiseLine index={1} style={serif}>to Expect.</RiseLine>
             </h2>
           </div>
-          <p className="text-white/50 max-w-xs text-sm leading-relaxed">
-            Real moments, real people, real encounters with God. Every Sunday is an invitation.
-          </p>
-        </div>
+          <RiseLine index={2} className="max-w-xs">
+            <span className="text-white/50 text-sm leading-relaxed">
+              Real moments, real people, real encounters with God. Every Sunday is an invitation.
+            </span>
+          </RiseLine>
+        </Reveal>
 
         {/* Bento photo grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3" style={{ gridAutoRows: '200px' }}>
           {/* Large featured — 2×2 */}
-          <div className="col-span-2 row-span-2 rounded-2xl overflow-hidden group relative">
+          <Reveal variant="scale" className="col-span-2 row-span-2 rounded-2xl overflow-hidden group relative">
             <img
               src={PHOTOS[0]}
               alt="Ruach Tabernacle"
@@ -57,11 +60,11 @@ export default function ExpectGallery() {
                 Rhema Grounds
               </span>
             </div>
-          </div>
+          </Reveal>
 
           {/* Grid tiles */}
           {PHOTOS.slice(1, 9).map((src, i) => (
-            <div key={i} className="rounded-2xl overflow-hidden group relative">
+            <Reveal key={i} variant="scale" delay={80 + i * 60} className="rounded-2xl overflow-hidden group relative">
               <img
                 src={src}
                 alt={`Ruach ${i + 2}`}
@@ -70,12 +73,12 @@ export default function ExpectGallery() {
                 onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
               />
               <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors duration-300" />
-            </div>
+            </Reveal>
           ))}
         </div>
 
         {/* CTA */}
-        <div className="flex justify-center mt-10">
+        <Reveal variant="up" className="flex justify-center mt-10">
           <Link
             href="/new-here"
             className="flex items-center gap-2 bg-[#BF0A30] hover:bg-[#9A0826] text-white font-black text-sm uppercase tracking-widest px-8 py-4 rounded-2xl transition-all hover:-translate-y-0.5 shadow-xl shadow-[rgba(191,10,48,0.35)]"
@@ -83,7 +86,7 @@ export default function ExpectGallery() {
           >
             Plan Your Visit <ArrowRight className="w-4 h-4" />
           </Link>
-        </div>
+        </Reveal>
       </div>
     </section>
   );

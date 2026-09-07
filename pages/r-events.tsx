@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { GetServerSideProps } from 'next';
 import { ArrowRight, CalendarDays, Clock, MapPin, LayoutGrid, Calendar } from 'lucide-react';
 import Layout from '@/components/shared/Layout';
+import { Reveal, RiseLine } from '@/components/shared/Reveal';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { eventCoversDay } from '@/lib/event-dates';
 
@@ -202,11 +203,15 @@ export default function REventsPage({ events }: Props) {
           </span>
         </div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 pb-24 pt-36 w-full">
-          <span className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-white border border-white/15 bg-white/5 mb-6" style={H}>
-            What&apos;s Coming
-          </span>
-          <h1 className="text-[38px] sm:text-5xl md:text-[58px] text-white leading-[1.05] tracking-tight mb-5" style={H}>Events</h1>
-          <p className="text-[#8B95A8] text-lg max-w-md leading-relaxed" style={serif}>Moments designed by God. Made for you.</p>
+          <Reveal variant="fade">
+            <span className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-white border border-white/15 bg-white/5 mb-6" style={H}>
+              What&apos;s Coming
+            </span>
+          </Reveal>
+          <Reveal variant="none" as="h1" className="text-[38px] sm:text-5xl md:text-[58px] text-white leading-[1.05] tracking-tight mb-5" style={H}>
+            <RiseLine index={0}>Events</RiseLine>
+          </Reveal>
+          <Reveal variant="blur" delay={300} as="p" className="text-[#8B95A8] text-lg max-w-md leading-relaxed" style={serif}>Moments designed by God. Made for you.</Reveal>
         </div>
       </section>
 
@@ -233,13 +238,13 @@ export default function REventsPage({ events }: Props) {
       {/* EVENTS SECTION */}
       <section className="bg-[#0A0C10] py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
-          <div className="flex items-center justify-between gap-4 mb-12 flex-wrap">
+          <Reveal variant="none" className="flex items-center justify-between gap-4 mb-12 flex-wrap">
             <div className="flex items-center gap-4">
               <span className="inline-flex items-center px-3 py-1 rounded-full bg-[#BF0A30]/15 text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest border border-[#BF0A30]/20" style={H}>
                 Upcoming
               </span>
               <h2 className="text-4xl md:text-5xl text-white leading-tight" style={H}>
-                Upcoming <span style={serif}>Events.</span>
+                <RiseLine index={0}>Upcoming <span style={serif}>Events.</span></RiseLine>
               </h2>
             </div>
             {/* View toggle */}
@@ -253,19 +258,25 @@ export default function REventsPage({ events }: Props) {
                 <Calendar className="w-3.5 h-3.5" /> Calendar
               </button>
             </div>
-          </div>
+          </Reveal>
 
           {events.length === 0 ? (
-            <div className="rounded-2xl p-12 text-center" style={{ background: 'rgba(18,21,28,0.9)', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <Reveal variant="up" className="rounded-2xl p-12 text-center" style={{ background: 'rgba(18,21,28,0.9)', border: '1px solid rgba(255,255,255,0.08)' }}>
               <p className="text-white text-xl mb-2" style={H}>No upcoming events at the moment</p>
               <p className="text-[#8B95A8] text-sm">Check back soon — something is always coming.</p>
-            </div>
+            </Reveal>
           ) : view === 'card' ? (
             <div className="grid md:grid-cols-2 gap-6">
-              {events.map(ev => <EventCard key={ev.id} ev={ev} />)}
+              {events.map((ev, i) => (
+                <Reveal key={ev.id} variant="up" delay={Math.min(i, 5) * 90} className="grid">
+                  <EventCard ev={ev} />
+                </Reveal>
+              ))}
             </div>
           ) : (
-            <CalendarView events={events} />
+            <Reveal variant="up">
+              <CalendarView events={events} />
+            </Reveal>
           )}
         </div>
       </section>
@@ -273,31 +284,38 @@ export default function REventsPage({ events }: Props) {
       {/* PAST EVENTS NOTE */}
       <section className="bg-[#F5F0E8] py-16">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-12 text-center">
-          <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-4" style={H}>More from Ruach</p>
-          <h2 className="text-3xl md:text-4xl text-[#111827] mb-5 leading-tight" style={H}>
-            Catch up on<br /><span style={serif}>past messages.</span>
-          </h2>
-          <p className="text-[#6B7280] leading-relaxed mb-8">
+          <Reveal variant="fade" as="p" className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-4" style={H}>More from Ruach</Reveal>
+          <Reveal variant="none" as="h2" className="text-3xl md:text-4xl text-[#111827] mb-5 leading-tight" style={H}>
+            <RiseLine index={0}>Catch up on</RiseLine>
+            <RiseLine index={1}><span style={serif}>past messages.</span></RiseLine>
+          </Reveal>
+          <Reveal variant="blur" delay={250} as="p" className="text-[#6B7280] leading-relaxed mb-8">
             Missed a service or want to revisit a message? Our full library of sermons and past event recordings is available online.
-          </p>
-          <Link href="/sermons"
-            className="inline-flex items-center gap-2 border-2 border-[#111827] text-[#111827] hover:bg-[#111827] hover:text-white font-bold text-xs uppercase tracking-widest px-6 py-3.5 rounded-xl transition-all"
-            style={H}>
-            Watch Sermons <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
+          </Reveal>
+          <Reveal variant="up" delay={350}>
+            <Link href="/sermons"
+              className="inline-flex items-center gap-2 border-2 border-[#111827] text-[#111827] hover:bg-[#111827] hover:text-white font-bold text-xs uppercase tracking-widest px-6 py-3.5 rounded-xl transition-all"
+              style={H}>
+              Watch Sermons <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </Reveal>
         </div>
       </section>
 
       {/* CTA */}
       <section className="bg-[#BF0A30] py-16 text-center">
         <div className="max-w-2xl mx-auto px-8">
-          <h2 className="text-4xl md:text-5xl text-white mb-4" style={H}>Plan your visit.</h2>
-          <p className="text-red-100 mb-8 leading-relaxed">We&apos;d love to see you at one of our events — or any Sunday morning.</p>
-          <Link href="/new-here"
-            className="inline-flex items-center gap-2 bg-white text-[#BF0A30] hover:bg-red-50 font-bold text-xs uppercase tracking-widest px-7 py-4 rounded-2xl transition-all"
-            style={H}>
-            Plan a Visit <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
+          <Reveal variant="none" as="h2" className="text-4xl md:text-5xl text-white mb-4" style={H}>
+            <RiseLine index={0}>Plan your visit.</RiseLine>
+          </Reveal>
+          <Reveal variant="blur" delay={200} as="p" className="text-red-100 mb-8 leading-relaxed">We&apos;d love to see you at one of our events — or any Sunday morning.</Reveal>
+          <Reveal variant="up" delay={300}>
+            <Link href="/new-here"
+              className="inline-flex items-center gap-2 bg-white text-[#BF0A30] hover:bg-red-50 font-bold text-xs uppercase tracking-widest px-7 py-4 rounded-2xl transition-all"
+              style={H}>
+              Plan a Visit <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </Reveal>
         </div>
       </section>
 

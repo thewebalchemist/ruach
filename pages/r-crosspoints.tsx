@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import Layout from '@/components/shared/Layout';
+import { Reveal, RiseLine } from '@/components/shared/Reveal';
 
 const H = { fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 800 } as const;
 const serif = { fontFamily: 'Fraunces, Georgia, serif', fontWeight: 600 };
@@ -39,18 +40,20 @@ export default function RCrosspointsPage() {
         </div>
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 pb-24 pt-36 w-full">
-          <span
-            className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-white border border-white/15 bg-white/5 mb-6"
-            style={H}
-          >
-            Small Groups
-          </span>
-          <h1 className="text-[38px] sm:text-5xl md:text-[58px] text-white leading-[1.05] tracking-tight mb-5" style={H}>
-            R-Crosspoints
-          </h1>
-          <p className="text-[#8B95A8] text-lg max-w-md leading-relaxed" style={serif}>
+          <Reveal variant="fade">
+            <span
+              className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-white border border-white/15 bg-white/5 mb-6"
+              style={H}
+            >
+              Small Groups
+            </span>
+          </Reveal>
+          <Reveal variant="none" as="h1" className="text-[38px] sm:text-5xl md:text-[58px] text-white leading-[1.05] tracking-tight mb-5" style={H}>
+            <RiseLine index={0}>R-Crosspoints</RiseLine>
+          </Reveal>
+          <Reveal variant="blur" delay={300} as="p" className="text-[#8B95A8] text-lg max-w-md leading-relaxed" style={serif}>
             Where Sunday becomes every day.
-          </p>
+          </Reveal>
         </div>
       </section>
 
@@ -83,37 +86,39 @@ export default function RCrosspointsPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
           <div className="grid md:grid-cols-2 gap-16 items-start">
             <div>
-              <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-5" style={H}>
+              <Reveal variant="fade" as="p" className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-5" style={H}>
                 What Are Crosspoints?
-              </p>
-              <h2 className="text-4xl md:text-5xl text-[#111827] mb-6 leading-tight" style={H}>
-                Community<br />
-                <span style={serif}>beyond Sunday.</span>
-              </h2>
-              <p className="text-[#374151] leading-relaxed mb-4">
+              </Reveal>
+              <Reveal variant="none" as="h2" className="text-4xl md:text-5xl text-[#111827] mb-6 leading-tight" style={H}>
+                <RiseLine index={0}>Community</RiseLine>
+                <RiseLine index={1} style={serif}>beyond Sunday.</RiseLine>
+              </Reveal>
+              <Reveal variant="blur" delay={200} as="p" className="text-[#374151] leading-relaxed mb-4">
                 R-Crosspoints are Ruach Tabernacle&apos;s small groups — intimate gatherings of 10–20 people meeting weekly in homes, offices, and community spaces across Nairobi.
-              </p>
-              <p className="text-[#374151] leading-relaxed mb-8">
+              </Reveal>
+              <Reveal variant="blur" delay={300} as="p" className="text-[#374151] leading-relaxed mb-8">
                 This is where real relationships are built, where the Word comes alive in everyday life, and where you are known — not just as a face in a crowd, but as a person with a name, a story, and a purpose.
-              </p>
-              <Link
-                href="/r-connect"
-                className="inline-flex items-center gap-2 bg-[#BF0A30] text-white font-black text-xs uppercase tracking-widest px-6 py-3.5 rounded-2xl hover:bg-[#9A0826] transition-colors shadow-lg shadow-[rgba(191,10,48,0.3)]"
-                style={H}
-              >
-                Find a Crosspoint <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
+              </Reveal>
+              <Reveal variant="up" delay={400}>
+                <Link
+                  href="/r-connect"
+                  className="inline-flex items-center gap-2 bg-[#BF0A30] text-white font-black text-xs uppercase tracking-widest px-6 py-3.5 rounded-2xl hover:bg-[#9A0826] transition-colors shadow-lg shadow-[rgba(191,10,48,0.3)]"
+                  style={H}
+                >
+                  Find a Crosspoint <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </Reveal>
             </div>
             <div className="space-y-4">
               {[
                 { label: 'Bible Study', desc: 'Deep dive into the Word together — questions welcome, growth guaranteed. Every Crosspoint is grounded in Scripture.' },
                 { label: 'Prayer', desc: 'Real prayer for real needs. Crosspoints carry each other before the throne, believing for breakthroughs together.' },
                 { label: 'Fellowship', desc: 'Life together — meals, laughter, and showing up for one another in the everyday moments that matter most.' },
-              ].map((item) => (
-                <div key={item.label} className="bg-white rounded-2xl p-6 border border-[#E5E0D5]">
+              ].map((item, i) => (
+                <Reveal key={item.label} variant="right" delay={i * 110} className="bg-white rounded-2xl p-6 border border-[#E5E0D5]">
                   <h3 className="text-lg text-[#111827] mb-2" style={H}>{item.label}</h3>
                   <p className="text-[#6B7280] text-sm leading-relaxed">{item.desc}</p>
-                </div>
+                </Reveal>
               ))}
             </div>
           </div>
@@ -128,16 +133,18 @@ export default function RCrosspointsPage() {
               { stat: '10–20', label: 'People per group', desc: 'Small enough to truly know each other. Big enough to make an impact.' },
               { stat: 'Every week', label: 'Across Nairobi', desc: 'Groups meeting throughout the week in homes and community spaces.' },
               { stat: 'For every zone', label: 'Near you', desc: 'Whether you\'re in Westlands, Karen, Eastlands or anywhere in between.' },
-            ].map((item) => (
-              <div
+            ].map((item, si) => (
+              <Reveal
                 key={item.stat}
+                variant="scale"
+                delay={si * 90}
                 className="rounded-2xl p-8"
                 style={{ background: 'rgba(18,21,28,0.9)', border: '1px solid rgba(255,255,255,0.08)' }}
               >
                 <p className="text-[#BF0A30] text-4xl md:text-5xl font-black mb-2 leading-none" style={H}>{item.stat}</p>
                 <p className="text-white font-bold text-sm uppercase tracking-widest mb-3" style={H}>{item.label}</p>
                 <p className="text-[#8B95A8] text-sm leading-relaxed">{item.desc}</p>
-              </div>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -165,15 +172,15 @@ export default function RCrosspointsPage() {
       {/* HOW TO JOIN */}
       <section className="bg-[#F5F0E8] py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
-          <div className="text-center mb-14">
+          <Reveal variant="none" className="text-center mb-14">
             <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-4" style={H}>
               Getting Started
             </p>
             <h2 className="text-4xl md:text-5xl text-[#111827] leading-tight" style={H}>
-              How to<br />
-              <span style={serif}>join a Crosspoint.</span>
+              <RiseLine index={0}>How to</RiseLine>
+              <RiseLine index={1} style={serif}>join a Crosspoint.</RiseLine>
             </h2>
-          </div>
+          </Reveal>
 
           <div className="grid md:grid-cols-3 gap-6">
             {[
@@ -192,8 +199,8 @@ export default function RCrosspointsPage() {
                 title: 'Show Up and Become Family',
                 desc: 'Come to your first meeting, meet your group, and experience what it means to truly belong. Crosspoints are a place to be fully known and loved.',
               },
-            ].map((s) => (
-              <div key={s.step} className="bg-white rounded-2xl p-8 border border-[#E5E0D5] relative overflow-hidden">
+            ].map((s, si) => (
+              <Reveal key={s.step} variant="up" delay={si * 130} className="bg-white rounded-2xl p-8 border border-[#E5E0D5] relative overflow-hidden">
                 <div
                   className="absolute top-4 right-4 text-[#111827]/[0.04] leading-none select-none pointer-events-none"
                   style={{ ...H, fontSize: '100px' }}
@@ -211,7 +218,7 @@ export default function RCrosspointsPage() {
                   <h3 className="text-[#111827] text-xl mb-3" style={H}>{s.title}</h3>
                   <p className="text-[#6B7280] text-sm leading-relaxed">{s.desc}</p>
                 </div>
-              </div>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -220,20 +227,22 @@ export default function RCrosspointsPage() {
       {/* CTA */}
       <section className="bg-[#BF0A30] py-16 text-center">
         <div className="max-w-2xl mx-auto px-8">
-          <h2 className="text-4xl md:text-5xl text-white mb-4" style={H}>
-            Ready to find your<br />
-            <span style={serif}>Crosspoint?</span>
-          </h2>
-          <p className="text-red-100 mb-8 leading-relaxed">
+          <Reveal variant="none" as="h2" className="text-4xl md:text-5xl text-white mb-4" style={H}>
+            <RiseLine index={0}>Ready to find your</RiseLine>
+            <RiseLine index={1} style={serif}>Crosspoint?</RiseLine>
+          </Reveal>
+          <Reveal variant="blur" delay={250} as="p" className="text-red-100 mb-8 leading-relaxed">
             Start with Connect Class and get matched to a group in your zone.
-          </p>
-          <Link
-            href="/r-connect"
-            className="inline-flex items-center gap-2 bg-white text-[#BF0A30] hover:bg-red-50 font-bold text-xs uppercase tracking-widest px-7 py-4 rounded-2xl transition-all"
-            style={H}
-          >
-            Join Connect Class <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
+          </Reveal>
+          <Reveal variant="up" delay={400}>
+            <Link
+              href="/r-connect"
+              className="inline-flex items-center gap-2 bg-white text-[#BF0A30] hover:bg-red-50 font-bold text-xs uppercase tracking-widest px-7 py-4 rounded-2xl transition-all"
+              style={H}
+            >
+              Join Connect Class <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </Reveal>
         </div>
       </section>
 

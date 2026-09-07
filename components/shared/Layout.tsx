@@ -5,6 +5,7 @@ import Navbar from './Navbar';
 import Footer from './Footer';
 import MobileNav from './MobileNav';
 import AskRuachWidget from './AskRuachWidget';
+import { ScrollProgress } from './Reveal';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -146,6 +147,8 @@ export default function Layout({ children, title, description, image, noFooter, 
     <>
       {seoHead}
       <div className="min-h-screen bg-white text-[#111827] pb-mobile-nav lg:pb-0">
+        {/* Reading progress hairline */}
+        <ScrollProgress />
         {/* Fixed header: announcement bar + navbar stacked in one container */}
         <div className="fixed top-0 left-0 right-0 z-50">
           <div className="hidden sm:block">

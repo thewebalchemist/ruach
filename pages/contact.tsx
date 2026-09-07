@@ -2,6 +2,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { MapPin, Clock, Mail, Phone, ArrowRight, ExternalLink } from 'lucide-react';
 import Layout from '@/components/shared/Layout';
+import { Reveal, RiseLine } from '@/components/shared/Reveal';
 
 const H = { fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 800 };
 const serif = { fontFamily: 'Fraunces, Georgia, serif', fontWeight: 600 };
@@ -87,18 +88,20 @@ export default function ContactPage() {
           style={{ top: '5%', right: '-5%', filter: 'blur(150px)', opacity: 0.09, ['--spirit-dur' as string]: '13s' }}
         />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 pb-20 pt-32 w-full">
-          <div
+          <Reveal
+            variant="fade"
             className="inline-flex items-center gap-2 text-[#F87171] text-[10px] font-bold uppercase tracking-widest px-4 py-2 rounded-full mb-6"
             style={{ background: 'rgba(191,10,48,0.18)', border: '1px solid rgba(191,10,48,0.30)' }}
           >
             <span style={H}>Get In Touch</span>
-          </div>
-          <h1 className="text-[38px] sm:text-5xl md:text-[58px] text-white leading-tight tracking-tight mb-5" style={H}>
-            We&apos;d Love to<br /><span style={serif}>Hear From You</span>
-          </h1>
-          <p className="text-[#8B95A8] text-lg max-w-md leading-relaxed">
+          </Reveal>
+          <Reveal variant="none" as="h1" className="text-[38px] sm:text-5xl md:text-[58px] text-white leading-tight tracking-tight mb-5" style={H}>
+            <RiseLine index={0}>We&apos;d Love to</RiseLine>
+            <RiseLine index={1} style={serif}>Hear From You</RiseLine>
+          </Reveal>
+          <Reveal variant="blur" delay={350} as="p" className="text-[#8B95A8] text-lg max-w-md leading-relaxed">
             Planning a visit or want to connect with our team — we&apos;re here for you.
-          </p>
+          </Reveal>
         </div>
       </section>
 
@@ -149,9 +152,11 @@ export default function ContactPage() {
                 main: 'info@ruachtabernacle.org',
                 sub: 'We respond within 24 hours',
               },
-            ].map((card) => (
-              <div
+            ].map((card, ci) => (
+              <Reveal
                 key={card.label}
+                variant="up"
+                delay={ci * 100}
                 className="flex items-start gap-4 rounded-2xl px-6 py-5"
                 style={{
                   background: 'rgba(18,21,28,0.8)',
@@ -171,7 +176,7 @@ export default function ContactPage() {
                   <p className="text-white text-sm font-bold leading-snug" style={H}>{card.main}</p>
                   <p className="text-[#8B95A8] text-xs mt-0.5 leading-relaxed">{card.sub}</p>
                 </div>
-              </div>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -183,7 +188,8 @@ export default function ContactPage() {
           <div className="grid lg:grid-cols-2 gap-6">
 
             {/* Map */}
-            <div
+            <Reveal
+              variant="left"
               className="rounded-3xl overflow-hidden flex flex-col"
               style={{
                 background: 'rgba(18,21,28,0.9)',
@@ -220,10 +226,12 @@ export default function ContactPage() {
                   <ExternalLink className="w-3 h-3 opacity-70" />
                 </a>
               </div>
-            </div>
+            </Reveal>
 
             {/* Contact form */}
-            <div
+            <Reveal
+              variant="right"
+              delay={140}
               className="rounded-3xl p-8 flex flex-col"
               style={{
                 background: 'rgba(18,21,28,0.9)',
@@ -318,7 +326,7 @@ export default function ContactPage() {
                   </button>
                 </form>
               )}
-            </div>
+            </Reveal>
           </div>
         </div>
       </section>
@@ -326,24 +334,25 @@ export default function ContactPage() {
       {/* ── ASSEMBLIES ────────────────────────────────────────────── */}
       <section className="bg-[#0A0C10] py-16 border-t border-white/5">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-12">
+          <Reveal variant="none" className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-12">
             <div>
               <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-3" style={H}>
                 Find Us Near You
               </p>
               <h2 className="text-4xl md:text-5xl text-white leading-tight" style={H}>
-                5 Assemblies.<br />
-                <span style={serif}>One family.</span>
+                <RiseLine index={0}>5 Assemblies.</RiseLine>
+                <RiseLine index={1} style={serif}>One family.</RiseLine>
               </h2>
             </div>
-            <p className="text-[#8B95A8] max-w-xs text-sm leading-relaxed">
+            <Reveal variant="blur" delay={250} as="p" className="text-[#8B95A8] max-w-xs text-sm leading-relaxed">
               We have assemblies across Nairobi so you can worship closer to home.
-            </p>
-          </div>
+            </Reveal>
+          </Reveal>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             {/* Flagship */}
-            <div
+            <Reveal
+              variant="up"
               className="lg:col-span-2 rounded-3xl relative overflow-hidden min-h-[220px] flex flex-col justify-between p-8"
               style={{ background: 'linear-gradient(135deg, #BF0A30 0%, #7A0020 100%)' }}
             >
@@ -370,12 +379,14 @@ export default function ContactPage() {
                   <MapPin className="w-4 h-4 text-white" />
                 </a>
               </div>
-            </div>
+            </Reveal>
 
             {/* Other assemblies */}
-            {LOCATIONS.filter(l => !l.featured).map((loc) => (
-              <div
+            {LOCATIONS.filter(l => !l.featured).map((loc, li) => (
+              <Reveal
                 key={loc.name}
+                variant="up"
+                delay={(li + 1) * 100}
                 className="rounded-3xl p-7 flex flex-col justify-between min-h-[180px]"
                 style={{
                   background: 'rgba(18,21,28,0.9)',
@@ -401,7 +412,7 @@ export default function ContactPage() {
                     <MapPin className="w-3 h-3 text-[#BF0A30]" />
                   </a>
                 </div>
-              </div>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -410,14 +421,15 @@ export default function ContactPage() {
       {/* ── CTA ───────────────────────────────────────────────────── */}
       <section className="bg-[#BF0A30] py-16 text-center">
         <div className="max-w-2xl mx-auto px-8">
-          <p className="text-red-200 text-[10px] font-bold uppercase tracking-widest mb-4" style={H}>Ready to visit?</p>
-          <h2 className="text-4xl text-white mb-5" style={H}>
-            Your seat<br /><span style={serif}>is waiting.</span>
-          </h2>
-          <p className="text-red-100 text-sm mb-8 leading-relaxed">
+          <Reveal variant="fade" as="p" className="text-red-200 text-[10px] font-bold uppercase tracking-widest mb-4" style={H}>Ready to visit?</Reveal>
+          <Reveal variant="none" as="h2" className="text-4xl text-white mb-5" style={H}>
+            <RiseLine index={0}>Your seat</RiseLine>
+            <RiseLine index={1} style={serif}>is waiting.</RiseLine>
+          </Reveal>
+          <Reveal variant="blur" delay={200} as="p" className="text-red-100 text-sm mb-8 leading-relaxed">
             Every Sunday at 8AM, 10AM, and 12:30PM — along the Northern Bypass, next to Shell Windsor.
-          </p>
-          <div className="flex flex-wrap gap-3 justify-center">
+          </Reveal>
+          <Reveal variant="up" delay={300} className="flex flex-wrap gap-3 justify-center">
             <Link
               href="/new-here"
               className="inline-flex items-center gap-2 bg-white text-[#BF0A30] hover:bg-red-50 font-black text-xs uppercase tracking-widest px-7 py-4 rounded-2xl transition-all"
@@ -432,7 +444,7 @@ export default function ContactPage() {
             >
               Learn More <ArrowRight className="w-3.5 h-3.5" />
             </Link>
-          </div>
+          </Reveal>
         </div>
       </section>
 

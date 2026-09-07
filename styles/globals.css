@@ -1206,3 +1206,94 @@ input[type="range"]::-webkit-slider-thumb {
 .spirit-drift   { animation: spirit-drift   var(--spirit-dur, 12s) ease-in-out infinite; }
 .spirit-wind    { animation: spirit-wind    var(--spirit-dur, 9s)  ease-in-out infinite; }
 .spirit-pulse   { animation: spirit-pulse   var(--spirit-dur, 8s)  ease-in-out infinite; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   SCROLL REVEAL SYSTEM  (components/shared/Reveal.tsx)
+
+   Hidden pre-reveal states are gated behind `html.reveal-ready`,
+   which is only added once JS mounts (and never for reduced-motion
+   users) — so content is always visible without JavaScript.
+═══════════════════════════════════════════════════════════════════ */
+
+:root {
+  --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
+  --reveal-dur: 950ms;
+}
+
+/* Pre-reveal (hidden) states */
+.reveal-ready [data-reveal]          { opacity: 0; }
+.reveal-ready [data-reveal="up"]     { transform: translateY(42px); }
+.reveal-ready [data-reveal="left"]   { transform: translateX(-48px); }
+.reveal-ready [data-reveal="right"]  { transform: translateX(48px); }
+.reveal-ready [data-reveal="scale"]  { transform: scale(0.94); }
+.reveal-ready [data-reveal="blur"]   { transform: translateY(24px); filter: blur(10px); }
+.reveal-ready [data-reveal="none"]   { opacity: 1; }
+
+/* Revealed state — one springy expo ease everywhere for coherence */
+.reveal-ready [data-reveal].is-revealed {
+  opacity: 1;
+  transform: none;
+  filter: none;
+  transition:
+    opacity   var(--reveal-dur) var(--ease-out-expo),
+    transform var(--reveal-dur) var(--ease-out-expo),
+    filter    var(--reveal-dur) var(--ease-out-expo);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+
+/* ─── Line-rise text ─────────────────────────────────────────────
+   <RiseLine> — each heading line slides up out of an overflow mask,
+   staggered by its --i index. Triggered by the nearest <Reveal>.  */
+.rise-mask {
+  display: block;
+  overflow: hidden;
+  /* keep descenders (g, y, p) from being clipped by the mask */
+  padding-bottom: 0.12em;
+  margin-bottom: -0.12em;
+}
+.rise { display: block; }
+.reveal-ready .rise {
+  transform: translateY(115%);
+  transition: transform 1s var(--ease-out-expo);
+  transition-delay: calc(var(--i, 0) * 110ms + var(--reveal-delay, 0ms));
+}
+.reveal-ready .is-revealed .rise { transform: translateY(0); }
+
+/* ─── Underline draw — accent line that grows in on reveal ────── */
+.reveal-ready .draw-line {
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 1.1s var(--ease-out-expo);
+  transition-delay: calc(var(--reveal-delay, 0ms) + 250ms);
+}
+.reveal-ready .is-revealed .draw-line { transform: scaleX(1); }
+
+/* ─── Scroll progress hairline ───────────────────────────────── */
+.scroll-progress {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #BF0A30, #FF4D6D);
+  transform: scaleX(0);
+  transform-origin: left;
+  z-index: 100;
+  pointer-events: none;
+}
+
+/* ─── Smooth FAQ / accordion expand (grid-rows trick) ────────── */
+.expand-grid {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 420ms var(--ease-out-expo);
+}
+.expand-grid.is-open { grid-template-rows: 1fr; }
+.expand-grid > * { overflow: hidden; }
+
+/* ─── Image curtain — photo scales down as its wrap reveals ────
+   Put .img-curtain on the <Reveal>, .img-curtain-img on the img. */
+.reveal-ready .img-curtain .img-curtain-img {
+  transform: scale(1.18);
+  transition: transform 1.4s var(--ease-out-expo);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+.reveal-ready .img-curtain.is-revealed .img-curtain-img { transform: scale(1); }

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import Layout from '@/components/shared/Layout';
+import { Reveal, RiseLine } from '@/components/shared/Reveal';
 
 const H = { fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 800 };
 const serif = { fontFamily: 'Fraunces, Georgia, serif', fontWeight: 600 };
@@ -121,16 +122,16 @@ export default function OurTeamPage() {
           </span>
         </div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 pb-24 pt-36 w-full">
-          <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-5" style={H}>
+          <Reveal variant="fade" as="p" className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-5" style={H}>
             R-Leadership
-          </p>
-          <h1 className="text-[38px] sm:text-5xl md:text-[58px] text-white tracking-tight mb-6 leading-[1.05]" style={H}>
-            Meet Our<br />
-            <span style={serif}>God-given Team.</span>
-          </h1>
-          <p className="text-[#8B95A8] text-lg max-w-lg leading-relaxed">
+          </Reveal>
+          <Reveal variant="none" as="h1" className="text-[38px] sm:text-5xl md:text-[58px] text-white tracking-tight mb-6 leading-[1.05]" style={H}>
+            <RiseLine index={0}>Meet Our</RiseLine>
+            <RiseLine index={1} style={serif}>God-given Team.</RiseLine>
+          </Reveal>
+          <Reveal variant="blur" delay={350} as="p" className="text-[#8B95A8] text-lg max-w-lg leading-relaxed">
             Servant leaders committed to raising Kingdom Champions and building a community of purpose.
-          </p>
+          </Reveal>
         </div>
       </section>
 
@@ -179,19 +180,21 @@ export default function OurTeamPage() {
           <div className="absolute inset-0 bg-[#0A0C10]/80" />
         </div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
-          <div className="mb-14">
+          <Reveal variant="none" className="mb-14">
             <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-3" style={H}>
               Senior Leadership
             </p>
             <h2 className="text-4xl md:text-5xl text-white leading-tight" style={H}>
-              Visionary<br />
-              <span style={serif}>leadership.</span>
+              <RiseLine index={0}>Visionary</RiseLine>
+              <RiseLine index={1} style={serif}>leadership.</RiseLine>
             </h2>
-          </div>
+          </Reveal>
           <div className="grid md:grid-cols-2 gap-6">
-            {LEADERSHIP.map((m) => (
-              <div
+            {LEADERSHIP.map((m, mi) => (
+              <Reveal
                 key={m.href}
+                variant={mi === 0 ? 'left' : 'right'}
+                delay={mi * 140}
                 className="rounded-3xl overflow-hidden"
                 style={{
                   background: 'rgba(18,21,28,0.75)',
@@ -223,7 +226,7 @@ export default function OurTeamPage() {
                     Read More <ArrowRight className="w-3.5 h-3.5" />
                   </Link>
                 </div>
-              </div>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -256,25 +259,25 @@ export default function OurTeamPage() {
       ══════════════════════════════════════════════ */}
       <section className="bg-[#F5F0E8] py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-14">
+          <Reveal variant="none" className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-14">
             <div>
               <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-3" style={H}>
                 Pastoral Team
               </p>
               <h2 className="text-4xl md:text-5xl text-[#111827] leading-tight" style={H}>
-                Associate<br />
-                <span style={{ ...serif, fontWeight: 700 }}>Pastors.</span>
+                <RiseLine index={0}>Associate</RiseLine>
+                <RiseLine index={1} style={{ ...serif, fontWeight: 700 }}>Pastors.</RiseLine>
               </h2>
             </div>
-            <p className="text-[#6B7280] max-w-xs text-sm leading-relaxed">
+            <Reveal variant="blur" delay={250} as="p" className="text-[#6B7280] max-w-xs text-sm leading-relaxed">
               Faithful leaders serving our congregation across every department and ministry.
-            </p>
-          </div>
+            </Reveal>
+          </Reveal>
 
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {ASSOCIATE_PASTORS.map((p) => (
+            {ASSOCIATE_PASTORS.map((p, pi) => (
+              <Reveal key={p.href} variant="up" delay={pi * 100}>
               <Link
-                key={p.href}
                 href={p.href}
                 className="group relative rounded-3xl overflow-hidden block"
                 style={{ aspectRatio: '3/4' }}
@@ -304,6 +307,7 @@ export default function OurTeamPage() {
                   </div>
                 </div>
               </Link>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -317,13 +321,13 @@ export default function OurTeamPage() {
           <div className="grid lg:grid-cols-3 gap-16 items-start">
 
             {/* Left: description */}
-            <div>
+            <Reveal variant="left">
               <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-4" style={H}>
                 Governance
               </p>
               <h2 className="text-4xl md:text-5xl text-white mb-6 leading-tight" style={H}>
-                Elder<br />
-                <span style={serif}>Board.</span>
+                <RiseLine index={0}>Elder</RiseLine>
+                <RiseLine index={1} style={serif}>Board.</RiseLine>
               </h2>
               <p className="text-[#8B95A8] text-sm leading-relaxed mb-4">
                 The elders at Ruach Tabernacle serve as spiritual shepherds of our church body — providing
@@ -334,11 +338,11 @@ export default function OurTeamPage() {
                 Their role is not about authority for its own sake, but about servant leadership —
                 modeling humility, wisdom, and integrity as they lead God&apos;s people.
               </p>
-            </div>
+            </Reveal>
 
             {/* Right: elder cards */}
             <div className="lg:col-span-2 grid grid-cols-2 gap-4">
-              {ELDER_BOARD.map((e) => {
+              {ELDER_BOARD.map((e, ei) => {
                 const cardInner = (
                   <>
                     <img
@@ -370,23 +374,25 @@ export default function OurTeamPage() {
                   </>
                 );
 
-                return e.href ? (
-                  <Link
-                    key={e.name}
-                    href={e.href}
-                    className="group relative rounded-3xl overflow-hidden block"
-                    style={{ aspectRatio: '3/4' }}
-                  >
-                    {cardInner}
-                  </Link>
-                ) : (
-                  <div
-                    key={e.name}
-                    className="relative rounded-3xl overflow-hidden"
-                    style={{ aspectRatio: '3/4' }}
-                  >
-                    {cardInner}
-                  </div>
+                return (
+                  <Reveal key={e.name} variant="up" delay={ei * 100}>
+                    {e.href ? (
+                      <Link
+                        href={e.href}
+                        className="group relative rounded-3xl overflow-hidden block"
+                        style={{ aspectRatio: '3/4' }}
+                      >
+                        {cardInner}
+                      </Link>
+                    ) : (
+                      <div
+                        className="relative rounded-3xl overflow-hidden"
+                        style={{ aspectRatio: '3/4' }}
+                      >
+                        {cardInner}
+                      </div>
+                    )}
+                  </Reveal>
                 );
               })}
             </div>

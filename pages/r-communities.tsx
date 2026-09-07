@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import Layout from '@/components/shared/Layout';
+import { Reveal, RiseLine } from '@/components/shared/Reveal';
 
 const H = { fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 800 };
 const serif = { fontFamily: 'Fraunces, Georgia, serif', fontWeight: 600 };
@@ -54,19 +55,21 @@ export default function RCommunitiesPage() {
           </span>
         </div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 pb-20 pt-36 w-full">
-          <span
-            className="inline-block mb-5 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest text-white border border-white/15"
-            style={{ ...H, background: 'rgba(191,10,48,0.18)' }}
-          >
-            R-Communities
-          </span>
-          <h1 className="text-[38px] sm:text-5xl md:text-[58px] text-white tracking-tight leading-tight mb-4" style={H}>
-            Find Your <br />
-            <span style={serif}>Circle.</span>
-          </h1>
-          <p className="text-white/55 text-lg max-w-md" style={serif}>
+          <Reveal variant="fade">
+            <span
+              className="inline-block mb-5 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest text-white border border-white/15"
+              style={{ ...H, background: 'rgba(191,10,48,0.18)' }}
+            >
+              R-Communities
+            </span>
+          </Reveal>
+          <Reveal variant="none" as="h1" className="text-[38px] sm:text-5xl md:text-[58px] text-white tracking-tight leading-tight mb-4" style={H}>
+            <RiseLine index={0}>Find Your</RiseLine>
+            <RiseLine index={1} style={serif}>Circle.</RiseLine>
+          </Reveal>
+          <Reveal variant="blur" delay={350} as="p" className="text-white/55 text-lg max-w-md" style={serif}>
             Real community. Real growth. Real purpose.
-          </p>
+          </Reveal>
         </div>
       </section>
 
@@ -101,12 +104,12 @@ export default function RCommunitiesPage() {
       {/* TAGLINE SECTION */}
       <section className="bg-[#F5F0E8] py-14 text-center">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-12">
-          <h2 className="text-3xl md:text-4xl text-[#111827] mb-5 leading-tight" style={H}>
-            Have people to do life with!
-          </h2>
-          <p className="text-[#6B7280] leading-relaxed text-base">
+          <Reveal variant="none" as="h2" className="text-3xl md:text-4xl text-[#111827] mb-5 leading-tight" style={H}>
+            <RiseLine index={0}>Have people to do life with!</RiseLine>
+          </Reveal>
+          <Reveal variant="blur" delay={200} as="p" className="text-[#6B7280] leading-relaxed text-base">
             We believe that real life change and growth happens through authentic relationships. You can&apos;t do life with everyone, but we can create a world where everyone has someone to do life with. Find your community at Ruach Tabernacle.
-          </p>
+          </Reveal>
         </div>
       </section>
 
@@ -136,16 +139,16 @@ export default function RCommunitiesPage() {
       {/* COMMUNITIES GRID */}
       <section className="bg-[#0A0C10] py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
-          <div className="mb-12">
+          <Reveal variant="none" className="mb-12">
             <p className="text-[#BF0A30] text-xs font-black uppercase tracking-widest mb-3" style={H}>Find Your Place</p>
             <h2 className="text-4xl md:text-5xl text-white leading-tight" style={H}>
-              All Communities
+              <RiseLine index={0}>All Communities</RiseLine>
             </h2>
-          </div>
+          </Reveal>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {COMMUNITIES.map((c) => (
+            {COMMUNITIES.map((c, ci) => (
+              <Reveal key={`${c.href}-${c.name}`} variant="up" delay={(ci % 4) * 90}>
               <Link
-                key={`${c.href}-${c.name}`}
                 href={c.href}
                 className="group relative rounded-3xl overflow-hidden block aspect-square"
               >
@@ -171,6 +174,7 @@ export default function RCommunitiesPage() {
                   </div>
                 </div>
               </Link>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -179,13 +183,13 @@ export default function RCommunitiesPage() {
       {/* CTA */}
       <section className="bg-[#BF0A30] py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 text-center">
-          <h2 className="text-4xl md:text-5xl text-white mb-4 leading-tight" style={H}>
-            Your community is waiting.
-          </h2>
-          <p className="text-white/70 text-base mb-10 max-w-lg mx-auto" style={serif}>
+          <Reveal variant="none" as="h2" className="text-4xl md:text-5xl text-white mb-4 leading-tight" style={H}>
+            <RiseLine index={0}>Your community is waiting.</RiseLine>
+          </Reveal>
+          <Reveal variant="blur" delay={200} as="p" className="text-white/70 text-base mb-10 max-w-lg mx-auto" style={serif}>
             There&apos;s a place for you here. Take the first step.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          </Reveal>
+          <Reveal variant="up" delay={350} className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               href="/new-here"
               className="inline-flex items-center justify-center gap-2 bg-white text-[#BF0A30] font-black text-xs uppercase tracking-widest px-8 py-4 rounded-2xl hover:bg-[#F5F0E8] transition-colors shadow-xl"
@@ -200,7 +204,7 @@ export default function RCommunitiesPage() {
             >
               Plan a Visit <ArrowRight className="w-3.5 h-3.5" />
             </Link>
-          </div>
+          </Reveal>
         </div>
       </section>
 

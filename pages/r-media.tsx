@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import Layout from '@/components/shared/Layout';
+import { Reveal, RiseLine } from '@/components/shared/Reveal';
 
 const H = { fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 800 };
 const serif = { fontFamily: 'Fraunces, Georgia, serif', fontWeight: 600 };
@@ -58,18 +59,20 @@ export default function RMediaPage() {
           </span>
         </div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 pb-20 pt-36 w-full">
-          <span
-            className="inline-block mb-5 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest text-white border border-white/15"
-            style={{ ...H, background: 'rgba(191,10,48,0.18)' }}
-          >
-            Media &amp; Production
-          </span>
-          <h1 className="text-[38px] sm:text-5xl md:text-[58px] text-white tracking-tight leading-tight mb-4" style={H}>
-            R-Media
-          </h1>
-          <p className="text-white/55 text-lg max-w-lg" style={serif}>
+          <Reveal variant="fade">
+            <span
+              className="inline-block mb-5 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest text-white border border-white/15"
+              style={{ ...H, background: 'rgba(191,10,48,0.18)' }}
+            >
+              Media &amp; Production
+            </span>
+          </Reveal>
+          <Reveal variant="none" as="h1" className="text-[38px] sm:text-5xl md:text-[58px] text-white tracking-tight leading-tight mb-4" style={H}>
+            <RiseLine index={0}>R-Media</RiseLine>
+          </Reveal>
+          <Reveal variant="blur" delay={300} as="p" className="text-white/55 text-lg max-w-lg" style={serif}>
             Every frame a testimony. Every sound an act of worship.
-          </p>
+          </Reveal>
         </div>
       </section>
 
@@ -107,32 +110,34 @@ export default function RMediaPage() {
           <div className="grid md:grid-cols-2 gap-16 items-start">
             {/* Left */}
             <div>
-              <p className="text-[#BF0A30] text-[10px] font-black uppercase tracking-widest mb-5" style={H}>Who We Are</p>
-              <h2 className="text-4xl md:text-5xl text-[#111827] mb-6 leading-tight" style={H}>
-                Telling the <br />
-                <span style={serif}>Ruach story.</span>
-              </h2>
-              <p className="text-[#374151] leading-relaxed mb-4">
+              <Reveal variant="fade" as="p" className="text-[#BF0A30] text-[10px] font-black uppercase tracking-widest mb-5" style={H}>Who We Are</Reveal>
+              <Reveal variant="none" as="h2" className="text-4xl md:text-5xl text-[#111827] mb-6 leading-tight" style={H}>
+                <RiseLine index={0}>Telling the</RiseLine>
+                <RiseLine index={1} style={serif}>Ruach story.</RiseLine>
+              </Reveal>
+              <Reveal variant="blur" delay={200} as="p" className="text-[#374151] leading-relaxed mb-4">
                 R-Media is the creative and production backbone of Ruach Tabernacle — a team of skilled communicators, designers, videographers, and technicians who serve the vision of the house through excellent, purposeful media.
-              </p>
-              <p className="text-[#374151] leading-relaxed mb-8">
+              </Reveal>
+              <Reveal variant="blur" delay={300} as="p" className="text-[#374151] leading-relaxed mb-8">
                 We believe creativity is a gift from God, and we are committed to using ours to extend the reach and impact of the gospel. Whether it&apos;s a live Sunday broadcast, a social media post, or a brand design — we do it all with excellence as an act of worship.
-              </p>
-              <Link
-                href="/new-here"
-                className="inline-flex items-center gap-2 bg-[#BF0A30] text-white font-black text-xs uppercase tracking-widest px-6 py-3.5 rounded-2xl hover:bg-[#9A0826] transition-colors shadow-lg shadow-[rgba(191,10,48,0.3)]"
-                style={H}
-              >
-                Join Us Sunday <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
+              </Reveal>
+              <Reveal variant="up" delay={400}>
+                <Link
+                  href="/new-here"
+                  className="inline-flex items-center gap-2 bg-[#BF0A30] text-white font-black text-xs uppercase tracking-widest px-6 py-3.5 rounded-2xl hover:bg-[#9A0826] transition-colors shadow-lg shadow-[rgba(191,10,48,0.3)]"
+                  style={H}
+                >
+                  Join Us Sunday <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </Reveal>
             </div>
             {/* Right — activity cards */}
             <div className="space-y-4">
-              {ACTIVITIES.map((a) => (
-                <div key={a.title} className="bg-white rounded-2xl p-6 border border-[#E5E0D5]">
+              {ACTIVITIES.map((a, ai) => (
+                <Reveal key={a.title} variant="right" delay={ai * 110} className="bg-white rounded-2xl p-6 border border-[#E5E0D5]">
                   <h3 className="text-[#111827] text-base font-black mb-2" style={H}>{a.title}</h3>
                   <p className="text-[#6B7280] text-sm leading-relaxed">{a.desc}</p>
-                </div>
+                </Reveal>
               ))}
             </div>
           </div>
@@ -165,16 +170,16 @@ export default function RMediaPage() {
       {/* PHOTO GRID */}
       <section className="bg-[#0A0C10] py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
-          <div className="mb-12">
+          <Reveal variant="none" className="mb-12">
             <p className="text-[#BF0A30] text-xs font-black uppercase tracking-widest mb-3" style={H}>Our Community</p>
             <h2 className="text-4xl md:text-5xl text-white leading-tight" style={H}>
-              Life at R-Media
+              <RiseLine index={0}>Life at R-Media</RiseLine>
             </h2>
-          </div>
+          </Reveal>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {PHOTOS.map((card) => (
+            {PHOTOS.map((card, ci) => (
+              <Reveal key={card.name} variant="up" delay={ci * 110}>
               <Link
-                key={card.name}
                 href="/new-here"
                 className="group relative rounded-3xl overflow-hidden block"
                 style={{ aspectRatio: '3/4' }}
@@ -201,6 +206,7 @@ export default function RMediaPage() {
                   </div>
                 </div>
               </Link>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -209,7 +215,8 @@ export default function RMediaPage() {
       {/* VOLUNTEER CTA CARD */}
       <section className="bg-[#0A0C10] pb-20">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-12">
-          <div
+          <Reveal
+            variant="scale"
             className="rounded-3xl p-10 md:p-14"
             style={{
               background: 'rgba(18,21,28,0.9)',
@@ -231,20 +238,20 @@ export default function RMediaPage() {
             >
               Get Involved <ArrowRight className="w-3.5 h-3.5" />
             </Link>
-          </div>
+          </Reveal>
         </div>
       </section>
 
       {/* CTA */}
       <section className="bg-[#BF0A30] py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 text-center">
-          <h2 className="text-4xl md:text-5xl text-white mb-4 leading-tight" style={H}>
-            Get Involved in R-Media.
-          </h2>
-          <p className="text-white/70 text-base mb-10 max-w-lg mx-auto" style={serif}>
+          <Reveal variant="none" as="h2" className="text-4xl md:text-5xl text-white mb-4 leading-tight" style={H}>
+            <RiseLine index={0}>Get Involved in R-Media.</RiseLine>
+          </Reveal>
+          <Reveal variant="blur" delay={200} as="p" className="text-white/70 text-base mb-10 max-w-lg mx-auto" style={serif}>
             Your creativity has a Kingdom purpose. Come serve with us.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          </Reveal>
+          <Reveal variant="up" delay={350} className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               href="/new-here"
               className="inline-flex items-center justify-center gap-2 bg-white text-[#BF0A30] font-black text-xs uppercase tracking-widest px-8 py-4 rounded-2xl hover:bg-[#F5F0E8] transition-colors shadow-xl"
@@ -259,7 +266,7 @@ export default function RMediaPage() {
             >
               Explore Communities <ArrowRight className="w-3.5 h-3.5" />
             </Link>
-          </div>
+          </Reveal>
         </div>
       </section>
 

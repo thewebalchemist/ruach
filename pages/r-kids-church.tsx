@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { ArrowRight, Shield } from 'lucide-react';
 import Layout from '@/components/shared/Layout';
+import { Reveal, RiseLine } from '@/components/shared/Reveal';
 
 const H = { fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 800 };
 const serif = { fontFamily: 'Fraunces, Georgia, serif', fontWeight: 600 };
@@ -66,19 +67,21 @@ export default function RKidsChurchPage() {
           </span>
         </div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 pb-20 pt-36 w-full">
-          <span
-            className="inline-block mb-5 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest text-white border border-white/15"
-            style={{ ...H, background: 'rgba(191,10,48,0.18)' }}
-          >
-            Children Ministry
-          </span>
-          <h1 className="text-[38px] sm:text-5xl md:text-[58px] text-white tracking-tight leading-tight mb-4" style={H}>
-            R-Kids <br />
-            <span style={serif}>Church</span>
-          </h1>
-          <p className="text-white/55 text-lg max-w-md" style={serif}>
+          <Reveal variant="fade">
+            <span
+              className="inline-block mb-5 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest text-white border border-white/15"
+              style={{ ...H, background: 'rgba(191,10,48,0.18)' }}
+            >
+              Children Ministry
+            </span>
+          </Reveal>
+          <Reveal variant="none" as="h1" className="text-[38px] sm:text-5xl md:text-[58px] text-white tracking-tight leading-tight mb-4" style={H}>
+            <RiseLine index={0}>R-Kids</RiseLine>
+            <RiseLine index={1} style={serif}>Church</RiseLine>
+          </Reveal>
+          <Reveal variant="blur" delay={350} as="p" className="text-white/55 text-lg max-w-md" style={serif}>
             A safe, fun space where kids discover Jesus.
-          </p>
+          </Reveal>
         </div>
       </section>
 
@@ -116,32 +119,34 @@ export default function RKidsChurchPage() {
           <div className="grid md:grid-cols-2 gap-16 items-start">
             {/* Left */}
             <div>
-              <p className="text-[#BF0A30] text-[10px] font-black uppercase tracking-widest mb-5" style={H}>Who We Are</p>
-              <h2 className="text-4xl md:text-5xl text-[#111827] mb-6 leading-tight" style={H}>
-                Where kids <br />
-                <span style={serif}>belong.</span>
-              </h2>
-              <p className="text-[#374151] leading-relaxed mb-4">
+              <Reveal variant="fade" as="p" className="text-[#BF0A30] text-[10px] font-black uppercase tracking-widest mb-5" style={H}>Who We Are</Reveal>
+              <Reveal variant="none" as="h2" className="text-4xl md:text-5xl text-[#111827] mb-6 leading-tight" style={H}>
+                <RiseLine index={0}>Where kids</RiseLine>
+                <RiseLine index={1} style={serif}>belong.</RiseLine>
+              </Reveal>
+              <Reveal variant="blur" delay={200} as="p" className="text-[#374151] leading-relaxed mb-4">
                 At R-Kids Church, we believe every child is uniquely created by God with a purpose and a destiny. Our goal is to create an environment where kids feel loved, safe, and genuinely excited to learn about Jesus — in a way that speaks to them at their level.
-              </p>
-              <p className="text-[#374151] leading-relaxed mb-4">
+              </Reveal>
+              <Reveal variant="blur" delay={300} as="p" className="text-[#374151] leading-relaxed mb-4">
                 We partner with parents to raise a generation that knows God, loves His Word, and carries His presence wherever they go. Each age group is served by trained, passionate volunteers who make every Sunday an experience your child will look forward to.
-              </p>
-              <p className="text-[#374151] leading-relaxed mb-8">
+              </Reveal>
+              <Reveal variant="blur" delay={400} as="p" className="text-[#374151] leading-relaxed mb-8">
                 From songs and crafts to Bible lessons and games — R-Kids is where faith becomes fun and lifelong.
-              </p>
-              <Link
-                href="/new-here"
-                className="inline-flex items-center gap-2 bg-[#BF0A30] text-white font-black text-xs uppercase tracking-widest px-6 py-3.5 rounded-2xl hover:bg-[#9A0826] transition-colors shadow-lg shadow-[rgba(191,10,48,0.3)]"
-                style={H}
-              >
-                Join Us Sunday <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
+              </Reveal>
+              <Reveal variant="up" delay={450}>
+                <Link
+                  href="/new-here"
+                  className="inline-flex items-center gap-2 bg-[#BF0A30] text-white font-black text-xs uppercase tracking-widest px-6 py-3.5 rounded-2xl hover:bg-[#9A0826] transition-colors shadow-lg shadow-[rgba(191,10,48,0.3)]"
+                  style={H}
+                >
+                  Join Us Sunday <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </Reveal>
             </div>
             {/* Right — program cards */}
             <div className="space-y-4">
-              {PROGRAMS.map((p) => (
-                <div key={p.name} className="bg-white rounded-2xl p-6 border border-[#E5E0D5]">
+              {PROGRAMS.map((p, pi) => (
+                <Reveal key={p.name} variant="right" delay={pi * 110} className="bg-white rounded-2xl p-6 border border-[#E5E0D5]">
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="text-[#111827] text-base font-black" style={H}>{p.name}</h3>
                     <span
@@ -152,7 +157,7 @@ export default function RKidsChurchPage() {
                     </span>
                   </div>
                   <p className="text-[#6B7280] text-sm leading-relaxed">{p.desc}</p>
-                </div>
+                </Reveal>
               ))}
             </div>
           </div>
@@ -185,16 +190,16 @@ export default function RKidsChurchPage() {
       {/* PHOTO GRID */}
       <section className="bg-[#0A0C10] py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
-          <div className="mb-12">
+          <Reveal variant="none" className="mb-12">
             <p className="text-[#BF0A30] text-xs font-black uppercase tracking-widest mb-3" style={H}>Our Community</p>
             <h2 className="text-4xl md:text-5xl text-white leading-tight" style={H}>
-              Life at R-Kids
+              <RiseLine index={0}>Life at R-Kids</RiseLine>
             </h2>
-          </div>
+          </Reveal>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {PHOTOS.map((card) => (
+            {PHOTOS.map((card, ci) => (
+              <Reveal key={card.name} variant="up" delay={ci * 110}>
               <Link
-                key={card.name}
                 href="/new-here"
                 className="group relative rounded-3xl overflow-hidden block"
                 style={{ aspectRatio: '3/4' }}
@@ -221,6 +226,7 @@ export default function RKidsChurchPage() {
                   </div>
                 </div>
               </Link>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -229,7 +235,8 @@ export default function RKidsChurchPage() {
       {/* SAFETY NOTE */}
       <section className="bg-[#F5F0E8] py-12">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-12 text-center">
-          <div
+          <Reveal
+            variant="scale"
             className="rounded-3xl p-10"
             style={{
               background: 'rgba(18,21,28,0.9)',
@@ -247,20 +254,20 @@ export default function RKidsChurchPage() {
             <p className="text-white/60 leading-relaxed text-sm max-w-xl mx-auto">
               Your child&apos;s safety is our highest priority. Every R-Kids volunteer goes through a thorough background check, safeguarding training, and a structured onboarding process before serving with children. We follow strict protocols to ensure every child is safe, seen, and cared for.
             </p>
-          </div>
+          </Reveal>
         </div>
       </section>
 
       {/* CTA */}
       <section className="bg-[#BF0A30] py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 text-center">
-          <h2 className="text-4xl md:text-5xl text-white mb-4 leading-tight" style={H}>
-            Bring your kids this Sunday.
-          </h2>
-          <p className="text-white/70 text-base mb-10 max-w-lg mx-auto" style={serif}>
+          <Reveal variant="none" as="h2" className="text-4xl md:text-5xl text-white mb-4 leading-tight" style={H}>
+            <RiseLine index={0}>Bring your kids this Sunday.</RiseLine>
+          </Reveal>
+          <Reveal variant="blur" delay={200} as="p" className="text-white/70 text-base mb-10 max-w-lg mx-auto" style={serif}>
             A safe, exciting environment where your children will love coming back every week.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          </Reveal>
+          <Reveal variant="up" delay={350} className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               href="/new-here"
               className="inline-flex items-center justify-center gap-2 bg-white text-[#BF0A30] font-black text-xs uppercase tracking-widest px-8 py-4 rounded-2xl hover:bg-[#F5F0E8] transition-colors shadow-xl"
@@ -275,7 +282,7 @@ export default function RKidsChurchPage() {
             >
               Explore Communities <ArrowRight className="w-3.5 h-3.5" />
             </Link>
-          </div>
+          </Reveal>
         </div>
       </section>
 

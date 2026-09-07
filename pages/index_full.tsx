@@ -3,6 +3,7 @@ import { useState, useRef } from 'react';
 import { ArrowRight, ChevronDown, Volume2, VolumeX, CalendarDays, MapPin } from 'lucide-react';
 import Layout from '@/components/shared/Layout';
 import ExpectGallery from '@/components/shared/ExpectGallery';
+import { Reveal, RiseLine, CountUp, Parallax } from '@/components/shared/Reveal';
 import ThemeHero from '@/components/streaming/ThemeHero';
 import { supabase } from '@/lib/supabase';
 import { supabaseAdmin } from '@/lib/supabase-admin';
@@ -57,13 +58,16 @@ function FaqItem({ q, a }: { q: string; a: string }) {
       <button
         className="w-full flex items-center justify-between gap-4 px-6 py-5 text-left bg-white/5 hover:bg-white/10 transition-colors"
         onClick={() => setOpen(!open)}
+        aria-expanded={open}
       >
         <span className="font-bold text-white text-sm" style={H}>{q}</span>
-        <ChevronDown className={`w-5 h-5 text-[#BF0A30] flex-shrink-0 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`w-5 h-5 text-[#BF0A30] flex-shrink-0 transition-transform duration-300 ${open ? 'rotate-180' : ''}`} />
       </button>
-      {open && (
-        <div className="px-6 pb-6 pt-2 text-[#8B95A8] text-sm leading-relaxed bg-white/3">{a}</div>
-      )}
+      <div className={`expand-grid ${open ? 'is-open' : ''}`}>
+        <div>
+          <div className="px-6 pb-6 pt-2 text-[#8B95A8] text-sm leading-relaxed bg-white/3">{a}</div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -176,21 +180,21 @@ export default function HomePage({ recentSermons, isLive, upcomingEvents = [] }:
 
         {/* Content */}
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-24 sm:py-32 w-full">
-          {/* Mixed typography headline */}
-          <h1 className="text-white leading-[0.95] tracking-tight mb-6 sm:mb-8">
-            <span className="block text-[50px] sm:text-6xl md:text-7xl lg:text-[96px]" style={H}>Raising</span>
-            <span className="block text-[50px] sm:text-6xl md:text-7xl lg:text-[96px]" style={serif}>Kingdom</span>
-            <span className="block text-[50px] sm:text-6xl md:text-7xl lg:text-[96px] text-[#BF0A30]" style={H}>Champions</span>
-          </h1>
+          {/* Mixed typography headline — lines rise out of overflow masks */}
+          <Reveal variant="none" as="h1" className="text-white leading-[0.95] tracking-tight mb-6 sm:mb-8">
+            <RiseLine index={0} className="text-[50px] sm:text-6xl md:text-7xl lg:text-[96px]" style={H}>Raising</RiseLine>
+            <RiseLine index={1} className="text-[50px] sm:text-6xl md:text-7xl lg:text-[96px]" style={serif}>Kingdom</RiseLine>
+            <RiseLine index={2} className="text-[50px] sm:text-6xl md:text-7xl lg:text-[96px] text-[#BF0A30]" style={H}>Champions</RiseLine>
+          </Reveal>
 
           {/* Sub-copy */}
-          <p className="text-white/70 text-sm sm:text-lg md:text-xl max-w-lg mb-7 leading-relaxed">
+          <Reveal variant="blur" delay={450} as="p" className="text-white/70 text-sm sm:text-lg md:text-xl max-w-lg mb-7 leading-relaxed">
             A church for people who want to live out their God-given purpose —
             <span style={serif}> in business, family, and beyond.</span>
-          </p>
+          </Reveal>
 
           {/* CTA row */}
-          <div className="flex flex-wrap gap-3">
+          <Reveal variant="up" delay={650} className="flex flex-wrap gap-3">
             <Link href="/new-here"
               className="flex items-center gap-2 bg-[#BF0A30] hover:bg-[#9A0826] text-white font-bold text-sm uppercase tracking-wider px-6 sm:px-7 py-3.5 sm:py-4 rounded-2xl transition-all hover:-translate-y-0.5 shadow-xl shadow-[rgba(191,10,48,0.4)]"
               style={H}
@@ -211,7 +215,7 @@ export default function HomePage({ recentSermons, isLive, upcomingEvents = [] }:
                 <span className="w-2 h-2 bg-white rounded-full animate-pulse" /> Live Now
               </Link>
             )}
-          </div>
+          </Reveal>
         </div>
       </section>
 
@@ -252,18 +256,20 @@ export default function HomePage({ recentSermons, isLive, upcomingEvents = [] }:
       ══════════════════════════════════════════════ */}
       <section id="services" className="bg-[#F5F0E8] py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-12">
+          <Reveal variant="none" className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-12">
             <h2 className="text-4xl md:text-5xl text-[#111827] leading-[1.1]" style={H}>
-              We can&apos;t wait to<br />
-              <span style={{ ...serif, fontWeight: 700 }}>meet you.</span>
+              <RiseLine index={0}>We can&apos;t wait to</RiseLine>
+              <RiseLine index={1} style={{ ...serif, fontWeight: 700 }}>meet you.</RiseLine>
             </h2>
-            <Link href="/new-here"
-              className="self-start sm:self-auto flex items-center gap-2 border-2 border-[#111827] text-[#111827] hover:bg-[#111827] hover:text-white font-bold text-xs uppercase tracking-widest px-5 py-3 rounded-2xl transition-all"
-              style={H}
-            >
-              New Here? →
-            </Link>
-          </div>
+            <RiseLine index={2} className="self-start sm:self-auto">
+              <Link href="/new-here"
+                className="inline-flex items-center gap-2 border-2 border-[#111827] text-[#111827] hover:bg-[#111827] hover:text-white font-bold text-xs uppercase tracking-widest px-5 py-3 rounded-2xl transition-all"
+                style={H}
+              >
+                New Here? →
+              </Link>
+            </RiseLine>
+          </Reveal>
 
           {/* Masonry bento — 3 cols, 2 rows */}
           <div
@@ -272,7 +278,7 @@ export default function HomePage({ recentSermons, isLive, upcomingEvents = [] }:
           >
 
             {/* ── SERVICE TIMES — wide dark card (col-span-2) */}
-            <div className="md:col-span-2 rounded-3xl bg-[#000000] p-8 flex flex-col min-h-[260px] relative overflow-hidden">
+            <Reveal variant="up" className="md:col-span-2 rounded-3xl bg-[#000000] p-8 flex flex-col min-h-[260px] relative overflow-hidden">
               {/* Background image fading on the right */}
               <div className="absolute right-0 top-0 bottom-0 w-2/5 md:w-1/3 pointer-events-none">
                 <img
@@ -302,14 +308,14 @@ export default function HomePage({ recentSermons, isLive, upcomingEvents = [] }:
               <p className="relative text-white/20 text-[10px] uppercase tracking-wider mt-8" style={H}>
                 Northern Bypass, next to Shell Windsor · Nairobi
               </p>
-            </div>
+            </Reveal>
 
             {/* ── R-KIDS — tall photo card (row-span-2) */}
-            <div className="md:row-span-2 rounded-3xl overflow-hidden relative min-h-[340px]">
+            <Reveal variant="up" delay={120} className="img-curtain md:row-span-2 rounded-3xl overflow-hidden relative min-h-[340px]">
               <img
                 src="/kids/children-1.jpeg"
                 alt="R-Kids Church"
-                className="w-full h-full object-cover"
+                className="img-curtain-img w-full h-full object-cover"
                 onError={(e) => { (e.target as HTMLImageElement).src = '/church-photos/IMG_1716.jpg'; }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
@@ -328,10 +334,10 @@ export default function HomePage({ recentSermons, isLive, upcomingEvents = [] }:
                   R-Kids Church <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
               </div>
-            </div>
+            </Reveal>
 
             {/* ── LOCATION — pure black */}
-            <div className="rounded-3xl bg-[#000000] p-7 flex flex-col min-h-[220px]">
+            <Reveal variant="up" delay={200} className="rounded-3xl bg-[#000000] p-7 flex flex-col min-h-[220px]">
               <p className="text-[#8B95A8] text-[10px] font-bold uppercase tracking-widest mb-4" style={H}>Our Location</p>
               <p className="text-white text-sm font-bold leading-relaxed flex-1" style={H}>
                 Rhema Grounds, Rhema Ave<br />
@@ -347,10 +353,10 @@ export default function HomePage({ recentSermons, isLive, upcomingEvents = [] }:
               >
                 See Directions <ArrowRight className="w-3.5 h-3.5" />
               </a>
-            </div>
+            </Reveal>
 
             {/* ── SERMONS — deep dark */}
-            <div className="rounded-3xl bg-[#000000] p-7 flex flex-col min-h-[220px]">
+            <Reveal variant="up" delay={280} className="rounded-3xl bg-[#000000] p-7 flex flex-col min-h-[220px]">
               <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-4" style={H}>Watch Sermons</p>
               <div className="flex-1">
                 {recentSermons[0] && (
@@ -368,7 +374,7 @@ export default function HomePage({ recentSermons, isLive, upcomingEvents = [] }:
               >
                 All Sermons <ArrowRight className="w-3.5 h-3.5" />
               </Link>
-            </div>
+            </Reveal>
 
           </div>
         </div>
@@ -379,27 +385,29 @@ export default function HomePage({ recentSermons, isLive, upcomingEvents = [] }:
       ══════════════════════════════════════ */}
       <section className="relative py-20 overflow-hidden">
         <div className="absolute inset-0">
-          <img
-            src="/church-photos/rhema-feast.jpg"
-            alt=""
-            className="w-full h-full object-cover"
-            style={{ filter: 'brightness(0.2)' }}
-          />
+          <Parallax speed={-0.12} className="absolute -inset-y-16 inset-x-0">
+            <img
+              src="/church-photos/rhema-feast.jpg"
+              alt=""
+              className="w-full h-full object-cover"
+              style={{ filter: 'brightness(0.2)' }}
+            />
+          </Parallax>
           <div className="absolute inset-0 bg-[#0A0C10]/70" />
         </div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 grid md:grid-cols-2 gap-6">
           {/* We're people like you */}
-          <div className="rounded-3xl p-10" style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.1)' }}>
+          <Reveal variant="left" className="rounded-3xl p-10" style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.1)' }}>
             <p className="text-[#BF0A30] text-xs font-bold uppercase tracking-widest mb-3" style={H}>New Here?</p>
             <h3 className="text-white text-3xl md:text-4xl mb-4 leading-tight" style={H}>
               We&apos;re People<br /><span style={serif}>Just Like You.</span>
             </h3>
             <p className="text-[#8B95A8] text-sm leading-relaxed mb-8">We are a community of believers passionate about Jesus Christ, rooted in the Word of God, and empowered by the Holy Spirit.</p>
             <Link href="/new-here" className="inline-flex items-center gap-2 bg-white text-[#111827] hover:bg-gray-100 font-bold text-xs uppercase tracking-widest px-6 py-3.5 rounded-xl transition-all" style={H}>Plan a Visit <ArrowRight className="w-3.5 h-3.5" /></Link>
-          </div>
+          </Reveal>
 
           {/* Connect to purpose */}
-          <div className="bg-[#BF0A30] rounded-3xl p-10 relative overflow-hidden">
+          <Reveal variant="right" delay={140} className="bg-[#BF0A30] rounded-3xl p-10 relative overflow-hidden">
             <div className="absolute -top-10 -right-10 w-64 h-64 bg-white/5 rounded-full" />
             <div className="absolute -bottom-16 -left-8 w-48 h-48 bg-white/5 rounded-full" />
             <p className="relative text-red-200 text-xs font-bold uppercase tracking-widest mb-3" style={H}>Get Involved</p>
@@ -408,7 +416,7 @@ export default function HomePage({ recentSermons, isLive, upcomingEvents = [] }:
             </h3>
             <p className="relative text-red-100 text-sm leading-relaxed mb-8">God wants to use you to make an impact in the world. You have unique gifts and talents that can transform our community.</p>
             <Link href="/r-connect" className="relative inline-flex items-center gap-2 bg-white text-[#BF0A30] hover:bg-red-50 font-bold text-xs uppercase tracking-widest px-6 py-3.5 rounded-xl transition-all" style={H}>Be Connected <ArrowRight className="w-3.5 h-3.5" /></Link>
-          </div>
+          </Reveal>
         </div>
       </section>
 
@@ -439,18 +447,21 @@ export default function HomePage({ recentSermons, isLive, upcomingEvents = [] }:
       ════════════════════════════════════ */}
       <section className="bg-[#F5F0E8] py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-14">
+          <Reveal variant="none" className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-14">
             <h2 className="text-4xl md:text-5xl text-[#111827] leading-[1.05]" style={H}>
-              There is a place here<br />
-              <span style={serif}>for Everybody.</span>
+              <RiseLine index={0}>There is a place here</RiseLine>
+              <RiseLine index={1} style={serif}>for Everybody.</RiseLine>
             </h2>
-            <Link href="/r-communities" className="self-start sm:self-auto flex items-center gap-1.5 border border-[#111827] text-[#111827] hover:bg-[#111827] hover:text-white font-bold text-xs uppercase tracking-widest px-5 py-3 rounded-2xl transition-all" style={H}>
-              All Communities →
-            </Link>
-          </div>
+            <RiseLine index={2} className="self-start sm:self-auto">
+              <Link href="/r-communities" className="inline-flex items-center gap-1.5 border border-[#111827] text-[#111827] hover:bg-[#111827] hover:text-white font-bold text-xs uppercase tracking-widest px-5 py-3 rounded-2xl transition-all" style={H}>
+                All Communities →
+              </Link>
+            </RiseLine>
+          </Reveal>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {COMMUNITIES.map((c) => (
-              <Link key={c.href} href={c.href} className="group relative rounded-3xl overflow-hidden block" style={{ aspectRatio: '3/4' }}>
+            {COMMUNITIES.map((c, ci) => (
+              <Reveal key={c.href} variant="up" delay={ci * 100}>
+              <Link href={c.href} className="group relative rounded-3xl overflow-hidden block" style={{ aspectRatio: '3/4' }}>
                 <img src={c.img} alt={c.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
                   onError={(e) => { (e.target as HTMLImageElement).src = '/church-photos/IMG_1716.jpg'; }} />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
@@ -473,6 +484,7 @@ export default function HomePage({ recentSermons, isLive, upcomingEvents = [] }:
                   </div>
                 </div>
               </Link>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -483,25 +495,28 @@ export default function HomePage({ recentSermons, isLive, upcomingEvents = [] }:
       ══════════════════════════════ */}
       <section className="bg-[#0A0C10] py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
-          <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-3 text-center" style={H}>Our Impact</p>
-          <h2 className="text-3xl md:text-5xl font-black text-white text-center mb-3 leading-tight" style={H}>
-            God Is Moving<br /><span style={serif}>at Ruach</span>
-          </h2>
-          <p className="text-[#8B95A8] text-sm text-center max-w-md mx-auto mb-12">
+          <Reveal variant="fade" as="p" className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-3 text-center" style={H}>Our Impact</Reveal>
+          <Reveal variant="none" as="h2" className="text-3xl md:text-5xl font-black text-white text-center mb-3 leading-tight" style={H}>
+            <RiseLine index={0}>God Is Moving</RiseLine>
+            <RiseLine index={1} style={serif}>at Ruach</RiseLine>
+          </Reveal>
+          <Reveal variant="blur" delay={200} as="p" className="text-[#8B95A8] text-sm text-center max-w-md mx-auto mb-12">
             Every Sunday, lives are transformed. Every week, the Kingdom grows. Here is what God has done — and is still doing.
-          </p>
+          </Reveal>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
             {[
               { number: '100,000+', label: 'Attended Rhema Feast 2025', sub: 'Uhuru Park, Nairobi' },
               { number: '3,000+',  label: 'Weekly Congregation',        sub: 'Across 3 Sunday services' },
               { number: '5',       label: 'Nairobi Assemblies',          sub: 'And still planting' },
               { number: '18+',     label: 'Years of Ministry',           sub: 'Since 2007' },
-            ].map((s) => (
-              <div key={s.label} className="text-center p-4 sm:p-6 rounded-2xl bg-[#12151C] border border-white/5">
-                <p className="text-xl md:text-2xl font-black text-[#BF0A30] mb-1 leading-tight" style={H}>{s.number}</p>
+            ].map((s, si) => (
+              <Reveal key={s.label} variant="scale" delay={si * 90} className="text-center p-4 sm:p-6 rounded-2xl bg-[#12151C] border border-white/5">
+                <p className="text-xl md:text-2xl font-black text-[#BF0A30] mb-1 leading-tight" style={H}>
+                  <CountUp value={s.number} />
+                </p>
                 <p className="text-white text-xs font-bold mb-0.5" style={H}>{s.label}</p>
                 <p className="text-[#8B95A8] text-[10px]">{s.sub}</p>
-              </div>
+              </Reveal>
             ))}
           </div>
           {/* 3-photo Rhema Feast grid */}
@@ -511,25 +526,25 @@ export default function HomePage({ recentSermons, isLive, upcomingEvents = [] }:
               { src: '/rhema-feast/rhema-feast2.jpg',             alt: 'Rhema Feast 2025 Worship' },
               { src: '/rhema-feast/Rhema-Feast-1-og_image.webp',  alt: 'Rhema Feast 2025 Crowd' },
             ].map((img, i) => (
-              <div key={i} className={`relative overflow-hidden ${i === 0 ? 'rounded-l-3xl' : i === 2 ? 'rounded-r-3xl' : ''}`} style={{ aspectRatio: '4/3' }}>
+              <Reveal key={i} variant="up" delay={i * 130} className={`img-curtain relative overflow-hidden rounded-3xl ${i === 0 ? 'rounded-l-3xl' : i === 2 ? 'rounded-r-3xl' : ''}`} style={{ aspectRatio: '4/3' }}>
                 <img
                   src={img.src}
                   alt={img.alt}
-                  className="w-full h-full object-cover rounded-3xl"
+                  className="img-curtain-img w-full h-full object-cover"
                   onError={(e) => { (e.target as HTMLImageElement).src = '/church-photos/rhema-feast.jpg'; }}
                 />
                 {i === 0 && (
                   <div className="absolute inset-0 bg-gradient-to-r from-[#0A0C10]/60 to-transparent pointer-events-none" />
                 )}
-              </div>
+              </Reveal>
             ))}
           </div>
-          <div className="mt-4 flex items-center justify-between">
+          <Reveal variant="fade" delay={300} className="mt-4 flex items-center justify-between">
             <div>
               <p className="text-white font-black text-lg" style={H}>Rhema Feast 2025</p>
               <p className="text-[#8B95A8] text-sm">10th Edition · Uhuru Park, Nairobi · 100,000+ in attendance</p>
             </div>
-          </div>
+          </Reveal>
         </div>
       </section>
 
@@ -538,18 +553,20 @@ export default function HomePage({ recentSermons, isLive, upcomingEvents = [] }:
       ═════════════════════════════════════ */}
       <section className="bg-[#F5F0E8] py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-14">
+          <Reveal variant="none" className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-14">
             <div>
               <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-3" style={H}>What to Expect</p>
               <h2 className="text-4xl md:text-5xl text-[#111827] leading-tight" style={H}>
-                What happens when<br />
-                <span style={serif}>you show up.</span>
+                <RiseLine index={0}>What happens when</RiseLine>
+                <RiseLine index={1} style={serif}>you show up.</RiseLine>
               </h2>
             </div>
-            <Link href="/new-here" className="self-start md:self-auto flex items-center gap-1.5 border border-[#111827] text-[#111827] hover:bg-[#111827] hover:text-white font-bold text-xs uppercase tracking-widest px-5 py-3 rounded-2xl transition-all" style={H}>
-              Plan a Visit →
-            </Link>
-          </div>
+            <RiseLine index={2} className="self-start md:self-auto">
+              <Link href="/new-here" className="inline-flex items-center gap-1.5 border border-[#111827] text-[#111827] hover:bg-[#111827] hover:text-white font-bold text-xs uppercase tracking-widest px-5 py-3 rounded-2xl transition-all" style={H}>
+                Plan a Visit →
+              </Link>
+            </RiseLine>
+          </Reveal>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {[
               {
@@ -570,8 +587,8 @@ export default function HomePage({ recentSermons, isLive, upcomingEvents = [] }:
                 body: 'You were never meant to do life alone. At Ruach, you\'ll find your people — in Crosspoints, communities, and Sunday services.',
                 img: '/church-photos/IMG_1716.jpg',
               },
-            ].map((item) => (
-              <div key={item.label} className="group relative rounded-3xl overflow-hidden" style={{ aspectRatio: '3/4' }}>
+            ].map((item, pi) => (
+              <Reveal key={item.label} variant="up" delay={pi * 130} className="group relative rounded-3xl overflow-hidden" style={{ aspectRatio: '3/4' }}>
                 <img src={item.img} alt={item.label} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                   onError={(e) => { (e.target as HTMLImageElement).src = '/church-photos/IMG_1716.jpg'; }} />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
@@ -580,7 +597,7 @@ export default function HomePage({ recentSermons, isLive, upcomingEvents = [] }:
                   <h3 className="text-white text-xl font-black leading-snug mb-2" style={H}>{item.title}</h3>
                   <p className="text-white/65 text-sm leading-relaxed">{item.body}</p>
                 </div>
-              </div>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -591,7 +608,7 @@ export default function HomePage({ recentSermons, isLive, upcomingEvents = [] }:
       ════════════════════════════════ */}
       <section className="bg-[#000] py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
-          <div className="flex items-center justify-between gap-4 mb-10 flex-wrap">
+          <Reveal variant="fade" className="flex items-center justify-between gap-4 mb-10 flex-wrap">
             <div className="flex items-center gap-3">
               <CalendarDays className="w-4 h-4 text-[#BF0A30]" />
               <span className="text-white/40 text-xs font-bold uppercase tracking-widest" style={H}>
@@ -601,7 +618,7 @@ export default function HomePage({ recentSermons, isLive, upcomingEvents = [] }:
             <Link href="/r-events" className="text-white/40 hover:text-white/70 text-xs font-bold uppercase tracking-widest transition-colors" style={H}>
               All Events →
             </Link>
-          </div>
+          </Reveal>
 
           {upcomingEvents.length === 0 ? (
             <div className="text-center py-12 rounded-2xl" style={{ background: 'rgba(18,21,28,0.9)', border: '1px solid rgba(255,255,255,0.08)' }}>
@@ -611,10 +628,10 @@ export default function HomePage({ recentSermons, isLive, upcomingEvents = [] }:
             </div>
           ) : (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {upcomingEvents.map((ev) => {
+              {upcomingEvents.map((ev, evi) => {
                 const dateLabel = new Date(ev.event_date).toLocaleDateString('en-KE', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' });
                 return (
-                  <div key={ev.id} className="rounded-2xl overflow-hidden flex flex-col"
+                  <Reveal key={ev.id} variant="up" delay={evi * 110} className="rounded-2xl overflow-hidden flex flex-col"
                     style={{ background: 'rgba(18,21,28,0.9)', border: '1px solid rgba(255,255,255,0.08)' }}>
                     {ev.image_url && (
                       <div className="aspect-square overflow-hidden">
@@ -641,7 +658,7 @@ export default function HomePage({ recentSermons, isLive, upcomingEvents = [] }:
                         More Details <ArrowRight className="w-3 h-3" />
                       </Link>
                     </div>
-                  </div>
+                  </Reveal>
                 );
               })}
             </div>
@@ -655,20 +672,22 @@ export default function HomePage({ recentSermons, isLive, upcomingEvents = [] }:
       {recentSermons.length > 0 && (
         <section className="bg-[#0A0C10] py-16 sm:py-24 border-t border-white/5 overflow-hidden">
           <div className="max-w-7xl mx-auto">
-            <div className="flex items-center justify-between gap-4 mb-8 px-4 sm:px-6 lg:px-12">
+            <Reveal variant="none" className="flex items-center justify-between gap-4 mb-8 px-4 sm:px-6 lg:px-12">
               <h2 className="text-2xl sm:text-3xl md:text-4xl text-white leading-tight" style={H}>
-                Sermons
+                <RiseLine index={0}>Sermons</RiseLine>
               </h2>
-              <Link href="/sermons" className="flex-shrink-0 border border-white/20 text-white/70 hover:text-white hover:border-white/40 font-bold text-[10px] sm:text-xs uppercase tracking-widest px-4 sm:px-5 py-2.5 sm:py-3 rounded-2xl transition-all" style={H}>
-                View All →
-              </Link>
-            </div>
+              <RiseLine index={1}>
+                <Link href="/sermons" className="inline-block flex-shrink-0 border border-white/20 text-white/70 hover:text-white hover:border-white/40 font-bold text-[10px] sm:text-xs uppercase tracking-widest px-4 sm:px-5 py-2.5 sm:py-3 rounded-2xl transition-all" style={H}>
+                  View All →
+                </Link>
+              </RiseLine>
+            </Reveal>
             {/* Moving themes — hover / auto-rotating featured hero */}
-            <div className="px-4 sm:px-6 lg:px-12">
+            <Reveal variant="scale" className="px-4 sm:px-6 lg:px-12">
               <div className="rounded-3xl overflow-hidden border border-white/10">
                 <ThemeHero sermons={recentSermons} />
               </div>
-            </div>
+            </Reveal>
           </div>
         </section>
       )}
@@ -693,15 +712,19 @@ export default function HomePage({ recentSermons, isLive, upcomingEvents = [] }:
         <div className="absolute inset-0 bg-[#0A0C10]/88" />
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
           <div className="grid lg:grid-cols-3 gap-16">
-            <div>
+            <Reveal variant="left">
               <h2 className="text-4xl text-white mb-4" style={H}>FAQs</h2>
               <p className="text-[#8B95A8] text-sm leading-relaxed">These are frequently asked questions about Ruach Tabernacle.</p>
               <Link href="/all-about-ruach" className="mt-6 inline-flex items-center gap-1.5 text-[#BF0A30] text-xs font-bold uppercase tracking-wider" style={H}>
                 All About Ruach <ArrowRight className="w-3.5 h-3.5" />
               </Link>
-            </div>
+            </Reveal>
             <div className="lg:col-span-2 space-y-3">
-              {FAQS.map((f, i) => <FaqItem key={i} q={f.q} a={f.a} />)}
+              {FAQS.map((f, i) => (
+                <Reveal key={i} variant="up" delay={i * 70}>
+                  <FaqItem q={f.q} a={f.a} />
+                </Reveal>
+              ))}
             </div>
           </div>
         </div>

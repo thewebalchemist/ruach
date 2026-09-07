@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import Layout from '@/components/shared/Layout';
 import ExpectGallery from '@/components/shared/ExpectGallery';
+import { Reveal, RiseLine } from '@/components/shared/Reveal';
 
 // Headline voice: Bricolage Grotesque; accent voice: Fraunces (upright serif)
 const H = { fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 800 };
@@ -39,18 +40,18 @@ export default function NewHerePage() {
         </div>
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 pb-24 pt-36 w-full">
-          <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-5" style={H}>
+          <Reveal variant="fade" as="p" className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-5" style={H}>
             New Here?
-          </p>
-          <h1 className="text-[38px] sm:text-5xl md:text-[58px] text-white leading-[1.05] tracking-tight mb-6" style={H}>
-            Come as a guest,<br />
-            <span style={serif}>Stay as family.</span>
-          </h1>
-          <p className="text-[#8B95A8] text-lg mb-10 max-w-xl leading-relaxed">
+          </Reveal>
+          <Reveal variant="none" as="h1" className="text-[38px] sm:text-5xl md:text-[58px] text-white leading-[1.05] tracking-tight mb-6" style={H}>
+            <RiseLine index={0}>Come as a guest,</RiseLine>
+            <RiseLine index={1} style={serif}>Stay as family.</RiseLine>
+          </Reveal>
+          <Reveal variant="blur" delay={350} as="p" className="text-[#8B95A8] text-lg mb-10 max-w-xl leading-relaxed">
             We meet every Sunday at 8:00AM, 10:00AM, and 12:30PM along the Northern
             Bypass, Windsor, Nairobi. You&apos;ll find people of all ages and walks of life.
-          </p>
-          <div className="flex flex-wrap gap-3">
+          </Reveal>
+          <Reveal variant="up" delay={550} className="flex flex-wrap gap-3">
             <Link
               href="/contact"
               className="flex items-center gap-2 bg-[#BF0A30] hover:bg-[#9A0826] text-white font-bold text-sm uppercase tracking-wider px-7 py-4 rounded-2xl transition-all hover:-translate-y-0.5 shadow-xl shadow-[rgba(191,10,48,0.4)]"
@@ -65,7 +66,7 @@ export default function NewHerePage() {
             >
               Our Story
             </Link>
-          </div>
+          </Reveal>
         </div>
       </section>
 
@@ -115,20 +116,20 @@ export default function NewHerePage() {
       <section className="bg-[#F5F0E8] py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
 
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-12">
+          <Reveal variant="none" className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-12">
             <h2 className="text-4xl md:text-5xl text-[#111827] leading-[1.1]" style={H}>
-              You&apos;re So Loved<br />
-              <span style={{ ...serif, fontWeight: 700 }}>and Valued.</span>
+              <RiseLine index={0}>You&apos;re So Loved</RiseLine>
+              <RiseLine index={1} style={{ ...serif, fontWeight: 700 }}>and Valued.</RiseLine>
             </h2>
-            <p className="text-[#6B7280] max-w-xs text-sm leading-relaxed">
+            <Reveal variant="blur" delay={250} as="p" className="text-[#6B7280] max-w-xs text-sm leading-relaxed">
               Our team is committed to making your first visit enjoyable and stress-free.
-            </p>
-          </div>
+            </Reveal>
+          </Reveal>
 
           <div className="flex flex-col gap-4">
 
             {/* ── ROW 1: Full-width service times banner */}
-            <div className="rounded-3xl bg-[#111111] overflow-hidden relative">
+            <Reveal variant="up" className="rounded-3xl bg-[#111111] overflow-hidden relative">
               {/* Photo bleed on the right */}
               <div className="absolute right-0 top-0 bottom-0 w-2/5 md:w-1/3 pointer-events-none">
                 <img
@@ -163,13 +164,13 @@ export default function NewHerePage() {
                   Rhema Grounds, Northern Bypass · next to Shell Windsor · Nairobi
                 </p>
               </div>
-            </div>
+            </Reveal>
 
             {/* ── ROW 2: Location photo card + Connect card */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
               {/* Location — photo background */}
-              <div className="rounded-3xl overflow-hidden relative min-h-[300px]">
+              <Reveal variant="left" className="rounded-3xl overflow-hidden relative min-h-[300px]">
                 <img
                   src="/church-photos/aug-2025-a.jpg"
                   alt="Ruach Tabernacle"
@@ -197,10 +198,10 @@ export default function NewHerePage() {
                     </a>
                   </div>
                 </div>
-              </div>
+              </Reveal>
 
               {/* Connect — red card */}
-              <div className="rounded-3xl bg-[#BF0A30] p-8 relative overflow-hidden flex flex-col justify-between min-h-[300px]">
+              <Reveal variant="right" delay={140} className="rounded-3xl bg-[#BF0A30] p-8 relative overflow-hidden flex flex-col justify-between min-h-[300px]">
                 <div className="absolute -top-10 -right-10 w-56 h-56 bg-white/5 rounded-full pointer-events-none" />
                 <div className="absolute -bottom-14 -left-8 w-44 h-44 bg-white/5 rounded-full pointer-events-none" />
                 <div className="relative">
@@ -222,7 +223,7 @@ export default function NewHerePage() {
                 >
                   Explore Communities <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
-              </div>
+              </Reveal>
 
             </div>
           </div>
@@ -265,16 +266,16 @@ export default function NewHerePage() {
       <section className="bg-[#0A0C10] py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
           <div className="grid md:grid-cols-2 gap-10 lg:gap-16 items-center">
-            <div className="relative rounded-3xl overflow-hidden aspect-[4/3]">
+            <Reveal variant="left" className="img-curtain relative rounded-3xl overflow-hidden aspect-[4/3]">
               <img
                 src="/kids/children-1.jpeg"
                 alt="R-Kids Church"
-                className="w-full h-full object-cover"
+                className="img-curtain-img w-full h-full object-cover"
                 onError={(e) => { (e.target as HTMLImageElement).src = '/church-photos/IMG_1716.jpg'; }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-            </div>
-            <div>
+            </Reveal>
+            <Reveal variant="right" delay={140}>
               <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-5" style={H}>
                 R-Kids Church
               </p>
@@ -294,7 +295,7 @@ export default function NewHerePage() {
               >
                 R-Kids Church <ArrowRight className="w-3.5 h-3.5" />
               </Link>
-            </div>
+            </Reveal>
           </div>
         </div>
       </section>
@@ -314,20 +315,20 @@ export default function NewHerePage() {
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
           {/* Section header */}
-          <div className="mb-14">
+          <Reveal variant="none" className="mb-14">
             <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-3" style={H}>
               A Word from Our Leaders
             </p>
             <h2 className="text-4xl md:text-5xl text-white leading-tight" style={H}>
-              Welcome to<br />
-              <span style={serif}>the family.</span>
+              <RiseLine index={0}>Welcome to</RiseLine>
+              <RiseLine index={1} style={serif}>the family.</RiseLine>
             </h2>
-          </div>
+          </Reveal>
 
           <div className="grid md:grid-cols-2 gap-6">
 
             {/* Rev. Julian Kyula */}
-            <div className="rounded-3xl overflow-hidden" style={{ background: 'rgba(18,21,28,0.75)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <Reveal variant="left" className="rounded-3xl overflow-hidden" style={{ background: 'rgba(18,21,28,0.75)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.08)' }}>
               <div className="relative aspect-[4/3] overflow-hidden">
                 <img
                   src="/pastors/rev-julian1.jpg"
@@ -348,10 +349,10 @@ export default function NewHerePage() {
                   your work, and your community. We are so glad you are here.&rdquo;
                 </blockquote>
               </div>
-            </div>
+            </Reveal>
 
             {/* Pst. Zino */}
-            <div className="rounded-3xl overflow-hidden" style={{ background: 'rgba(18,21,28,0.75)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <Reveal variant="right" delay={140} className="rounded-3xl overflow-hidden" style={{ background: 'rgba(18,21,28,0.75)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.08)' }}>
               <div className="relative aspect-[4/3] overflow-hidden">
                 <img
                   src="/pastors/pst-zino-portrait.jpg"
@@ -372,11 +373,11 @@ export default function NewHerePage() {
                   walking with you every step of the way. Welcome home.&rdquo;
                 </blockquote>
               </div>
-            </div>
+            </Reveal>
 
           </div>
 
-          <div className="mt-10 flex justify-start">
+          <Reveal variant="fade" delay={200} className="mt-10 flex justify-start">
             <Link
               href="/our-team"
               className="inline-flex items-center gap-1.5 border border-white/20 text-white/70 hover:text-white hover:border-white/40 font-bold text-xs uppercase tracking-widest px-5 py-3 rounded-2xl transition-all"
@@ -384,7 +385,7 @@ export default function NewHerePage() {
             >
               Meet Our Team <ArrowRight className="w-3.5 h-3.5" />
             </Link>
-          </div>
+          </Reveal>
         </div>
       </section>
 
@@ -393,13 +394,14 @@ export default function NewHerePage() {
       ══════════════════════════════════════════════ */}
       <section className="bg-[#BF0A30] py-16 text-center">
         <div className="max-w-2xl mx-auto px-8">
-          <h2 className="text-4xl md:text-5xl text-white mb-4" style={H}>
-            See you on<br /><span style={serif}>Sunday.</span>
-          </h2>
-          <p className="text-red-100 mb-8 leading-relaxed">
+          <Reveal variant="none" as="h2" className="text-4xl md:text-5xl text-white mb-4" style={H}>
+            <RiseLine index={0}>See you on</RiseLine>
+            <RiseLine index={1} style={serif}>Sunday.</RiseLine>
+          </Reveal>
+          <Reveal variant="blur" delay={200} as="p" className="text-red-100 mb-8 leading-relaxed">
             Check out some of our upcoming events, or plan your first visit with us.
-          </p>
-          <div className="flex flex-wrap gap-3 justify-center">
+          </Reveal>
+          <Reveal variant="up" delay={300} className="flex flex-wrap gap-3 justify-center">
             <Link
               href="/r-events"
               className="inline-flex items-center gap-2 bg-white text-[#BF0A30] hover:bg-red-50 font-bold text-xs uppercase tracking-widest px-7 py-4 rounded-2xl transition-all"
@@ -414,7 +416,7 @@ export default function NewHerePage() {
             >
               Get Directions <ArrowRight className="w-3.5 h-3.5" />
             </Link>
-          </div>
+          </Reveal>
         </div>
       </section>
 

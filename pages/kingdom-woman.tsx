@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import Layout from '@/components/shared/Layout';
+import { Reveal, RiseLine } from '@/components/shared/Reveal';
 
 const H = { fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 800 };
 const serif = { fontFamily: 'Fraunces, Georgia, serif', fontWeight: 600 };
@@ -58,19 +59,21 @@ export default function KingdomWomanPage() {
           </span>
         </div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 pb-20 pt-36 w-full">
-          <span
-            className="inline-block mb-5 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest text-white border border-white/15"
-            style={{ ...H, background: 'rgba(191,10,48,0.18)' }}
-          >
-            Women Ministry
-          </span>
-          <h1 className="text-[38px] sm:text-5xl md:text-[58px] text-white tracking-tight leading-tight mb-4" style={H}>
-            Kingdom <br />
-            <span style={serif}>Woman</span>
-          </h1>
-          <p className="text-white/55 text-lg max-w-lg" style={serif}>
+          <Reveal variant="fade">
+            <span
+              className="inline-block mb-5 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest text-white border border-white/15"
+              style={{ ...H, background: 'rgba(191,10,48,0.18)' }}
+            >
+              Women Ministry
+            </span>
+          </Reveal>
+          <Reveal variant="none" as="h1" className="text-[38px] sm:text-5xl md:text-[58px] text-white tracking-tight leading-tight mb-4" style={H}>
+            <RiseLine index={0}>Kingdom</RiseLine>
+            <RiseLine index={1} style={serif}>Woman</RiseLine>
+          </Reveal>
+          <Reveal variant="blur" delay={350} as="p" className="text-white/55 text-lg max-w-lg" style={serif}>
             Rooted in faith. Refined in grace. Rising in purpose.
-          </p>
+          </Reveal>
         </div>
       </section>
 
@@ -108,32 +111,34 @@ export default function KingdomWomanPage() {
           <div className="grid md:grid-cols-2 gap-16 items-start">
             {/* Left */}
             <div>
-              <p className="text-[#BF0A30] text-[10px] font-black uppercase tracking-widest mb-5" style={H}>Who We Are</p>
-              <h2 className="text-4xl md:text-5xl text-[#111827] mb-6 leading-tight" style={H}>
-                Women who know <br />
-                <span style={serif}>their worth.</span>
-              </h2>
-              <p className="text-[#374151] leading-relaxed mb-4">
+              <Reveal variant="fade" as="p" className="text-[#BF0A30] text-[10px] font-black uppercase tracking-widest mb-5" style={H}>Who We Are</Reveal>
+              <Reveal variant="none" as="h2" className="text-4xl md:text-5xl text-[#111827] mb-6 leading-tight" style={H}>
+                <RiseLine index={0}>Women who know</RiseLine>
+                <RiseLine index={1} style={serif}>their worth.</RiseLine>
+              </Reveal>
+              <Reveal variant="blur" delay={200} as="p" className="text-[#374151] leading-relaxed mb-4">
                 Kingdom Woman is Ruach Tabernacle&apos;s women&apos;s ministry — a vibrant community where women of all ages and seasons of life are empowered to discover who they truly are in God, deepen their faith, and live with bold Kingdom purpose.
-              </p>
-              <p className="text-[#374151] leading-relaxed mb-8">
+              </Reveal>
+              <Reveal variant="blur" delay={300} as="p" className="text-[#374151] leading-relaxed mb-8">
                 Through fellowship, prayer, teaching, and sisterhood, we walk together — building women who are not just surviving, but truly thriving in every area of life. You are never alone here.
-              </p>
-              <Link
-                href="/new-here"
-                className="inline-flex items-center gap-2 bg-[#BF0A30] text-white font-black text-xs uppercase tracking-widest px-6 py-3.5 rounded-2xl hover:bg-[#9A0826] transition-colors shadow-lg shadow-[rgba(191,10,48,0.3)]"
-                style={H}
-              >
-                Join Us Sunday <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
+              </Reveal>
+              <Reveal variant="up" delay={400}>
+                <Link
+                  href="/new-here"
+                  className="inline-flex items-center gap-2 bg-[#BF0A30] text-white font-black text-xs uppercase tracking-widest px-6 py-3.5 rounded-2xl hover:bg-[#9A0826] transition-colors shadow-lg shadow-[rgba(191,10,48,0.3)]"
+                  style={H}
+                >
+                  Join Us Sunday <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </Reveal>
             </div>
             {/* Right — activity cards */}
             <div className="space-y-4">
-              {ACTIVITIES.map((a) => (
-                <div key={a.title} className="bg-white rounded-2xl p-6 border border-[#E5E0D5]">
+              {ACTIVITIES.map((a, ai) => (
+                <Reveal key={a.title} variant="right" delay={ai * 110} className="bg-white rounded-2xl p-6 border border-[#E5E0D5]">
                   <h3 className="text-[#111827] text-base font-black mb-2" style={H}>{a.title}</h3>
                   <p className="text-[#6B7280] text-sm leading-relaxed">{a.desc}</p>
-                </div>
+                </Reveal>
               ))}
             </div>
           </div>
@@ -166,16 +171,16 @@ export default function KingdomWomanPage() {
       {/* PHOTO GRID */}
       <section className="bg-[#0A0C10] py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
-          <div className="mb-12">
+          <Reveal variant="none" className="mb-12">
             <p className="text-[#BF0A30] text-xs font-black uppercase tracking-widest mb-3" style={H}>Our Community</p>
             <h2 className="text-4xl md:text-5xl text-white leading-tight" style={H}>
-              Life at Kingdom Woman
+              <RiseLine index={0}>Life at Kingdom Woman</RiseLine>
             </h2>
-          </div>
+          </Reveal>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {PHOTOS.map((card) => (
+            {PHOTOS.map((card, ci) => (
+              <Reveal key={card.name} variant="up" delay={ci * 110}>
               <Link
-                key={card.name}
                 href="/new-here"
                 className="group relative rounded-3xl overflow-hidden block"
                 style={{ aspectRatio: '3/4' }}
@@ -202,6 +207,7 @@ export default function KingdomWomanPage() {
                   </div>
                 </div>
               </Link>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -210,13 +216,13 @@ export default function KingdomWomanPage() {
       {/* CTA */}
       <section className="bg-[#BF0A30] py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 text-center">
-          <h2 className="text-4xl md:text-5xl text-white mb-4 leading-tight" style={H}>
-            Join Kingdom Woman this Sunday.
-          </h2>
-          <p className="text-white/70 text-base mb-10 max-w-lg mx-auto" style={serif}>
+          <Reveal variant="none" as="h2" className="text-4xl md:text-5xl text-white mb-4 leading-tight" style={H}>
+            <RiseLine index={0}>Join Kingdom Woman this Sunday.</RiseLine>
+          </Reveal>
+          <Reveal variant="blur" delay={200} as="p" className="text-white/70 text-base mb-10 max-w-lg mx-auto" style={serif}>
             You were made for more. Come discover it with us.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          </Reveal>
+          <Reveal variant="up" delay={350} className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               href="/new-here"
               className="inline-flex items-center justify-center gap-2 bg-white text-[#BF0A30] font-black text-xs uppercase tracking-widest px-8 py-4 rounded-2xl hover:bg-[#F5F0E8] transition-colors shadow-xl"
@@ -231,7 +237,7 @@ export default function KingdomWomanPage() {
             >
               Explore Communities <ArrowRight className="w-3.5 h-3.5" />
             </Link>
-          </div>
+          </Reveal>
         </div>
       </section>
 

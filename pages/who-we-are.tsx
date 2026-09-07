@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { ChevronDown, ArrowRight, Copy, Check } from 'lucide-react';
 import Layout from '@/components/shared/Layout';
 import ExpectGallery from '@/components/shared/ExpectGallery';
+import { Reveal, RiseLine } from '@/components/shared/Reveal';
 
 // Headline voice: Bricolage Grotesque; accent voice: Fraunces (upright serif)
 const H = { fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 800 };
@@ -187,16 +188,16 @@ export default function WhoWeArePage() {
           </span>
         </div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 pb-24 pt-36 w-full">
-          <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-5" style={H}>Who We Are</p>
-          <h1 className="text-[38px] sm:text-5xl md:text-[58px] text-white tracking-tight mb-6 leading-[1.05]" style={H}>
-            God-focused.<br />
-            <span style={serif}>Service-oriented.</span><br />
-            Community-driven.
-          </h1>
-          <p className="text-[#8B95A8] text-lg max-w-xl leading-relaxed">
+          <Reveal variant="fade" as="p" className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-5" style={H}>Who We Are</Reveal>
+          <Reveal variant="none" as="h1" className="text-[38px] sm:text-5xl md:text-[58px] text-white tracking-tight mb-6 leading-[1.05]" style={H}>
+            <RiseLine index={0}>God-focused.</RiseLine>
+            <RiseLine index={1} style={serif}>Service-oriented.</RiseLine>
+            <RiseLine index={2}>Community-driven.</RiseLine>
+          </Reveal>
+          <Reveal variant="blur" delay={450} as="p" className="text-[#8B95A8] text-lg max-w-xl leading-relaxed">
             We are Ruach Tabernacle — a church built on the Word of God, empowered by the Holy Spirit,
             and called to transform lives across Nairobi and beyond.
-          </p>
+          </Reveal>
         </div>
       </section>
 
@@ -237,18 +238,22 @@ export default function WhoWeArePage() {
       ══════════════════════════════════════════════ */}
       <section className="bg-[#F5F0E8] py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
-          <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-4" style={H}>
+          <Reveal variant="fade" as="p" className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-4" style={H}>
             Know Our Pursuits
-          </p>
-          <h2 className="text-4xl md:text-5xl text-[#111827] mb-14 leading-tight" style={H}>
-            As a church, these are the three<br className="hidden md:block" />
-            ways we live out our mission.
-          </h2>
+          </Reveal>
+          <Reveal variant="none" as="h2" className="text-4xl md:text-5xl text-[#111827] mb-14 leading-tight" style={H}>
+            <RiseLine index={0}>
+              As a church, these are the three<br className="hidden md:block" />
+              ways we live out our mission.
+            </RiseLine>
+          </Reveal>
 
           <div className="space-y-3">
             {PURSUITS.map((p, i) => (
-              <div
+              <Reveal
                 key={p.label}
+                variant="up"
+                delay={i * 120}
                 className={`rounded-3xl bg-[#000] p-8 md:p-10 flex items-start gap-6 md:gap-8 ${
                   i === 1 ? 'md:ml-16' : i === 2 ? 'md:ml-32' : ''
                 }`}
@@ -265,7 +270,7 @@ export default function WhoWeArePage() {
                   <h3 className="text-white text-2xl md:text-3xl font-black mb-3" style={H}>{p.label}</h3>
                   <p className="text-[#8B95A8] text-sm leading-relaxed max-w-lg">{p.text}</p>
                 </div>
-              </div>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -278,7 +283,7 @@ export default function WhoWeArePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 grid lg:grid-cols-2 gap-16 items-start">
 
           {/* Statement */}
-          <div>
+          <Reveal variant="left">
             <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-6" style={H}>
               Our Statement of Belief
             </p>
@@ -313,10 +318,10 @@ export default function WhoWeArePage() {
                 {copied ? 'Copied!' : 'Copy Statement'}
               </button>
             </div>
-          </div>
+          </Reveal>
 
           {/* Vision / Mission / Values */}
-          <div className="space-y-8 pt-2">
+          <Reveal variant="right" delay={140} className="space-y-8 pt-2">
             <div>
               <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-3" style={H}>Our Vision</p>
               <p className="text-[#D1D5DB] leading-relaxed text-sm">
@@ -345,7 +350,7 @@ export default function WhoWeArePage() {
                 ))}
               </div>
             </div>
-          </div>
+          </Reveal>
         </div>
       </section>
 
@@ -365,7 +370,7 @@ export default function WhoWeArePage() {
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
 
           {/* Mobile: small image strip */}
-          <div className="flex gap-3 overflow-x-auto pb-4 mb-10 scrollbar-hide md:hidden">
+          <Reveal variant="fade" className="flex gap-3 overflow-x-auto pb-4 mb-10 scrollbar-hide md:hidden">
             {[
               '/church-photos/advancing-kingdom.jpg',
               '/church-photos/aug-2025-a.jpg',
@@ -375,12 +380,12 @@ export default function WhoWeArePage() {
                 <img src={src} alt="" className="w-full h-full object-cover" />
               </div>
             ))}
-          </div>
+          </Reveal>
 
           <div className="grid md:grid-cols-2 gap-12 lg:gap-20 items-start">
 
             {/* Left column: staggered photo collage (desktop only) */}
-            <div className="relative hidden md:block" style={{ height: '560px' }}>
+            <Reveal variant="left" className="relative hidden md:block" style={{ height: '560px' }}>
               {/* Photo 1 — top left */}
               <div
                 className="absolute rounded-2xl overflow-hidden shadow-2xl"
@@ -417,17 +422,17 @@ export default function WhoWeArePage() {
                   onError={(e) => { (e.target as HTMLImageElement).src = '/church-photos/IMG_1716.jpg'; }}
                 />
               </div>
-            </div>
+            </Reveal>
 
             {/* Right column: header + drip timeline */}
             <div>
-              <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-4" style={H}>
+              <Reveal variant="fade" as="p" className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-4" style={H}>
                 Our Story
-              </p>
-              <h2 className="text-4xl md:text-5xl text-white mb-12 leading-tight" style={H}>
-                How It All<br />
-                <span style={serif}>Began</span>
-              </h2>
+              </Reveal>
+              <Reveal variant="none" as="h2" className="text-4xl md:text-5xl text-white mb-12 leading-tight" style={H}>
+                <RiseLine index={0}>How It All</RiseLine>
+                <RiseLine index={1} style={serif}>Began</RiseLine>
+              </Reveal>
 
               <div className="relative">
                 {/* Vertical line */}
@@ -435,7 +440,7 @@ export default function WhoWeArePage() {
 
                 <div className="space-y-0">
                   {TIMELINE.map((item, i) => (
-                    <div key={item.year} className="relative flex gap-6 pb-10 last:pb-0">
+                    <Reveal key={item.year} variant="up" delay={i * 100} className="relative flex gap-6 pb-10 last:pb-0">
                       {/* Dot */}
                       <div className="flex-shrink-0 flex flex-col items-center pt-1" style={{ width: '20px' }}>
                         <div
@@ -455,7 +460,7 @@ export default function WhoWeArePage() {
                         <p className="text-white font-black text-base mb-1.5" style={H}>{item.title}</p>
                         <p className="text-[#8B95A8] text-sm leading-relaxed">{item.text}</p>
                       </div>
-                    </div>
+                    </Reveal>
                   ))}
                 </div>
               </div>
@@ -500,26 +505,29 @@ export default function WhoWeArePage() {
       ══════════════════════════════════════════════ */}
       <section className="bg-[#0A0C10] py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
-          <div className="text-center mb-14">
+          <Reveal variant="none" className="text-center mb-14">
             <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-3" style={H}>
               What We Believe
             </p>
-            <h2 className="text-4xl md:text-5xl text-white mb-4" style={H}>Essential Beliefs</h2>
-            <p className="text-[#8B95A8] max-w-xl mx-auto text-sm leading-relaxed">
+            <h2 className="text-4xl md:text-5xl text-white mb-4" style={H}>
+              <RiseLine index={0}>Essential Beliefs</RiseLine>
+            </h2>
+            <Reveal variant="blur" delay={200} as="p" className="text-[#8B95A8] max-w-xl mx-auto text-sm leading-relaxed">
               In essential beliefs, we uphold unity. In non-essential beliefs, we practice liberty.
               In all our beliefs, we show love.
-            </p>
-          </div>
+            </Reveal>
+          </Reveal>
           <div className="grid md:grid-cols-2 gap-3 max-w-4xl mx-auto">
             {BELIEFS.map((b, i) => (
-              <BeliefItem
-                key={b.title}
-                title={b.title}
-                text={b.text}
-                scripture={b.scripture}
-                isOpen={openBelief === i}
-                onToggle={() => setOpenBelief(openBelief === i ? null : i)}
-              />
+              <Reveal key={b.title} variant="up" delay={(i % 2) * 90}>
+                <BeliefItem
+                  title={b.title}
+                  text={b.text}
+                  scripture={b.scripture}
+                  isOpen={openBelief === i}
+                  onToggle={() => setOpenBelief(openBelief === i ? null : i)}
+                />
+              </Reveal>
             ))}
           </div>
         </div>
@@ -539,19 +547,20 @@ export default function WhoWeArePage() {
         </div>
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
-          <div className="mb-14">
+          <Reveal variant="none" className="mb-14">
             <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-3" style={H}>
               A Word from Our Leaders
             </p>
             <h2 className="text-4xl md:text-5xl text-white leading-tight" style={H}>
-              Welcome to<br />
-              <span style={serif}>the family.</span>
+              <RiseLine index={0}>Welcome to</RiseLine>
+              <RiseLine index={1} style={serif}>the family.</RiseLine>
             </h2>
-          </div>
+          </Reveal>
 
           <div className="grid md:grid-cols-2 gap-6">
             {/* Rev. Julian Kyula */}
-            <div
+            <Reveal
+              variant="left"
               className="rounded-3xl overflow-hidden"
               style={{
                 background: 'rgba(18,21,28,0.75)',
@@ -581,10 +590,12 @@ export default function WhoWeArePage() {
                   generation.&rdquo;
                 </blockquote>
               </div>
-            </div>
+            </Reveal>
 
             {/* Pst. Zino */}
-            <div
+            <Reveal
+              variant="right"
+              delay={140}
               className="rounded-3xl overflow-hidden"
               style={{
                 background: 'rgba(18,21,28,0.75)',
@@ -614,10 +625,10 @@ export default function WhoWeArePage() {
                   marketplace.&rdquo;
                 </blockquote>
               </div>
-            </div>
+            </Reveal>
           </div>
 
-          <div className="mt-10">
+          <Reveal variant="fade" delay={200} className="mt-10">
             <Link
               href="/our-team"
               className="inline-flex items-center gap-1.5 border border-white/20 text-white/70 hover:text-white hover:border-white/40 font-bold text-xs uppercase tracking-widest px-5 py-3 rounded-2xl transition-all"
@@ -625,7 +636,7 @@ export default function WhoWeArePage() {
             >
               Meet Our Team <ArrowRight className="w-3.5 h-3.5" />
             </Link>
-          </div>
+          </Reveal>
         </div>
       </section>
 
@@ -634,14 +645,14 @@ export default function WhoWeArePage() {
       ══════════════════════════════════════════════ */}
       <section className="bg-[#BF0A30] py-16 text-center">
         <div className="max-w-2xl mx-auto px-8">
-          <h2 className="text-4xl md:text-5xl text-white mb-5" style={H}>
-            See you on<br />
-            <span style={serif}>Sunday.</span>
-          </h2>
-          <p className="text-red-100 mb-8 leading-relaxed">
+          <Reveal variant="none" as="h2" className="text-4xl md:text-5xl text-white mb-5" style={H}>
+            <RiseLine index={0}>See you on</RiseLine>
+            <RiseLine index={1} style={serif}>Sunday.</RiseLine>
+          </Reveal>
+          <Reveal variant="blur" delay={250} as="p" className="text-red-100 mb-8 leading-relaxed">
             Check out some of our upcoming events, or plan your first visit with us.
-          </p>
-          <div className="flex flex-wrap gap-3 justify-center">
+          </Reveal>
+          <Reveal variant="up" delay={400} className="flex flex-wrap gap-3 justify-center">
             <Link
               href="/r-events"
               className="inline-flex items-center gap-2 bg-white text-[#BF0A30] hover:bg-red-50 font-bold text-xs uppercase tracking-widest px-7 py-4 rounded-2xl transition-all"
@@ -656,7 +667,7 @@ export default function WhoWeArePage() {
             >
               Plan a Visit <ArrowRight className="w-3.5 h-3.5" />
             </Link>
-          </div>
+          </Reveal>
         </div>
       </section>
 

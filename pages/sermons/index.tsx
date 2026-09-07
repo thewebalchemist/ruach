@@ -6,6 +6,7 @@ import Layout from '@/components/shared/Layout';
 import { supabase } from '@/lib/supabase';
 import type { Sermon } from '@/types';
 import ThemeHero from '@/components/streaming/ThemeHero';
+import { Reveal, RiseLine } from '@/components/shared/Reveal';
 
 // Series + preacher filtering only — no categories
 
@@ -279,8 +280,10 @@ function SeriesModal({ title, sermons, onClose }: { title: string; sermons: Serm
 function SermonRow({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="mb-10">
-      <h2 className="text-white text-lg font-black mb-4 px-4 sm:px-6 md:px-12" style={H}>{title}</h2>
-      <div className="flex gap-3 overflow-x-auto pb-3 px-4 sm:px-6 md:px-12" style={{ scrollbarWidth: 'none' }}>{children}</div>
+      <Reveal variant="none" as="h2" className="text-white text-lg font-black mb-4 px-4 sm:px-6 md:px-12" style={H}>
+        <RiseLine index={0}>{title}</RiseLine>
+      </Reveal>
+      <Reveal variant="up" delay={100} className="flex gap-3 overflow-x-auto pb-3 px-4 sm:px-6 md:px-12" style={{ scrollbarWidth: 'none' }}>{children}</Reveal>
     </div>
   );
 }
@@ -332,16 +335,18 @@ export default function SermonsPage({ sermons, featuredSermon, seriesList, preac
     <Layout title="Sermons — Ruach Tabernacle" description="Watch powerful messages from Ruach Tabernacle. Kingdom-focused sermons that will transform your life.">
       <div className="min-h-screen bg-[#0A0C10] pt-16 sm:pt-24">
 
-        <ThemeHero sermons={sermons} fallback={FEATURED_VIDEOS} />
+        <Reveal variant="fade">
+          <ThemeHero sermons={sermons} fallback={FEATURED_VIDEOS} />
+        </Reveal>
 
         {/* Search */}
         <div className="max-w-5xl mx-auto px-4 sm:px-6 md:px-12 pt-8 pb-2">
-          <div className="relative max-w-sm">
+          <Reveal variant="up" delay={150} className="relative max-w-sm">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8B95A8]" />
             <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search sermons…"
               className="w-full bg-[#12151C] border border-white/10 text-white placeholder-[#8B95A8] rounded-xl pl-11 pr-10 py-3 text-sm focus:outline-none focus:border-[#BF0A30] transition-colors" />
             {search && <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8B95A8] hover:text-white"><X className="w-4 h-4" /></button>}
-          </div>
+          </Reveal>
         </div>
 
         {/* Search results */}
@@ -366,7 +371,7 @@ export default function SermonsPage({ sermons, featuredSermon, seriesList, preac
 
             {/* Preacher filter — glassmorphic pills */}
             {preachers.length > 1 && (
-              <div className="px-4 sm:px-6 md:px-12 mb-8">
+              <Reveal variant="fade" className="px-4 sm:px-6 md:px-12 mb-8">
                 <p className="text-[#8B95A8] text-[10px] font-black uppercase tracking-widest mb-3" style={H}>Filter by Preacher</p>
                 <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
                   <button onClick={() => setFilterPreacher('all')}
@@ -390,7 +395,7 @@ export default function SermonsPage({ sermons, featuredSermon, seriesList, preac
                     </button>
                   ))}
                 </div>
-              </div>
+              </Reveal>
             )}
 
             {displaySermons.length > 0 && filterPreacher === 'all' ? (
@@ -398,12 +403,14 @@ export default function SermonsPage({ sermons, featuredSermon, seriesList, preac
                 {/* Series row — glassmorphic landscape cards */}
                 {bySeries.length > 0 && (
                   <div className="mb-12">
-                    <h2 className="text-white text-lg font-black mb-4 px-4 sm:px-6 md:px-12" style={H}>Sermon Series</h2>
-                    <div className="flex gap-4 overflow-x-auto pb-3 px-4 sm:px-6 md:px-12" style={{ scrollbarWidth: 'none' }}>
+                    <Reveal variant="none" as="h2" className="text-white text-lg font-black mb-4 px-4 sm:px-6 md:px-12" style={H}>
+                      <RiseLine index={0}>Sermon Series</RiseLine>
+                    </Reveal>
+                    <Reveal variant="up" delay={100} className="flex gap-4 overflow-x-auto pb-3 px-4 sm:px-6 md:px-12" style={{ scrollbarWidth: 'none' }}>
                       {bySeries.map(({ series: sr, sermons: sg }) => (
                         <SeriesCard key={sr.id} title={sr.title} sermons={sg} onOpen={() => setOpenSeries({ title: sr.title, sermons: sg })} />
                       ))}
-                    </div>
+                    </Reveal>
                   </div>
                 )}
 
@@ -443,17 +450,18 @@ export default function SermonsPage({ sermons, featuredSermon, seriesList, preac
         {/* Bottom CTA */}
         {!search && (
           <div className="border-t border-white/5 bg-[#0A0C10] py-14 text-center">
-            <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-3" style={H}>Every Sunday · 3 Services</p>
-            <h2 className="text-white text-2xl sm:text-3xl md:text-4xl font-black mb-4" style={H}>
-              Experience it<br /><span style={serif}>in person.</span>
-            </h2>
-            <p className="text-[#8B95A8] text-sm mb-8 max-w-xs mx-auto">Watching online is great — but there&apos;s something special about being in the room.</p>
-            <div className="flex flex-wrap gap-3 justify-center px-4">
+            <Reveal variant="fade" as="p" className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-3" style={H}>Every Sunday · 3 Services</Reveal>
+            <Reveal variant="none" as="h2" className="text-white text-2xl sm:text-3xl md:text-4xl font-black mb-4" style={H}>
+              <RiseLine index={0}>Experience it</RiseLine>
+              <RiseLine index={1}><span style={serif}>in person.</span></RiseLine>
+            </Reveal>
+            <Reveal variant="blur" delay={250} as="p" className="text-[#8B95A8] text-sm mb-8 max-w-xs mx-auto">Watching online is great — but there&apos;s something special about being in the room.</Reveal>
+            <Reveal variant="up" delay={350} className="flex flex-wrap gap-3 justify-center px-4">
               <Link href="/new-here" className="flex items-center gap-2 bg-[#BF0A30] hover:bg-[#9A0826] text-white font-black text-xs uppercase tracking-widest px-7 py-4 rounded-2xl transition-all shadow-xl shadow-[rgba(191,10,48,0.35)]" style={H}>
                 Plan a Visit <ArrowRight className="w-3.5 h-3.5" />
               </Link>
               <Link href="/live" className="flex items-center gap-2 border border-white/20 text-white hover:border-white/40 font-bold text-xs uppercase tracking-widest px-7 py-4 rounded-2xl transition-all" style={H}>Watch Live</Link>
-            </div>
+            </Reveal>
           </div>
         )}
       </div>

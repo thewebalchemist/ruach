@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { ArrowRight, ChevronDown, ArrowUpRight } from 'lucide-react';
 import { useState } from 'react';
 import Layout from '@/components/shared/Layout';
+import { Reveal, RiseLine } from '@/components/shared/Reveal';
 
 const H = { fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 800 } as const;
 const serif = { fontFamily: 'Fraunces, Georgia, serif', fontWeight: 600 };
@@ -66,19 +67,21 @@ export default function RConnectPage() {
         </div>
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 pb-24 pt-36 w-full">
-          <span
-            className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-white border border-white/15 bg-white/5 mb-6"
-            style={H}
-          >
-            R-Connect
-          </span>
-          <h1 className="text-[38px] sm:text-5xl md:text-[58px] text-white leading-[1.05] tracking-tight mb-5" style={H}>
-            Connect to<br />
-            <span style={serif}>Your Purpose</span>
-          </h1>
-          <p className="text-[#8B95A8] text-lg max-w-md leading-relaxed">
+          <Reveal variant="fade">
+            <span
+              className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-white border border-white/15 bg-white/5 mb-6"
+              style={H}
+            >
+              R-Connect
+            </span>
+          </Reveal>
+          <Reveal variant="none" as="h1" className="text-[38px] sm:text-5xl md:text-[58px] text-white leading-[1.05] tracking-tight mb-5" style={H}>
+            <RiseLine index={0}>Connect to</RiseLine>
+            <RiseLine index={1}><span style={serif}>Your Purpose</span></RiseLine>
+          </Reveal>
+          <Reveal variant="blur" delay={350} as="p" className="text-[#8B95A8] text-lg max-w-md leading-relaxed">
             Know · Grow · Serve — the Ruach pathway.
-          </p>
+          </Reveal>
         </div>
       </section>
 
@@ -109,15 +112,15 @@ export default function RConnectPage() {
       {/* 3-STEP PATHWAY */}
       <section className="bg-[#0A0C10] py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
-          <div className="mb-14">
+          <Reveal variant="none" className="mb-14">
             <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-4" style={H}>
               Your Journey Starts Here
             </p>
             <h2 className="text-4xl md:text-5xl text-white leading-tight" style={H}>
-              The Ruach<br />
-              <span style={serif}>Pathway.</span>
+              <RiseLine index={0}>The Ruach</RiseLine>
+              <RiseLine index={1}><span style={serif}>Pathway.</span></RiseLine>
             </h2>
-          </div>
+          </Reveal>
 
           <div className="grid md:grid-cols-3 gap-5 mb-10">
             {[
@@ -142,9 +145,11 @@ export default function RConnectPage() {
                 desc: 'After the classes you can partner in God\'s work by serving and committing yourself to one of the departments or communities. Find where your gifts fit.',
                 href: '/r-communities',
               },
-            ].map((s) => (
-              <div
+            ].map((s, si) => (
+              <Reveal
                 key={s.step}
+                variant="up"
+                delay={si * 110}
                 className="relative rounded-2xl p-8 overflow-hidden"
                 style={{ background: 'rgba(18,21,28,0.9)', border: '1px solid rgba(255,255,255,0.08)' }}
               >
@@ -169,12 +174,12 @@ export default function RConnectPage() {
                   <h3 className="text-white text-2xl mb-3" style={H}>{s.title}</h3>
                   <p className="text-[#8B95A8] text-sm leading-relaxed">{s.desc}</p>
                 </div>
-              </div>
+              </Reveal>
             ))}
           </div>
 
           {/* Join Connect CTA */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-6 bg-[#BF0A30]/10 border border-[#BF0A30]/20 rounded-2xl px-8 py-6">
+          <Reveal variant="up" delay={150} className="flex flex-col sm:flex-row items-center justify-between gap-6 bg-[#BF0A30]/10 border border-[#BF0A30]/20 rounded-2xl px-8 py-6">
             <div>
               <p className="text-white font-black text-xl leading-tight mb-1" style={H}>Ready to take the first step?</p>
               <p className="text-[#8B95A8] text-sm">Register for the next Connect Class and begin your Ruach journey.</p>
@@ -186,7 +191,7 @@ export default function RConnectPage() {
             >
               Join Connect <ArrowUpRight className="w-4 h-4" />
             </Link>
-          </div>
+          </Reveal>
         </div>
       </section>
 
@@ -212,23 +217,24 @@ export default function RConnectPage() {
       {/* COMMUNITIES PREVIEW */}
       <section className="bg-[#0A0C10] py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
-          <div className="mb-12">
+          <Reveal variant="none" className="mb-12">
             <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-4" style={H}>
               R-Communities
             </p>
             <h2 className="text-4xl md:text-5xl text-white leading-tight" style={H}>
-              A place for<br />
-              <span style={serif}>everyone.</span>
+              <RiseLine index={0}>A place for</RiseLine>
+              <RiseLine index={1}><span style={serif}>everyone.</span></RiseLine>
             </h2>
-          </div>
+          </Reveal>
 
           <div className="grid md:grid-cols-3 gap-5">
             {[
               { name: 'R-Kids Church', sub: 'Children Ministry', href: '/r-kids-church', img: '/communities/r-kids.jpeg' },
               { name: 'The Bridge', sub: 'Youth Church', href: '/the-bridge', img: '/communities/the-bridge.jpg' },
               { name: 'R-Warriors', sub: "Men's Ministry", href: '/r-warriors', img: '/communities/r-warriors.jpg' },
-            ].map((c) => (
-              <Link key={c.href} href={c.href} className="group relative aspect-[3/4] rounded-2xl overflow-hidden block">
+            ].map((c, ci) => (
+              <Reveal key={c.href} variant="up" delay={ci * 100}>
+              <Link href={c.href} className="group relative aspect-[3/4] rounded-2xl overflow-hidden block">
                 <img
                   src={c.img}
                   alt={c.name}
@@ -254,10 +260,11 @@ export default function RConnectPage() {
                   </div>
                 </div>
               </Link>
+              </Reveal>
             ))}
           </div>
 
-          <div className="mt-10">
+          <Reveal variant="fade" delay={200} className="mt-10">
             <Link
               href="/r-communities"
               className="inline-flex items-center gap-2 border border-white/20 hover:border-white/40 text-white font-bold text-xs uppercase tracking-widest px-6 py-3.5 rounded-2xl transition-all"
@@ -265,7 +272,7 @@ export default function RConnectPage() {
             >
               All Communities <ArrowRight className="w-3.5 h-3.5" />
             </Link>
-          </div>
+          </Reveal>
         </div>
       </section>
 
@@ -273,7 +280,7 @@ export default function RConnectPage() {
       <section className="bg-[#F5F0E8] py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
           <div className="grid md:grid-cols-2 gap-10 items-center">
-            <div>
+            <Reveal variant="left">
               <h3 className="text-4xl md:text-5xl text-[#111827] mb-5 leading-tight" style={H}>
                 There is a place<br />for everyone.
               </h3>
@@ -287,8 +294,10 @@ export default function RConnectPage() {
               >
                 Join a Community <ArrowRight className="w-3.5 h-3.5" />
               </Link>
-            </div>
-            <div
+            </Reveal>
+            <Reveal
+              variant="right"
+              delay={140}
               className="rounded-2xl p-10"
               style={{ background: 'rgba(18,21,28,0.9)', border: '1px solid rgba(255,255,255,0.08)' }}
             >
@@ -296,7 +305,7 @@ export default function RConnectPage() {
               <p className="text-white text-2xl leading-snug" style={H}>
                 We believe the greatest leadership is service to others.
               </p>
-            </div>
+            </Reveal>
           </div>
         </div>
       </section>
@@ -305,16 +314,18 @@ export default function RConnectPage() {
       <section className="bg-[#0A0C10] py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
           <div className="grid lg:grid-cols-3 gap-12">
-            <div>
+            <Reveal variant="left">
               <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-4" style={H}>
                 Common Questions
               </p>
               <h2 className="text-4xl text-white mb-3 leading-tight" style={H}>FAQs</h2>
               <p className="text-[#8B95A8] text-sm">These are frequently asked questions about Ruach Tabernacle.</p>
-            </div>
+            </Reveal>
             <div className="lg:col-span-2 space-y-3">
               {FAQS.map((f, i) => (
-                <FaqItem key={i} q={f.q} a={f.a} />
+                <Reveal key={i} variant="up" delay={i * 70}>
+                  <FaqItem q={f.q} a={f.a} />
+                </Reveal>
               ))}
             </div>
           </div>
@@ -324,19 +335,21 @@ export default function RConnectPage() {
       {/* CTA */}
       <section className="bg-[#BF0A30] py-16 text-center">
         <div className="max-w-2xl mx-auto px-8">
-          <h2 className="text-4xl md:text-5xl text-white mb-4" style={H}>
-            Attend an event.
-          </h2>
-          <p className="text-red-100 mb-8 leading-relaxed">
+          <Reveal variant="none" as="h2" className="text-4xl md:text-5xl text-white mb-4" style={H}>
+            <RiseLine index={0}>Attend an event.</RiseLine>
+          </Reveal>
+          <Reveal variant="blur" delay={200} as="p" className="text-red-100 mb-8 leading-relaxed">
             Check out some of our upcoming events on the calendar.
-          </p>
-          <Link
-            href="/r-events"
-            className="inline-flex items-center gap-2 bg-white text-[#BF0A30] hover:bg-red-50 font-bold text-xs uppercase tracking-widest px-7 py-4 rounded-2xl transition-all"
-            style={H}
-          >
-            Events Calendar <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
+          </Reveal>
+          <Reveal variant="up" delay={300}>
+            <Link
+              href="/r-events"
+              className="inline-flex items-center gap-2 bg-white text-[#BF0A30] hover:bg-red-50 font-bold text-xs uppercase tracking-widest px-7 py-4 rounded-2xl transition-all"
+              style={H}
+            >
+              Events Calendar <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </Reveal>
         </div>
       </section>
 

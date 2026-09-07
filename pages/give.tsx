@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { ArrowRight, ChevronDown, Copy, Check } from 'lucide-react';
 import Layout from '@/components/shared/Layout';
+import { Reveal, RiseLine } from '@/components/shared/Reveal';
 
 const H = { fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 800 };
 const serif = { fontFamily: 'Fraunces, Georgia, serif', fontWeight: 600 };
@@ -59,17 +60,22 @@ export default function GivePage() {
           </span>
         </div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 pb-20 pt-32 w-full">
-          <div className="inline-flex items-center gap-2 text-[#F87171] text-[10px] font-bold uppercase tracking-widest px-4 py-2 rounded-full mb-6"
-            style={{ background: 'rgba(191,10,48,0.18)', border: '1px solid rgba(191,10,48,0.30)' }}>
-            <span style={H}>Generosity</span>
-          </div>
-          <h1 className="text-[38px] sm:text-5xl md:text-[58px] text-white leading-tight tracking-tight mb-5" style={H}>
-            Give to the<br /><span style={serif}>Work of God</span>
-          </h1>
+          <Reveal variant="fade">
+            <div className="inline-flex items-center gap-2 text-[#F87171] text-[10px] font-bold uppercase tracking-widest px-4 py-2 rounded-full mb-6"
+              style={{ background: 'rgba(191,10,48,0.18)', border: '1px solid rgba(191,10,48,0.30)' }}>
+              <span style={H}>Generosity</span>
+            </div>
+          </Reveal>
+          <Reveal variant="none" as="h1" className="text-[38px] sm:text-5xl md:text-[58px] text-white leading-tight tracking-tight mb-5" style={H}>
+            <RiseLine index={0}>Give to the</RiseLine>
+            <RiseLine index={1}><span style={serif}>Work of God</span></RiseLine>
+          </Reveal>
+          <Reveal variant="blur" delay={350}>
           <blockquote className="text-[#8B95A8] text-base max-w-lg leading-relaxed" style={serif}>
             &ldquo;Each of you should give what you have decided in your heart to give, not reluctantly or under compulsion, for God loves a cheerful giver.&rdquo;
             <cite className="not-italic block text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mt-2" style={H}>2 Corinthians 9:7</cite>
           </blockquote>
+          </Reveal>
         </div>
       </section>
 
@@ -95,20 +101,21 @@ export default function GivePage() {
       {/* ── WAYS TO GIVE ──────────────────────────────────────────── */}
       <section className="bg-[#0A0C10] py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
-          <div className="mb-14">
+          <Reveal variant="none" className="mb-14">
             <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-3" style={H}>Ways to Give</p>
             <h2 className="text-4xl md:text-5xl text-white mb-4 leading-tight" style={H}>
-              Giving is<br /><span style={serif}>an act of worship.</span>
+              <RiseLine index={0}>Giving is</RiseLine>
+              <RiseLine index={1}><span style={serif}>an act of worship.</span></RiseLine>
             </h2>
             <p className="text-[#8B95A8] text-sm max-w-md leading-relaxed">
               Choose any of the methods below. Every gift sows into the vision and advances the Kingdom.
             </p>
-          </div>
+          </Reveal>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
 
             {/* M-Pesa Paybill — FEATURED */}
-            <div className="lg:col-span-2 rounded-3xl p-8 flex flex-col justify-between relative overflow-hidden"
+            <Reveal variant="up" className="lg:col-span-2 rounded-3xl p-8 flex flex-col justify-between relative overflow-hidden"
               style={{ background: 'linear-gradient(135deg, #BF0A30 0%, #7A0020 100%)' }}>
               <div className="absolute -top-8 -right-8 w-40 h-40 bg-white/5 rounded-full pointer-events-none" />
               <div className="absolute -bottom-10 -left-6 w-32 h-32 bg-white/5 rounded-full pointer-events-none" />
@@ -126,10 +133,10 @@ export default function GivePage() {
                 <CopyButton value="4075905" />
                 <span className="text-red-200/60 text-xs">Copy Paybill No.</span>
               </div>
-            </div>
+            </Reveal>
 
             {/* Wave / M-Pesa Send */}
-            <div className="rounded-3xl p-7 flex flex-col justify-between"
+            <Reveal variant="up" delay={120} className="rounded-3xl p-7 flex flex-col justify-between"
               style={{ background: 'rgba(18,21,28,0.9)', border: '1px solid rgba(255,255,255,0.08)' }}>
               <div>
                 <div className="w-11 h-11 rounded-2xl flex items-center justify-center mb-5 text-2xl"
@@ -145,10 +152,10 @@ export default function GivePage() {
                 <CopyButton value="0700650503" />
                 <span className="text-white/30 text-[10px]">Copy number</span>
               </div>
-            </div>
+            </Reveal>
 
             {/* PayPal */}
-            <div className="rounded-3xl p-7 flex flex-col justify-between"
+            <Reveal variant="up" delay={240} className="rounded-3xl p-7 flex flex-col justify-between"
               style={{ background: 'rgba(18,21,28,0.9)', border: '1px solid rgba(255,255,255,0.08)' }}>
               <div>
                 <div className="w-11 h-11 rounded-2xl flex items-center justify-center mb-5 text-2xl"
@@ -163,12 +170,12 @@ export default function GivePage() {
                 <CopyButton value="accounts@purposecentre.org" />
                 <span className="text-white/30 text-[10px]">Copy email</span>
               </div>
-            </div>
+            </Reveal>
 
           </div>
 
           {/* In Person row */}
-          <div className="mt-5 rounded-3xl p-6 flex items-center justify-between gap-6"
+          <Reveal variant="up" delay={150} className="mt-5 rounded-3xl p-6 flex items-center justify-between gap-6"
             style={{ background: 'rgba(18,21,28,0.7)', border: '1px solid rgba(255,255,255,0.06)' }}>
             <div className="flex items-center gap-4">
               <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
@@ -184,7 +191,7 @@ export default function GivePage() {
               style={{ background: 'rgba(191,10,48,0.15)', color: '#F87171', border: '1px solid rgba(191,10,48,0.2)' }}>
               Every Sunday
             </span>
-          </div>
+          </Reveal>
         </div>
       </section>
 
@@ -192,7 +199,7 @@ export default function GivePage() {
       <section className="bg-[#F5F0E8] py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
           <div className="grid lg:grid-cols-2 gap-16 items-start">
-            <div>
+            <Reveal variant="left">
               <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-4" style={H}>Why We Give</p>
               <h2 className="text-4xl md:text-5xl text-[#111827] mb-6 leading-tight" style={H}>
                 Partnering in<br /><span style={serif}>God&apos;s Mission</span>
@@ -203,8 +210,8 @@ export default function GivePage() {
               <p className="text-[#374151] leading-relaxed">
                 We are committed to transparency in how funds are used. Financial reports are available to members upon request through the church office.
               </p>
-            </div>
-            <div className="rounded-3xl p-8" style={{ background: '#111827' }}>
+            </Reveal>
+            <Reveal variant="right" delay={140} className="rounded-3xl p-8" style={{ background: '#111827' }}>
               <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-5" style={H}>What Your Giving Supports</p>
               <div className="space-y-3">
                 {['Sunday Services & Worship', 'Pastoral Ministry', 'Crosspoints (Home Churches)', 'R-Kids Church', 'Community Outreach & Foodbank', 'Missions & Church Planting'].map((item) => (
@@ -214,7 +221,7 @@ export default function GivePage() {
                   </div>
                 ))}
               </div>
-            </div>
+            </Reveal>
           </div>
         </div>
       </section>
@@ -222,12 +229,17 @@ export default function GivePage() {
       {/* ── FAQ ───────────────────────────────────────────────────── */}
       <section className="bg-[#0A0C10] py-20">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-12">
-          <p className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-3" style={H}>Common Questions</p>
-          <h2 className="text-3xl md:text-4xl text-white mb-10" style={H}>
-            FAQs on<br /><span style={serif}>Giving</span>
-          </h2>
+          <Reveal variant="fade" as="p" className="text-[#BF0A30] text-[10px] font-bold uppercase tracking-widest mb-3" style={H}>Common Questions</Reveal>
+          <Reveal variant="none" as="h2" className="text-3xl md:text-4xl text-white mb-10" style={H}>
+            <RiseLine index={0}>FAQs on</RiseLine>
+            <RiseLine index={1}><span style={serif}>Giving</span></RiseLine>
+          </Reveal>
           <div className="space-y-3">
-            {FAQS.map((f, i) => <FaqItem key={i} q={f.q} a={f.a} />)}
+            {FAQS.map((f, i) => (
+              <Reveal key={i} variant="up" delay={i * 70}>
+                <FaqItem q={f.q} a={f.a} />
+              </Reveal>
+            ))}
           </div>
         </div>
       </section>
@@ -235,13 +247,16 @@ export default function GivePage() {
       {/* ── CTA ───────────────────────────────────────────────────── */}
       <section className="bg-[#BF0A30] py-16 text-center">
         <div className="max-w-xl mx-auto px-8">
-          <h2 className="text-4xl text-white mb-4" style={H}>
-            Questions?<br /><span style={serif}>We&apos;re here.</span>
-          </h2>
-          <p className="text-red-100 text-sm mb-8 leading-relaxed">Questions about giving or stewarding finances? Reach out to the church office — we&apos;d love to help.</p>
-          <Link href="/contact" className="inline-flex items-center gap-2 bg-white text-[#BF0A30] hover:bg-red-50 font-black text-xs uppercase tracking-widest px-7 py-4 rounded-2xl transition-all" style={H}>
-            Contact Us <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
+          <Reveal variant="none" as="h2" className="text-4xl text-white mb-4" style={H}>
+            <RiseLine index={0}>Questions?</RiseLine>
+            <RiseLine index={1}><span style={serif}>We&apos;re here.</span></RiseLine>
+          </Reveal>
+          <Reveal variant="blur" delay={250} as="p" className="text-red-100 text-sm mb-8 leading-relaxed">Questions about giving or stewarding finances? Reach out to the church office — we&apos;d love to help.</Reveal>
+          <Reveal variant="up" delay={350}>
+            <Link href="/contact" className="inline-flex items-center gap-2 bg-white text-[#BF0A30] hover:bg-red-50 font-black text-xs uppercase tracking-widest px-7 py-4 rounded-2xl transition-all" style={H}>
+              Contact Us <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </Reveal>
         </div>
       </section>
 
