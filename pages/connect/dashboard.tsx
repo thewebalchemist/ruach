@@ -4,9 +4,11 @@ import { useRouter } from 'next/router';
 import {
   Users, Calendar, GraduationCap, Plus, TrendingUp,
   Upload, BookOpen, AlertTriangle, Bell, Search, Eye,
-  FileText, ChevronRight, X, Loader2,
+  FileText, ChevronRight, X,
 } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import { ConnectLayout } from '@/components/connect/ConnectLayout';
+import { DashboardSkeleton } from '@/components/connect/Skeleton';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabase';
 
@@ -24,12 +26,65 @@ interface SessionRow { id: string; is_completed: boolean; }
 interface ExamRow { id: string; title: string; status: string; total_marks: number; passing_marks: number; duration_minutes: number; question_count?: number; }
 interface LegacyRequestRow { id: string; full_name: string; year_joined: number; years_as_member: number; }
 
+const db = supabase as any;
+
+async function loadDashboardBase() {
+  const [
+    { data: cohortData },
+    { data: legacyData },
+    { count: gradCount },
+    { data: recentData },
+  ] = await Promise.all([
+    db.from('connect_cohorts')
+      .select('*, profiles!connect_cohorts_teacher_id_fkey(first_name, last_name)')
+      .order('created_at', { ascending: false }),
+    db.from('legacy_member_requests')
+      .select('*')
+      .eq('status', 'pending'),
+    supabase.from('connect_students')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'completed'),
+    db.from('connect_students')
+      .select('id, status, created_at, admission_number, profiles(first_name, last_name)')
+      .order('created_at', { ascending: false })
+      .limit(5),
+  ]);
+  return {
+    cohorts: (cohortData ?? []) as any[],
+    legacyRequests: (legacyData ?? []) as any[],
+    graduatesCount: gradCount ?? 0,
+    recentActivity: (recentData ?? []) as any[],
+  };
+}
+
+async function loadCohortData(cohortId: string) {
+  const [
+    { data: studentData },
+    { data: sessionData },
+    { data: examData },
+  ] = await Promise.all([
+    db.from('connect_students')
+      .select('*, profiles(first_name, last_name)')
+      .eq('cohort_id', cohortId),
+    db.from('connect_sessions')
+      .select('*')
+      .eq('cohort_id', cohortId)
+      .order('created_at', { ascending: true }),
+    db.from('connect_exams')
+      .select('*')
+      .eq('cohort_id', cohortId),
+  ]);
+  return {
+    students: (studentData ?? []) as any[],
+    sessions: (sessionData ?? []) as any[],
+    exams: (examData ?? []) as any[],
+  };
+}
+
 export default function ConnectDashboardPage() {
   const router = useRouter();
   const { profile, loading: authLoading } = useAuth();
-  const db = supabase as any;
 
-  const [loading,           setLoading]           = useState(true);
   const [selectedCohortId,  setSelectedCohortId]  = useState('');
   const [searchQuery,       setSearchQuery]       = useState('');
   const [activeTab,         setActiveTab]         = useState<Tab>('overview');
@@ -37,90 +92,41 @@ export default function ConnectDashboardPage() {
   const [warnMsg,           setWarnMsg]           = useState('');
   const [sendingWarning,    setSendingWarning]    = useState(false);
 
-  const [allCohorts,        setAllCohorts]        = useState<any[]>([]);
-  const [allStudents,       setAllStudents]       = useState<any[]>([]);
-  const [allSessions,       setAllSessions]       = useState<any[]>([]);
-  const [allExams,          setAllExams]          = useState<any[]>([]);
-  const [legacyRequests,    setLegacyRequests]    = useState<any[]>([]);
-  const [graduatesCount,    setGraduatesCount]    = useState(0);
-  const [recentActivity,    setRecentActivity]    = useState<any[]>([]);
+  const canView = !!profile && ['teacher', 'admin', 'pastor', 'leader'].includes(profile.role);
 
   useEffect(() => {
     if (authLoading) return;
-    if (!profile) { router.push('/connect'); return; }
-    if (!['teacher', 'admin', 'pastor', 'leader'].includes(profile.role)) {
-      router.push('/connect'); return;
-    }
-    load();
-  }, [authLoading, profile]);
+    if (!canView) router.push('/connect');
+  }, [authLoading, canView, router]);
 
-  async function load() {
-    setLoading(true);
-    const [
-      { data: cohortData },
-      { data: legacyData },
-      { count: gradCount },
-      { data: recentData },
-    ] = await Promise.all([
-      db.from('connect_cohorts')
-        .select('*, profiles!connect_cohorts_teacher_id_fkey(first_name, last_name)')
-        .order('created_at', { ascending: false }),
-      db.from('legacy_member_requests')
-        .select('*')
-        .eq('status', 'pending'),
-      supabase.from('connect_students')
-        .select('id', { count: 'exact', head: true })
-        .eq('status', 'completed'),
-      db.from('connect_students')
-        .select('id, status, created_at, admission_number, profiles(first_name, last_name)')
-        .order('created_at', { ascending: false })
-        .limit(5),
-    ]);
+  const { data: base } = useQuery({
+    queryKey: ['connect-dashboard'],
+    queryFn: loadDashboardBase,
+    enabled: canView,
+  });
 
-    const cohorts = (cohortData ?? []) as any[];
-    setAllCohorts(cohorts);
-    setLegacyRequests((legacyData ?? []) as any[]);
-    setGraduatesCount(gradCount ?? 0);
-    setRecentActivity((recentData ?? []) as any[]);
+  const allCohorts     = base?.cohorts ?? [];
+  const legacyRequests = base?.legacyRequests ?? [];
+  const graduatesCount = base?.graduatesCount ?? 0;
+  const recentActivity = base?.recentActivity ?? [];
 
-    // Set default selected cohort
-    if (cohorts.length > 0 && !selectedCohortId) {
-      const firstActive = cohorts.find((c: any) => c.status === 'active');
-      setSelectedCohortId(firstActive?.id ?? cohorts[0].id);
-    }
-
-    setLoading(false);
-  }
-
-  // Reload students/sessions/exams when selectedCohortId changes
+  // Default the cohort picker once cohorts arrive
   useEffect(() => {
-    if (!selectedCohortId) return;
-
-    async function loadCohortData() {
-      const [
-        { data: studentData },
-        { data: sessionData },
-        { data: examData },
-      ] = await Promise.all([
-        db.from('connect_students')
-          .select('*, profiles(first_name, last_name)')
-          .eq('cohort_id', selectedCohortId),
-        db.from('connect_sessions')
-          .select('*')
-          .eq('cohort_id', selectedCohortId)
-          .order('created_at', { ascending: true }),
-        db.from('connect_exams')
-          .select('*')
-          .eq('cohort_id', selectedCohortId),
-      ]);
-
-      setAllStudents((studentData ?? []) as any[]);
-      setAllSessions((sessionData ?? []) as any[]);
-      setAllExams((examData ?? []) as any[]);
+    if (!selectedCohortId && allCohorts.length > 0) {
+      const firstActive = allCohorts.find((c: any) => c.status === 'active');
+      setSelectedCohortId(firstActive?.id ?? allCohorts[0].id);
     }
+  }, [allCohorts, selectedCohortId]);
 
-    loadCohortData();
-  }, [selectedCohortId]);
+  const { data: cohortDetail } = useQuery({
+    queryKey: ['connect-cohort-detail', selectedCohortId],
+    queryFn: () => loadCohortData(selectedCohortId),
+    enabled: !!selectedCohortId,
+  });
+
+  const allStudents = cohortDetail?.students ?? [];
+  const allSessions = cohortDetail?.sessions ?? [];
+  const allExams    = cohortDetail?.exams ?? [];
 
   async function sendWarning() {
     if (!warnMsg.trim()) return;
@@ -134,11 +140,9 @@ export default function ConnectDashboardPage() {
     setWarnMsg('');
   }
 
-  if (loading) return (
+  if (!base) return (
     <ConnectLayout title="Dashboard" notificationCount={0}>
-      <div className="flex items-center justify-center py-24">
-        <Loader2 className="w-7 h-7 text-[#BF0A30] animate-spin" />
-      </div>
+      <DashboardSkeleton />
     </ConnectLayout>
   );
 
