@@ -1,9 +1,10 @@
 import { useState, ReactNode } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
-import { Loader2, ShieldOff } from 'lucide-react';
+import { ShieldOff } from 'lucide-react';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
+import { Skeleton, DashboardSkeleton } from './Skeleton';
 import { useAuth } from '@/context/AuthContext';
 
 interface AdminLayoutProps {
@@ -26,9 +27,22 @@ export function AdminLayout({ children, title, description, requirePermission }:
   // Finer per-module checks are opt-in via requirePermission, added module
   // by module as each is wired to real data (Batches 4-8).
   if (loading) {
+    // Auth still resolving: paint the dashboard chrome immediately with a
+    // shimmer instead of a blank screen — perceived load time, not real one.
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-[#0F0F0F]">
-        <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+      <div className="min-h-screen bg-gray-100 dark:bg-[#08090C]">
+        <div className="glass-panel fixed top-4 bottom-4 left-4 hidden lg:flex flex-col w-64 rounded-3xl shadow-xl shadow-gray-200/50 dark:shadow-black/30 p-5 space-y-4">
+          <Skeleton className="h-9 w-36 rounded-xl" />
+          <div className="pt-4 space-y-3">
+            {Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="h-8 w-full rounded-lg" />)}
+          </div>
+        </div>
+        <div className="lg:pl-[288px]">
+          <div className="top-header"><Skeleton className="h-9 flex-1 rounded-2xl" /></div>
+          <main className="px-4 lg:px-6 pb-8">
+            <DashboardSkeleton />
+          </main>
+        </div>
       </div>
     );
   }

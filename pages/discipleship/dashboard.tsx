@@ -1,11 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import {
   Users, BookOpen, GraduationCap, Award, ChevronRight, Plus, Upload,
-  AlertTriangle, Loader2,
+  AlertTriangle,
 } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import { DiscipleshipLayout } from '@/components/connect/DiscipleshipLayout';
+import { DashboardSkeleton } from '@/components/connect/Skeleton';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
 
@@ -49,93 +51,91 @@ const LEVEL_LABELS: Record<number, string> = {
   3: 'KDC 3 — Leadership',
 };
 
+async function loadDashboard() {
+  const [
+    { data: cohortData },
+    { data: activeStudents },
+    { count: gradCount },
+    { data: recent },
+  ] = await Promise.all([
+    db.from('discipleship_cohorts')
+      .select('id, name, level, status, enrolled_count')
+      .order('level'),
+    db.from('discipleship_students')
+      .select('id, cohort_id, level')
+      .in('status', ['enrolled', 'in-progress']),
+    supabase.from('discipleship_students')
+      .select('id', { count: 'exact', head: true })
+      .in('status', ['graduated', 'completed']),
+    db.from('discipleship_students')
+      .select('id, level, status, created_at, profiles(full_name)')
+      .order('created_at', { ascending: false })
+      .limit(6),
+  ]);
+
+  const allCohorts = (cohortData ?? []) as Cohort[];
+  const activeStu  = (activeStudents ?? []) as ActiveStudent[];
+
+  // At-risk calculation: fetch sessions + attendance for active students
+  let atRiskCount = 0;
+  const activeCohortIds = [...new Set(activeStu.map(s => s.cohort_id))];
+  const activeStudentIds = activeStu.map(s => s.id);
+
+  if (activeCohortIds.length > 0 && activeStudentIds.length > 0) {
+    const [{ data: sessionData }, { data: attData }] = await Promise.all([
+      db.from('discipleship_sessions')
+        .select('id, cohort_id')
+        .in('cohort_id', activeCohortIds)
+        .eq('is_completed', true),
+      db.from('discipleship_attendance')
+        .select('student_id, present')
+        .in('student_id', activeStudentIds),
+    ]);
+
+    const sessions    = (sessionData ?? []) as SessionRow[];
+    const attendance  = (attData ?? []) as AttendanceRow[];
+
+    atRiskCount = activeStu.filter(student => {
+      const cohortSessions = sessions.filter(s => s.cohort_id === student.cohort_id).length;
+      if (cohortSessions === 0) return false;
+      const attended = attendance.filter(a => a.student_id === student.id && a.present).length;
+      return (attended / cohortSessions) * 100 < 80;
+    }).length;
+  }
+
+  return {
+    cohorts: allCohorts,
+    graduatesCount: gradCount ?? 0,
+    recentActivity: (recent ?? []) as RecentRow[],
+    atRiskCount,
+  };
+}
+
 export default function DiscipleshipDashboardPage() {
   const router = useRouter();
   const { profile, loading: authLoading } = useAuth();
 
-  const [loading,        setLoading]        = useState(true);
-  const [cohorts,        setCohorts]        = useState<Cohort[]>([]);
-  const [atRiskCount,    setAtRiskCount]    = useState(0);
-  const [graduatesCount, setGraduatesCount] = useState(0);
-  const [recentActivity, setRecentActivity] = useState<RecentRow[]>([]);
+  const canView = !!profile && ['teacher', 'admin', 'pastor', 'leader'].includes(profile.role);
 
   useEffect(() => {
     if (authLoading) return;
     if (!profile) { router.push('/discipleship'); return; }
-    if (!['teacher', 'admin', 'pastor', 'leader'].includes(profile.role)) {
-      router.push('/discipleship/student');
-      return;
-    }
-    load();
-  }, [authLoading, profile]);
+    if (!canView) router.push('/discipleship/student');
+  }, [authLoading, profile, canView, router]);
 
-  async function load() {
-    setLoading(true);
-    const [
-      { data: cohortData },
-      { data: activeStudents },
-      { count: gradCount },
-      { data: recent },
-    ] = await Promise.all([
-      db.from('discipleship_cohorts')
-        .select('id, name, level, status, enrolled_count')
-        .order('level'),
-      db.from('discipleship_students')
-        .select('id, cohort_id, level')
-        .in('status', ['enrolled', 'in-progress']),
-      supabase.from('discipleship_students')
-        .select('id', { count: 'exact', head: true })
-        .in('status', ['graduated', 'completed']),
-      db.from('discipleship_students')
-        .select('id, level, status, created_at, profiles(full_name)')
-        .order('created_at', { ascending: false })
-        .limit(6),
-    ]);
+  const { data } = useQuery({
+    queryKey: ['discipleship-dashboard'],
+    queryFn: loadDashboard,
+    enabled: canView,
+  });
 
-    const allCohorts = (cohortData ?? []) as Cohort[];
-    const activeStu  = (activeStudents ?? []) as ActiveStudent[];
-
-    setCohorts(allCohorts);
-    setGraduatesCount(gradCount ?? 0);
-    setRecentActivity((recent ?? []) as RecentRow[]);
-
-    // At-risk calculation: fetch sessions + attendance for active students
-    const activeCohortIds = [...new Set(activeStu.map(s => s.cohort_id))];
-    const activeStudentIds = activeStu.map(s => s.id);
-
-    if (activeCohortIds.length > 0 && activeStudentIds.length > 0) {
-      const [{ data: sessionData }, { data: attData }] = await Promise.all([
-        db.from('discipleship_sessions')
-          .select('id, cohort_id')
-          .in('cohort_id', activeCohortIds)
-          .eq('is_completed', true),
-        db.from('discipleship_attendance')
-          .select('student_id, present')
-          .in('student_id', activeStudentIds),
-      ]);
-
-      const sessions    = (sessionData ?? []) as SessionRow[];
-      const attendance  = (attData ?? []) as AttendanceRow[];
-
-      const atRisk = activeStu.filter(student => {
-        const cohortSessions = sessions.filter(s => s.cohort_id === student.cohort_id).length;
-        if (cohortSessions === 0) return false;
-        const attended = attendance.filter(a => a.student_id === student.id && a.present).length;
-        return (attended / cohortSessions) * 100 < 80;
-      });
-      setAtRiskCount(atRisk.length);
-    }
-
-    setLoading(false);
-  }
-
-  if (loading) return (
+  if (!data) return (
     <DiscipleshipLayout title="Dashboard">
-      <div className="flex items-center justify-center py-24">
-        <Loader2 className="w-7 h-7 text-[#BF0A30] animate-spin" />
-      </div>
+      <DashboardSkeleton />
     </DiscipleshipLayout>
   );
+
+  const { cohorts, atRiskCount, graduatesCount, recentActivity } = data;
 
   const activeCohorts  = cohorts.filter(c => c.status === 'active');
   const totalEnrolled  = activeCohorts.reduce((s, c) => s + (c.enrolled_count ?? 0), 0);

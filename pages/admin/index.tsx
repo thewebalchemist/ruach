@@ -1,8 +1,10 @@
-import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { Users, Home, GraduationCap, Calendar, AlertCircle, ChevronRight, UserPlus, ArrowRight, Loader2 } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { Users, Home, GraduationCap, Calendar, AlertCircle, ChevronRight, UserPlus, ArrowRight } from 'lucide-react';
 import { AdminLayout, StatCard, PageHeader } from '@/components/connect/AdminLayout';
+import { DashboardSkeleton } from '@/components/connect/Skeleton';
 import { IntroGuide } from '@/components/connect/IntroGuide';
+import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabase';
 
 interface Stats {
@@ -16,62 +18,69 @@ interface Guest { id: string; first_name: string; last_name: string; visit_date:
 interface Member { id: string; first_name: string; last_name: string; member_id: string | null; role: string; status: string; crosspointName: string | null }
 interface CrosspointRow { id: string; name: string; area: string; status: string; member_count: number; max_members: number }
 
-export default function AdminDashboard() {
-  const [stats, setStats] = useState<Stats | null>(null);
-  const [recentGuests, setRecentGuests] = useState<Guest[]>([]);
-  const [recentMembers, setRecentMembers] = useState<Member[]>([]);
-  const [crosspoints, setCrosspoints] = useState<CrosspointRow[]>([]);
-  const [loading, setLoading] = useState(true);
+async function loadDashboard() {
+  const [
+    membersRes, leadersRes, cpActiveRes, cpFormingRes, discCohortsRes, eventsRes,
+    guestsPendingRes, transfersRes, deptRequestsRes, prayerPendingRes,
+    recentGuestsRes, recentMembersRes, crosspointsRes,
+  ] = await Promise.all([
+    supabase.from('profiles').select('id', { count: 'exact', head: true }).not('member_id', 'is', null),
+    supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('role', 'leader'),
+    supabase.from('crosspoints').select('id', { count: 'exact', head: true }).eq('status', 'active'),
+    supabase.from('crosspoints').select('id', { count: 'exact', head: true }).eq('status', 'forming'),
+    supabase.from('discipleship_cohorts').select('id', { count: 'exact', head: true }).eq('status', 'active'),
+    supabase.from('events').select('id', { count: 'exact', head: true }).eq('status', 'upcoming'),
+    supabase.from('guests').select('id', { count: 'exact', head: true }).eq('follow_up_status', 'pending'),
+    supabase.from('transfer_requests').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
+    supabase.from('department_join_requests').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
+    supabase.from('prayer_requests').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
+    supabase.from('guests').select('id, first_name, last_name, visit_date, follow_up_status').order('visit_date', { ascending: false }).limit(3),
+    supabase.from('profiles').select('id, first_name, last_name, member_id, role, status, crosspoint_memberships(crosspoints(name))').not('member_id', 'is', null).order('member_since', { ascending: false }).limit(5),
+    supabase.from('crosspoints').select('id, name, area, status, member_count, max_members').order('name').limit(4),
+  ]);
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    const [
-      membersRes, leadersRes, cpActiveRes, cpFormingRes, discCohortsRes, eventsRes,
-      guestsPendingRes, transfersRes, deptRequestsRes, prayerPendingRes,
-      recentGuestsRes, recentMembersRes, crosspointsRes,
-    ] = await Promise.all([
-      supabase.from('profiles').select('id', { count: 'exact', head: true }).not('member_id', 'is', null),
-      supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('role', 'leader'),
-      supabase.from('crosspoints').select('id', { count: 'exact', head: true }).eq('status', 'active'),
-      supabase.from('crosspoints').select('id', { count: 'exact', head: true }).eq('status', 'forming'),
-      supabase.from('discipleship_cohorts').select('id', { count: 'exact', head: true }).eq('status', 'active'),
-      supabase.from('events').select('id', { count: 'exact', head: true }).eq('status', 'upcoming'),
-      supabase.from('guests').select('id', { count: 'exact', head: true }).eq('follow_up_status', 'pending'),
-      supabase.from('transfer_requests').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
-      supabase.from('department_join_requests').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
-      supabase.from('prayer_requests').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
-      supabase.from('guests').select('id, first_name, last_name, visit_date, follow_up_status').order('visit_date', { ascending: false }).limit(3),
-      supabase.from('profiles').select('id, first_name, last_name, member_id, role, status, crosspoint_memberships(crosspoints(name))').not('member_id', 'is', null).order('member_since', { ascending: false }).limit(5),
-      supabase.from('crosspoints').select('id, name, area, status, member_count, max_members').order('name').limit(4),
-    ]);
-
-    setStats({
-      membersTotal: membersRes.count ?? 0,
-      membersLeaders: leadersRes.count ?? 0,
-      crosspointsActive: cpActiveRes.count ?? 0,
-      crosspointsForming: cpFormingRes.count ?? 0,
-      discipleshipActiveCohorts: discCohortsRes.count ?? 0,
-      eventsUpcoming: eventsRes.count ?? 0,
-      guestsPendingFollowUp: guestsPendingRes.count ?? 0,
-      crosspointsPendingTransfers: transfersRes.count ?? 0,
-      departmentsPendingRequests: deptRequestsRes.count ?? 0,
-      prayerPending: prayerPendingRes.count ?? 0,
-    });
-    setRecentGuests(recentGuestsRes.data ?? []);
-    setRecentMembers((recentMembersRes.data ?? []).map((m: any) => ({
+  const stats: Stats = {
+    membersTotal: membersRes.count ?? 0,
+    membersLeaders: leadersRes.count ?? 0,
+    crosspointsActive: cpActiveRes.count ?? 0,
+    crosspointsForming: cpFormingRes.count ?? 0,
+    discipleshipActiveCohorts: discCohortsRes.count ?? 0,
+    eventsUpcoming: eventsRes.count ?? 0,
+    guestsPendingFollowUp: guestsPendingRes.count ?? 0,
+    crosspointsPendingTransfers: transfersRes.count ?? 0,
+    departmentsPendingRequests: deptRequestsRes.count ?? 0,
+    prayerPending: prayerPendingRes.count ?? 0,
+  };
+  return {
+    stats,
+    recentGuests: (recentGuestsRes.data ?? []) as Guest[],
+    recentMembers: ((recentMembersRes.data ?? []) as any[]).map((m): Member => ({
       id: m.id, first_name: m.first_name, last_name: m.last_name, member_id: m.member_id,
       role: m.role, status: m.status,
       crosspointName: m.crosspoint_memberships?.[0]?.crosspoints?.name ?? null,
-    })));
-    setCrosspoints(crosspointsRes.data ?? []);
-    setLoading(false);
-  }, []);
+    })),
+    crosspoints: (crosspointsRes.data ?? []) as CrosspointRow[],
+  };
+}
 
-  useEffect(() => { load(); }, [load]);
+export default function AdminDashboard() {
+  const { session } = useAuth();
+  const { data } = useQuery({
+    queryKey: ['admin-dashboard'],
+    queryFn: loadDashboard,
+    // Without this, the query fires before auth resolves and caches the
+    // RLS-empty anonymous result (all zeros).
+    enabled: !!session,
+  });
 
-  if (loading || !stats) {
-    return <AdminLayout title="Dashboard"><div className="flex justify-center py-16"><Loader2 className="w-6 h-6 animate-spin text-gray-400" /></div></AdminLayout>;
+  if (!data) {
+    return (
+      <AdminLayout title="Dashboard" requirePermission={{ moduleKey: 'dashboard', action: 'view' }}>
+        <DashboardSkeleton />
+      </AdminLayout>
+    );
   }
+  const { stats, recentGuests, recentMembers, crosspoints } = data;
 
   const attentionItems = [
     { label: 'Guest follow-ups pending', count: stats.guestsPendingFollowUp, href: '/admin/members/guests' },
