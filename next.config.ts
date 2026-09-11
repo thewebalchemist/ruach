@@ -37,6 +37,13 @@ const nextConfig: NextConfig = {
   },
 
   async headers() {
+    // Vercel serves /public with max-age=0, must-revalidate by default, so
+    // every visit re-validates all ~30MB of photos/videos. These folders'
+    // contents effectively never change in place (new content gets new
+    // filenames), so let browsers keep them for a day and serve stale while
+    // revalidating for a month after that.
+    const staticMedia = 'public, max-age=86400, stale-while-revalidate=2592000';
+    const mediaFolders = ['videos', 'church-photos', 'communities', 'pastors', 'rhema-feast', 'brand', 'kids', 'events'];
     return [
       {
         source: '/:path*',
@@ -46,6 +53,10 @@ const nextConfig: NextConfig = {
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
         ],
       },
+      ...mediaFolders.map(folder => ({
+        source: `/${folder}/:path*`,
+        headers: [{ key: 'Cache-Control', value: staticMedia }],
+      })),
     ];
   },
 };
