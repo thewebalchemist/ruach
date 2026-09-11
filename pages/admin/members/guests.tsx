@@ -80,19 +80,19 @@ export default function GuestsPage() {
       />
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-4">
+        <div className="bg-white dark:bg-[#12151C] rounded-xl border border-gray-200 dark:border-white/[0.06] p-4">
           <p className="text-sm text-gray-500">Total Guests</p>
-          <p className="text-2xl font-bold text-white">{stats.total}</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total}</p>
         </div>
-        <div className="bg-[#12151C] rounded-xl border-l-4 border-l-amber-500 border border-white/[0.06] p-4">
+        <div className="bg-white dark:bg-[#12151C] rounded-xl border-l-4 border-l-amber-500 border border-gray-200 dark:border-white/[0.06] p-4">
           <p className="text-sm text-gray-500">Pending Follow-up</p>
           <p className="text-2xl font-bold text-amber-600">{stats.pending}</p>
         </div>
-        <div className="bg-[#12151C] rounded-xl border-l-4 border-l-blue-500 border border-white/[0.06] p-4">
+        <div className="bg-white dark:bg-[#12151C] rounded-xl border-l-4 border-l-blue-500 border border-gray-200 dark:border-white/[0.06] p-4">
           <p className="text-sm text-gray-500">Contacted</p>
           <p className="text-2xl font-bold text-blue-600">{stats.contacted}</p>
         </div>
-        <div className="bg-[#12151C] rounded-xl border-l-4 border-l-green-500 border border-white/[0.06] p-4">
+        <div className="bg-white dark:bg-[#12151C] rounded-xl border-l-4 border-l-green-500 border border-gray-200 dark:border-white/[0.06] p-4">
           <p className="text-sm text-gray-500">Converted</p>
           <p className="text-2xl font-bold text-green-600">{stats.converted}</p>
         </div>
@@ -102,9 +102,9 @@ export default function GuestsPage() {
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input type="text" placeholder="Search guests..." className="w-full pl-10 pr-4 py-2.5 text-sm border border-white/10 dark:border-[#2D2D2D] rounded-lg" value={search} onChange={(e) => setSearch(e.target.value)} />
+            <input type="text" placeholder="Search guests..." className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-200 dark:border-[#2D2D2D] rounded-lg bg-white dark:bg-transparent text-gray-900 dark:text-white" value={search} onChange={(e) => setSearch(e.target.value)} />
           </div>
-          <select className="px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg" value={filter} onChange={(e) => setFilter(e.target.value as any)}>
+          <select className="px-4 py-2.5 text-sm border border-gray-300 dark:border-[#2D2D2D] rounded-lg bg-white dark:bg-transparent text-gray-900 dark:text-white" value={filter} onChange={(e) => setFilter(e.target.value as any)}>
             <option value="all">All Status</option>
             <option value="pending">Pending</option>
             <option value="contacted">Contacted</option>
@@ -119,7 +119,7 @@ export default function GuestsPage() {
       ) : (
       <div className="space-y-4">
         {filtered.map((guest) => (
-          <div key={guest.id} className="bg-[#12151C] rounded-xl border border-white/[0.06] p-5">
+          <div key={guest.id} className="bg-white dark:bg-[#12151C] rounded-xl border border-gray-200 dark:border-white/[0.06] p-5">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-full bg-gray-200 dark:bg-[#2D2D2D] flex items-center justify-center text-gray-600 dark:text-gray-400 font-semibold">
@@ -150,8 +150,8 @@ export default function GuestsPage() {
             </div>
 
             {guest.notes && (
-              <div className="bg-white/[0.04] rounded-lg p-3 mb-4">
-                <p className="text-sm text-white/50">{guest.notes}</p>
+              <div className="bg-gray-50 dark:bg-white/[0.04] rounded-lg p-3 mb-4">
+                <p className="text-sm text-gray-600 dark:text-white/50">{guest.notes}</p>
               </div>
             )}
 

@@ -149,9 +149,9 @@ export default function MembersPage() {
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input type="text" placeholder="Search by name, ID, or phone..." className="w-full pl-10 pr-4 py-2.5 text-sm border border-white/10 rounded-lg bg-[#12151C] focus:outline-none focus:ring-2 focus:ring-[#BF0A30]" value={search} onChange={(e) => setSearch(e.target.value)} />
+            <input type="text" placeholder="Search by name, ID, or phone..." className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-200 dark:border-white/10 rounded-lg bg-white dark:bg-[#12151C] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#BF0A30]" value={search} onChange={(e) => setSearch(e.target.value)} />
           </div>
-          <select className="px-4 py-2.5 text-sm border border-white/10 rounded-lg bg-[#12151C]" value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)}>
+          <select className="px-4 py-2.5 text-sm border border-gray-200 dark:border-white/10 rounded-lg bg-white dark:bg-[#12151C] text-gray-900 dark:text-white" value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)}>
             <option value="all">All Roles</option>
             <option value="member">Member</option>
             <option value="leader">Leader</option>

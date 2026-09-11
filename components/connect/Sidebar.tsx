@@ -124,7 +124,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             </div>
             <span className="font-bold text-gray-900 dark:text-white">RuachConnect</span>
           </Link>
-          <button onClick={onClose} className="lg:hidden p-1 text-white/40 hover:text-white">
+          <button onClick={onClose} className="lg:hidden p-1 text-gray-500 dark:text-white/40 hover:text-gray-900 dark:hover:text-white">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -143,7 +143,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
               {item.children ? (
                 <>
                   <button onClick={() => toggleExpand(item.name)}
-                    className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition-colors ${isParentActive(item.children) ? 'text-white bg-white/[0.06]' : 'text-white/50 hover:text-white/80 hover:bg-white/[0.04]'}`}>
+                    className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition-colors ${isParentActive(item.children) ? 'text-gray-900 dark:text-white bg-gray-100 dark:bg-white/[0.06]' : 'text-gray-500 dark:text-white/50 hover:text-gray-800 dark:hover:text-white/80 hover:bg-gray-50 dark:hover:bg-white/[0.04]'}`}>
                     <span className="flex items-center gap-2.5">
                       <item.icon className="w-4 h-4" />
                       {item.name}
@@ -151,10 +151,10 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                     <ChevronDown className={`w-3.5 h-3.5 transition-transform ${expandedItems.includes(item.name) ? 'rotate-180' : ''}`} />
                   </button>
                   {expandedItems.includes(item.name) && (
-                    <div className="ml-7 mt-0.5 space-y-0.5 border-l border-white/[0.06] pl-3">
+                    <div className="ml-7 mt-0.5 space-y-0.5 border-l border-gray-100 dark:border-white/[0.06] pl-3">
                       {item.children.map(child => (
                         <Link key={child.href} href={child.href} onClick={onClose}
-                          className={`block px-2.5 py-1.5 rounded-md text-[11px] font-medium transition-colors ${isActive(child.href) ? 'text-[#BF0A30] bg-[#BF0A30]/10' : 'text-white/40 hover:text-white/70'}`}>
+                          className={`block px-2.5 py-1.5 rounded-md text-[11px] font-medium transition-colors ${isActive(child.href) ? 'text-[#BF0A30] bg-[#BF0A30]/10' : 'text-gray-500 dark:text-white/40 hover:text-gray-800 dark:hover:text-white/70'}`}>
                           {child.name}
                         </Link>
                       ))}
@@ -163,7 +163,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                 </>
               ) : (
                 <Link href={item.href} onClick={onClose}
-                  className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${isActive(item.href) ? 'text-[#BF0A30] bg-[#BF0A30]/10' : 'text-white/50 hover:text-white/80 hover:bg-white/[0.04]'}`}>
+                  className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${isActive(item.href) ? 'text-[#BF0A30] bg-[#BF0A30]/10' : 'text-gray-500 dark:text-white/50 hover:text-gray-800 dark:hover:text-white/80 hover:bg-gray-50 dark:hover:bg-white/[0.04]'}`}>
                   <item.icon className="w-4 h-4" />
                   {item.name}
                 </Link>

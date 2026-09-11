@@ -75,17 +75,17 @@ export default function AdminDiscipleshipCohortPage() {
     switch (status) {
       case 'completed': return 'bg-green-100 text-green-800';
       case 'in-progress': return 'bg-blue-100 text-blue-800';
-      case 'enrolled': return 'bg-white/5 text-gray-700';
+      case 'enrolled': return 'bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-gray-300';
       case 'failed': return 'bg-red-100 text-red-800';
-      case 'dropped': return 'bg-white/5 text-gray-400';
-      default: return 'bg-white/5 text-gray-700';
+      case 'dropped': return 'bg-gray-100 dark:bg-white/5 text-gray-400';
+      default: return 'bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-gray-300';
     }
   };
 
   return (
     <AdminLayout title={cohort.name}>
       <div className="mb-6">
-        <Link href="/admin/discipleship" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-white/70 mb-4">
+        <Link href="/admin/discipleship" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 dark:hover:text-white/70 mb-4">
           <ArrowLeft className="w-4 h-4" />Back to Discipleship
         </Link>
         <div className="flex items-start justify-between">
@@ -101,7 +101,7 @@ export default function AdminDiscipleshipCohortPage() {
           <div className="flex items-center gap-2">
             <Link
               href={`/discipleship/dashboard?cohort=${cohort.id}`}
-              className="flex items-center gap-2 px-3 py-2 border border-white/10 text-white/70 text-sm font-medium rounded-lg hover:bg-white/[0.06]"
+              className="flex items-center gap-2 px-3 py-2 border border-gray-200 dark:border-white/10 text-gray-700 dark:text-white/70 text-sm font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-white/[0.06]"
             >
               Teacher View
             </Link>
@@ -118,15 +118,15 @@ export default function AdminDiscipleshipCohortPage() {
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-4 text-center">
-          <p className="text-2xl font-bold text-white">{students.length}</p>
+        <div className="bg-white dark:bg-[#12151C] rounded-xl border border-gray-200 dark:border-white/[0.06] p-4 text-center">
+          <p className="text-2xl font-bold text-gray-900 dark:text-white">{students.length}</p>
           <p className="text-sm text-gray-500">Enrolled</p>
         </div>
-        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-4 text-center">
+        <div className="bg-white dark:bg-[#12151C] rounded-xl border border-gray-200 dark:border-white/[0.06] p-4 text-center">
           <p className="text-2xl font-bold text-green-600">{passing.length}</p>
           <p className="text-sm text-gray-500">Can Graduate</p>
         </div>
-        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-4 text-center">
+        <div className="bg-white dark:bg-[#12151C] rounded-xl border border-gray-200 dark:border-white/[0.06] p-4 text-center">
           <p className="text-2xl font-bold text-amber-500">{atRisk.length}</p>
           <p className="text-sm text-gray-500">At Risk</p>
         </div>
@@ -139,7 +139,7 @@ export default function AdminDiscipleshipCohortPage() {
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 mb-8">
         <Link
           href={`/admin/discipleship/cohorts/${id}/attendance`}
-          className="flex items-center gap-2 p-3 bg-[#12151C] rounded-xl border border-white/[0.06] hover:border-[#BF0A30]/50 text-sm font-medium text-white/70"
+          className="flex items-center gap-2 p-3 bg-white dark:bg-[#12151C] rounded-xl border border-gray-200 dark:border-white/[0.06] hover:border-[#BF0A30]/50 text-sm font-medium text-gray-700 dark:text-white/70"
         >
           <Download className="w-4 h-4 text-[#BF0A30]" />Import Attendance
         </Link>
@@ -151,7 +151,7 @@ export default function AdminDiscipleshipCohortPage() {
         </Link>
         <Link
           href={`/admin/discipleship/cohorts/${id}/students`}
-          className="flex items-center gap-2 p-3 bg-[#12151C] rounded-xl border border-white/[0.06] hover:border-[#BF0A30]/50 text-sm font-medium text-white/70"
+          className="flex items-center gap-2 p-3 bg-white dark:bg-[#12151C] rounded-xl border border-gray-200 dark:border-white/[0.06] hover:border-[#BF0A30]/50 text-sm font-medium text-gray-700 dark:text-white/70"
         >
           <Users className="w-4 h-4 text-[#BF0A30]" />All Students
         </Link>
@@ -164,7 +164,7 @@ export default function AdminDiscipleshipCohortPage() {
         {students.length > 0 ? (
           <table className="w-full">
             <thead>
-              <tr className="text-left text-xs font-semibold text-gray-500 uppercase bg-white/[0.04]">
+              <tr className="text-left text-xs font-semibold text-gray-500 uppercase bg-gray-50 dark:bg-white/[0.04]">
                 <th className="py-3 px-4">Student</th>
                 <th className="py-3 px-4">Admission #</th>
                 <th className="py-3 px-4">Attendance</th>

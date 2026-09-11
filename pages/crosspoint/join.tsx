@@ -178,8 +178,8 @@ export default function JoinCrosspointPage() {
               <button
                 key={z}
                 onClick={() => setZone(z)}
-                className="px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap transition-all"
-                style={active ? { background: color, color: '#fff' } : { background: 'white', color: '#6B7280', border: '1px solid #E5E7EB' }}
+                className={`px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap transition-all ${active ? '' : 'bg-white dark:bg-[#1A1A1A] text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-[#2A2A2A]'}`}
+                style={active ? { background: color, color: '#fff' } : undefined}
               >
                 {label}
               </button>

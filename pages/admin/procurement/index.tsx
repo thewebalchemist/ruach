@@ -37,7 +37,7 @@ const categoryColors: Record<string, string> = {
   ministry: 'bg-emerald-500/20 text-emerald-400',
   'food-bank': 'bg-amber-500/20 text-amber-400',
   events: 'bg-pink-500/20 text-pink-400',
-  general: 'bg-white/10 text-white/60',
+  general: 'bg-gray-100 text-gray-600 dark:bg-white/10 dark:text-white/60',
 };
 
 const statusColors: Record<string, string> = {
@@ -49,7 +49,7 @@ const statusColors: Record<string, string> = {
 };
 
 const priorityColors: Record<string, string> = {
-  low: 'bg-white/10 text-white/50',
+  low: 'bg-gray-100 text-gray-600 dark:bg-white/10 dark:text-white/50',
   medium: 'bg-amber-500/20 text-amber-400',
   high: 'bg-orange-500/20 text-orange-400',
   urgent: 'bg-red-500/20 text-red-400',
@@ -182,7 +182,7 @@ export default function ProcurementPage() {
               className={`px-3 py-1.5 text-xs font-medium rounded-lg whitespace-nowrap transition-colors capitalize ${
                 statusFilter === s
                   ? 'bg-[#BF0A30] text-white'
-                  : 'bg-[#12151C] border border-white/[0.06] text-white/50 hover:text-white/70'
+                  : 'bg-white dark:bg-[#12151C] border border-gray-200 dark:border-white/[0.06] text-gray-500 dark:text-white/50 hover:text-gray-700 dark:hover:text-white/70'
               }`}
             >
               {s}
@@ -192,7 +192,7 @@ export default function ProcurementPage() {
         <select
           value={categoryFilter}
           onChange={e => setCategoryFilter(e.target.value)}
-          className="bg-[#12151C] border border-white/[0.06] text-white/70 text-xs rounded-lg px-3 py-1.5 outline-none"
+          className="bg-white dark:bg-[#12151C] border border-gray-200 dark:border-white/[0.06] text-gray-700 dark:text-white/70 text-xs rounded-lg px-3 py-1.5 outline-none"
         >
           <option value="all">All Categories</option>
           {CATEGORIES.map(c => (
@@ -202,11 +202,11 @@ export default function ProcurementPage() {
       </div>
 
       {/* Table */}
-      <div className="bg-[#12151C] rounded-xl border border-white/[0.06] overflow-hidden">
+      <div className="bg-white dark:bg-[#12151C] rounded-xl border border-gray-200 dark:border-white/[0.06] overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="text-left text-xs font-semibold text-white/40 uppercase bg-white/[0.04]">
+              <tr className="text-left text-xs font-semibold text-gray-500 dark:text-white/40 uppercase bg-gray-50 dark:bg-white/[0.04]">
                 <th className="py-3 px-4">Title</th>
                 <th className="py-3 px-4">Category</th>
                 <th className="py-3 px-4">Amount</th>
@@ -217,13 +217,13 @@ export default function ProcurementPage() {
                 {canApprove && <th className="py-3 px-4">Actions</th>}
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/[0.06]">
+            <tbody className="divide-y divide-gray-100 dark:divide-white/[0.06]">
               {filtered.map(r => (
-                <tr key={r.id} className="hover:bg-white/[0.04]">
+                <tr key={r.id} className="hover:bg-gray-50 dark:hover:bg-white/[0.04]">
                   <td className="py-3 px-4">
                     <div>
-                      <p className="text-sm font-medium text-white">{r.title}</p>
-                      {r.vendor && <p className="text-xs text-white/40">{r.vendor}</p>}
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">{r.title}</p>
+                      {r.vendor && <p className="text-xs text-gray-500 dark:text-white/40">{r.vendor}</p>}
                     </div>
                   </td>
                   <td className="py-3 px-4">
@@ -231,7 +231,7 @@ export default function ProcurementPage() {
                       {r.category}
                     </span>
                   </td>
-                  <td className="py-3 px-4 text-sm text-white/70 font-mono">
+                  <td className="py-3 px-4 text-sm text-gray-700 dark:text-white/70 font-mono">
                     {r.amount_estimated != null ? `R ${Number(r.amount_estimated).toLocaleString('en-ZA', { minimumFractionDigits: 2 })}` : '—'}
                   </td>
                   <td className="py-3 px-4">
@@ -244,10 +244,10 @@ export default function ProcurementPage() {
                       {r.status}
                     </span>
                   </td>
-                  <td className="py-3 px-4 text-sm text-white/50">
+                  <td className="py-3 px-4 text-sm text-gray-500 dark:text-white/50">
                     {r.requester ? `${r.requester.first_name} ${r.requester.last_name}` : '—'}
                   </td>
-                  <td className="py-3 px-4 text-xs text-white/40">
+                  <td className="py-3 px-4 text-xs text-gray-500 dark:text-white/40">
                     {new Date(r.created_at).toLocaleDateString()}
                   </td>
                   {canApprove && (
@@ -288,8 +288,8 @@ export default function ProcurementPage() {
         </div>
         {filtered.length === 0 && (
           <div className="p-12 text-center">
-            <ShoppingCart className="w-12 h-12 text-white/20 mx-auto mb-4" />
-            <p className="text-white/40 text-sm">No procurement requests found</p>
+            <ShoppingCart className="w-12 h-12 text-gray-300 dark:text-white/20 mx-auto mb-4" />
+            <p className="text-gray-500 dark:text-white/40 text-sm">No procurement requests found</p>
           </div>
         )}
       </div>
@@ -297,10 +297,10 @@ export default function ProcurementPage() {
       {/* New Request Modal */}
       {showModal && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
-          <div className="bg-[#12151C] border border-white/[0.06] rounded-2xl p-6 max-w-lg w-full shadow-2xl max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-[#12151C] border border-gray-200 dark:border-white/[0.06] rounded-2xl p-6 max-w-lg w-full shadow-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-bold text-white">New Procurement Request</h2>
-              <button onClick={() => setShowModal(false)} className="text-white/40 hover:text-white p-1">
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white">New Procurement Request</h2>
+              <button onClick={() => setShowModal(false)} className="text-gray-400 dark:text-white/40 hover:text-gray-700 dark:hover:text-white p-1">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -308,25 +308,25 @@ export default function ProcurementPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Title */}
               <div>
-                <label className="block text-xs font-medium text-white/50 mb-1.5">Title *</label>
+                <label className="block text-xs font-medium text-gray-500 dark:text-white/50 mb-1.5">Title *</label>
                 <input
                   type="text"
                   required
                   value={form.title}
                   onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
-                  className="w-full bg-white/[0.06] border border-white/[0.06] rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 outline-none focus:border-[#BF0A30]/50"
+                  className="w-full bg-gray-50 dark:bg-white/[0.06] border border-gray-200 dark:border-white/[0.06] rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-white/30 outline-none focus:border-[#BF0A30]/50"
                   placeholder="e.g. Office printer paper"
                 />
               </div>
 
               {/* Description */}
               <div>
-                <label className="block text-xs font-medium text-white/50 mb-1.5">Description</label>
+                <label className="block text-xs font-medium text-gray-500 dark:text-white/50 mb-1.5">Description</label>
                 <textarea
                   value={form.description}
                   onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
                   rows={3}
-                  className="w-full bg-white/[0.06] border border-white/[0.06] rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 outline-none focus:border-[#BF0A30]/50 resize-none"
+                  className="w-full bg-gray-50 dark:bg-white/[0.06] border border-gray-200 dark:border-white/[0.06] rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-white/30 outline-none focus:border-[#BF0A30]/50 resize-none"
                   placeholder="Details about the request..."
                 />
               </div>
@@ -334,26 +334,26 @@ export default function ProcurementPage() {
               {/* Category + Priority */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-white/50 mb-1.5">Category</label>
+                  <label className="block text-xs font-medium text-gray-500 dark:text-white/50 mb-1.5">Category</label>
                   <select
                     value={form.category}
                     onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
-                    className="w-full bg-white/[0.06] border border-white/[0.06] rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-[#BF0A30]/50"
+                    className="w-full bg-gray-50 dark:bg-white/[0.06] border border-gray-200 dark:border-white/[0.06] rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-white outline-none focus:border-[#BF0A30]/50"
                   >
                     {CATEGORIES.map(c => (
-                      <option key={c} value={c} className="bg-[#12151C]">{c}</option>
+                      <option key={c} value={c} className="bg-white dark:bg-[#12151C]">{c}</option>
                     ))}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-white/50 mb-1.5">Priority</label>
+                  <label className="block text-xs font-medium text-gray-500 dark:text-white/50 mb-1.5">Priority</label>
                   <select
                     value={form.priority}
                     onChange={e => setForm(f => ({ ...f, priority: e.target.value }))}
-                    className="w-full bg-white/[0.06] border border-white/[0.06] rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-[#BF0A30]/50"
+                    className="w-full bg-gray-50 dark:bg-white/[0.06] border border-gray-200 dark:border-white/[0.06] rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-white outline-none focus:border-[#BF0A30]/50"
                   >
                     {PRIORITIES.map(p => (
-                      <option key={p} value={p} className="bg-[#12151C]">{p}</option>
+                      <option key={p} value={p} className="bg-white dark:bg-[#12151C]">{p}</option>
                     ))}
                   </select>
                 </div>
@@ -362,24 +362,24 @@ export default function ProcurementPage() {
               {/* Amount + Vendor */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-white/50 mb-1.5">Estimated Amount (R)</label>
+                  <label className="block text-xs font-medium text-gray-500 dark:text-white/50 mb-1.5">Estimated Amount (R)</label>
                   <input
                     type="number"
                     step="0.01"
                     min="0"
                     value={form.amount_estimated}
                     onChange={e => setForm(f => ({ ...f, amount_estimated: e.target.value }))}
-                    className="w-full bg-white/[0.06] border border-white/[0.06] rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 outline-none focus:border-[#BF0A30]/50"
+                    className="w-full bg-gray-50 dark:bg-white/[0.06] border border-gray-200 dark:border-white/[0.06] rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-white/30 outline-none focus:border-[#BF0A30]/50"
                     placeholder="0.00"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-white/50 mb-1.5">Vendor</label>
+                  <label className="block text-xs font-medium text-gray-500 dark:text-white/50 mb-1.5">Vendor</label>
                   <input
                     type="text"
                     value={form.vendor}
                     onChange={e => setForm(f => ({ ...f, vendor: e.target.value }))}
-                    className="w-full bg-white/[0.06] border border-white/[0.06] rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 outline-none focus:border-[#BF0A30]/50"
+                    className="w-full bg-gray-50 dark:bg-white/[0.06] border border-gray-200 dark:border-white/[0.06] rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-white/30 outline-none focus:border-[#BF0A30]/50"
                     placeholder="e.g. Takealot, Makro"
                   />
                 </div>
@@ -387,24 +387,24 @@ export default function ProcurementPage() {
 
               {/* Department */}
               <div>
-                <label className="block text-xs font-medium text-white/50 mb-1.5">Department (optional)</label>
+                <label className="block text-xs font-medium text-gray-500 dark:text-white/50 mb-1.5">Department (optional)</label>
                 <input
                   type="text"
                   value={form.department_id}
                   onChange={e => setForm(f => ({ ...f, department_id: e.target.value }))}
-                  className="w-full bg-white/[0.06] border border-white/[0.06] rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 outline-none focus:border-[#BF0A30]/50"
+                  className="w-full bg-gray-50 dark:bg-white/[0.06] border border-gray-200 dark:border-white/[0.06] rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-white/30 outline-none focus:border-[#BF0A30]/50"
                   placeholder="Department ID"
                 />
               </div>
 
               {/* Notes */}
               <div>
-                <label className="block text-xs font-medium text-white/50 mb-1.5">Notes</label>
+                <label className="block text-xs font-medium text-gray-500 dark:text-white/50 mb-1.5">Notes</label>
                 <textarea
                   value={form.notes}
                   onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
                   rows={2}
-                  className="w-full bg-white/[0.06] border border-white/[0.06] rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 outline-none focus:border-[#BF0A30]/50 resize-none"
+                  className="w-full bg-gray-50 dark:bg-white/[0.06] border border-gray-200 dark:border-white/[0.06] rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-white/30 outline-none focus:border-[#BF0A30]/50 resize-none"
                   placeholder="Additional notes..."
                 />
               </div>
@@ -414,7 +414,7 @@ export default function ProcurementPage() {
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="px-4 py-2 text-sm font-medium text-white/50 border border-white/[0.06] rounded-lg hover:bg-white/[0.06]"
+                  className="px-4 py-2 text-sm font-medium text-gray-500 dark:text-white/50 border border-gray-200 dark:border-white/[0.06] rounded-lg hover:bg-gray-50 dark:hover:bg-white/[0.06]"
                 >
                   Cancel
                 </button>

@@ -70,7 +70,7 @@ export default function MemberDetailPage() {
   return (
     <AdminLayout title={`${member.first_name} ${member.last_name}`}>
       <div className="mb-6">
-        <Link href="/admin/members" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-white/70 mb-4">
+        <Link href="/admin/members" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 dark:hover:text-white/70 mb-4">
           <ArrowLeft className="w-4 h-4" />Back to Members
         </Link>
 
@@ -86,7 +86,7 @@ export default function MemberDetailPage() {
                 <span className={`px-2 py-0.5 text-xs font-semibold rounded-full capitalize ${
                   member.role === 'pastor' ? 'bg-[#BF0A30] text-white' :
                   member.role === 'leader' ? 'bg-blue-100 text-blue-800' :
-                  'bg-white/5 text-gray-700'
+                  'bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-gray-300'
                 }`}>{member.role}</span>
                 <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-green-100 text-green-800 capitalize">{member.status}</span>
               </div>

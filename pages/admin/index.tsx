@@ -95,17 +95,17 @@ export default function AdminDashboard() {
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           {attentionItems.length > 0 && (
-            <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-6">
+            <div className="bg-white dark:bg-[#12151C] rounded-xl border border-gray-200 dark:border-white/[0.06] p-6">
               <div className="flex items-center gap-2 mb-4">
                 <AlertCircle className="w-5 h-5 text-[#BF0A30]" />
-                <h2 className="font-semibold text-white">Requires Attention</h2>
+                <h2 className="font-semibold text-gray-900 dark:text-white">Requires Attention</h2>
               </div>
               <div className="space-y-3">
                 {attentionItems.map((item, i) => (
-                  <Link key={i} href={item.href} className="flex items-center justify-between p-3 rounded-lg bg-white/[0.04] hover:bg-white/[0.08]">
+                  <Link key={i} href={item.href} className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-white/[0.04] hover:bg-gray-100 dark:hover:bg-white/[0.08]">
                     <div className="flex items-center gap-3">
                       <span className="inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-full bg-amber-100 text-amber-800">{item.count}</span>
-                      <span className="text-sm text-white/70">{item.label}</span>
+                      <span className="text-sm text-gray-700 dark:text-white/70">{item.label}</span>
                     </div>
                     <ChevronRight className="w-4 h-4 text-gray-400" />
                   </Link>
@@ -119,7 +119,7 @@ export default function AdminDashboard() {
               <h2 className="font-semibold text-gray-900 dark:text-white">Recent Guests</h2>
               <Link href="/admin/members/guests" className="text-sm text-[#BF0A30] hover:underline flex items-center gap-1">View all <ArrowRight className="w-4 h-4" /></Link>
             </div>
-            <div className="divide-y divide-white/[0.06]">
+            <div className="divide-y divide-gray-100 dark:divide-white/[0.06]">
               {recentGuests.length > 0 ? recentGuests.map((guest) => (
                 <div key={guest.id} className="flex items-center justify-between p-4">
                   <div className="flex items-center gap-3">
@@ -145,13 +145,13 @@ export default function AdminDashboard() {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="text-left text-xs font-semibold text-gray-500 uppercase bg-white/[0.04]">
+                  <tr className="text-left text-xs font-semibold text-gray-500 uppercase bg-gray-50 dark:bg-white/[0.04]">
                     <th className="py-3 px-4">Member</th><th className="py-3 px-4">ID</th><th className="py-3 px-4">Role</th><th className="py-3 px-4">Status</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/[0.06]">
+                <tbody className="divide-y divide-gray-100 dark:divide-white/[0.06]">
                   {recentMembers.map((m) => (
-                    <tr key={m.id} className="hover:bg-white/[0.06]">
+                    <tr key={m.id} className="hover:bg-gray-50 dark:hover:bg-white/[0.06]">
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-full bg-[#BF0A30] flex items-center justify-center text-white text-xs font-semibold">{m.first_name[0]}{m.last_name[0]}</div>
@@ -171,25 +171,25 @@ export default function AdminDashboard() {
         </div>
 
         <div className="space-y-6">
-          <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-6">
-            <h2 className="font-semibold text-white mb-4">Quick Actions</h2>
+          <div className="bg-white dark:bg-[#12151C] rounded-xl border border-gray-200 dark:border-white/[0.06] p-6">
+            <h2 className="font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h2>
             <div className="space-y-2">
               <Link href="/admin/members/new" className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium bg-[#BF0A30] text-white hover:bg-[#B00325]"><UserPlus className="w-4 h-4" />Add New Member</Link>
-              <Link href="/admin/crosspoints/new" className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium border border-white/10 text-white/70 hover:bg-white/[0.06]"><Home className="w-4 h-4" />Create Crosspoint</Link>
-              <Link href="/admin/events/new" className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium border border-white/10 text-white/70 hover:bg-white/[0.06]"><Calendar className="w-4 h-4" />Create Event</Link>
+              <Link href="/admin/crosspoints/new" className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium border border-gray-200 dark:border-white/10 text-gray-700 dark:text-white/70 hover:bg-gray-50 dark:hover:bg-white/[0.06]"><Home className="w-4 h-4" />Create Crosspoint</Link>
+              <Link href="/admin/events/new" className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium border border-gray-200 dark:border-white/10 text-gray-700 dark:text-white/70 hover:bg-gray-50 dark:hover:bg-white/[0.06]"><Calendar className="w-4 h-4" />Create Event</Link>
             </div>
           </div>
 
-          <div className="bg-[#12151C] rounded-xl border border-white/[0.06]">
-            <div className="flex items-center justify-between p-4 border-b border-white/[0.06]">
-              <h2 className="font-semibold text-white">Crosspoints</h2>
+          <div className="bg-white dark:bg-[#12151C] rounded-xl border border-gray-200 dark:border-white/[0.06]">
+            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-white/[0.06]">
+              <h2 className="font-semibold text-gray-900 dark:text-white">Crosspoints</h2>
               <Link href="/admin/crosspoints" className="text-sm text-[#BF0A30] hover:underline">View all</Link>
             </div>
             <div className="divide-y divide-gray-100 dark:divide-[#2D2D2D]">
               {crosspoints.map((cp) => (
                 <div key={cp.id} className="flex items-center justify-between p-4">
                   <div><p className="font-medium text-gray-900 dark:text-white">{cp.name}</p><p className="text-sm text-gray-500">{cp.area}</p></div>
-                  <div className="text-right"><p className="text-sm font-medium">{cp.member_count}/{cp.max_members}</p><span className={`text-xs px-2 py-0.5 rounded-full ${cp.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'}`}>{cp.status}</span></div>
+                  <div className="text-right"><p className="text-sm font-medium text-gray-900 dark:text-white">{cp.member_count}/{cp.max_members}</p><span className={`text-xs px-2 py-0.5 rounded-full ${cp.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'}`}>{cp.status}</span></div>
                 </div>
               ))}
               {crosspoints.length === 0 && <div className="p-8 text-center text-gray-500">No crosspoints yet</div>}
