@@ -36,10 +36,10 @@ export default function CrosspointsPage() {
       <PageHeader title="Crosspoints" subtitle={`${crosspoints.length} home churches`}
         actions={<Link href="/admin/crosspoints/new" className="flex items-center gap-2 px-3 py-2 text-sm font-medium bg-[#BF0A30] text-white rounded-lg"><Plus className="w-4 h-4" />Create</Link>} />
 
-      <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-4 mb-6">
+      <div className="bg-white dark:bg-[#12151C] rounded-xl border border-gray-200 dark:border-white/[0.06] p-4 mb-6">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input type="text" placeholder="Search..." className="w-full pl-10 pr-4 py-2.5 text-sm border border-white/10 dark:border-[#2D2D2D] rounded-lg" value={search} onChange={(e) => setSearch(e.target.value)} />
+          <input type="text" placeholder="Search..." className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-200 dark:border-[#2D2D2D] rounded-lg bg-white dark:bg-transparent" value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
       </div>
 

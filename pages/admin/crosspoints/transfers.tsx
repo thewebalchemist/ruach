@@ -56,7 +56,7 @@ export default function TransfersPage() {
   return (
     <AdminLayout title="Transfer Requests">
       <div className="mb-6">
-        <Link href="/admin/crosspoints" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-white/70 mb-4">
+        <Link href="/admin/crosspoints" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 dark:hover:text-white/70 mb-4">
           <ArrowLeft className="w-4 h-4" />Back to Crosspoints
         </Link>
         <PageHeader title="Crosspoint Transfers" subtitle={`${pending.length} pending transfer requests`} />
@@ -122,18 +122,18 @@ export default function TransfersPage() {
           ))}
         </div>
       ) : (
-        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-12 text-center mb-8">
+        <div className="bg-white dark:bg-[#12151C] rounded-xl border border-gray-200 dark:border-white/[0.06] p-12 text-center mb-8">
           <p className="text-gray-500">No pending transfer requests</p>
         </div>
       )}
 
       {processed.length > 0 && (
         <div>
-          <h2 className="text-lg font-semibold text-white mb-4">Transfer History</h2>
-          <div className="bg-[#12151C] rounded-xl border border-white/[0.06] overflow-hidden">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Transfer History</h2>
+          <div className="bg-white dark:bg-[#12151C] rounded-xl border border-gray-200 dark:border-white/[0.06] overflow-hidden">
             <table className="w-full">
               <thead>
-                <tr className="text-left text-xs font-semibold text-gray-500 uppercase bg-white/[0.04]">
+                <tr className="text-left text-xs font-semibold text-gray-500 uppercase bg-gray-50 dark:bg-white/[0.04]">
                   <th className="py-3 px-4">Member</th>
                   <th className="py-3 px-4">From</th>
                   <th className="py-3 px-4">To</th>
@@ -144,9 +144,9 @@ export default function TransfersPage() {
               <tbody className="divide-y divide-gray-100 dark:divide-[#2D2D2D]">
                 {processed.map((req) => (
                   <tr key={req.id}>
-                    <td className="py-3 px-4 font-medium">{req.profiles?.first_name} {req.profiles?.last_name}</td>
-                    <td className="py-3 px-4 text-sm">{req.from_crosspoint?.name}</td>
-                    <td className="py-3 px-4 text-sm">{req.to_crosspoint?.name}</td>
+                    <td className="py-3 px-4 font-medium text-gray-900 dark:text-white">{req.profiles?.first_name} {req.profiles?.last_name}</td>
+                    <td className="py-3 px-4 text-sm text-gray-700 dark:text-gray-300">{req.from_crosspoint?.name}</td>
+                    <td className="py-3 px-4 text-sm text-gray-700 dark:text-gray-300">{req.to_crosspoint?.name}</td>
                     <td className="py-3 px-4 text-sm text-gray-500">{new Date(req.request_date).toLocaleDateString()}</td>
                     <td className="py-3 px-4">
                       <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${req.status === 'approved' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>

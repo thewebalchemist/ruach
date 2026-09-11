@@ -30,25 +30,25 @@ export function IntroGuide() {
 
   return (
     <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
-      <div className="bg-[#12151C] border border-white/[0.06] rounded-2xl p-6 max-w-md w-full shadow-2xl">
+      <div className="bg-white dark:bg-[#12151C] border border-gray-200 dark:border-white/[0.06] rounded-2xl p-6 max-w-md w-full shadow-2xl">
         {/* Progress dots */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex gap-1.5">
             {STEPS.map((_, i) => (
-              <div key={i} className={`h-1 rounded-full transition-all ${i === step ? 'w-6 bg-[#BF0A30]' : 'w-2 bg-white/20'}`} />
+              <div key={i} className={`h-1 rounded-full transition-all ${i === step ? 'w-6 bg-[#BF0A30]' : 'w-2 bg-gray-200 dark:bg-white/20'}`} />
             ))}
           </div>
-          <button onClick={dismiss} className="text-white/40 hover:text-white p-1"><X className="w-4 h-4" /></button>
+          <button onClick={dismiss} className="text-gray-400 dark:text-white/40 hover:text-gray-900 dark:hover:text-white p-1"><X className="w-4 h-4" /></button>
         </div>
 
-        <h3 className="text-lg font-bold text-white mb-2">{current.title}</h3>
-        <p className="text-sm text-white/60 leading-relaxed mb-6">{current.description}</p>
+        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">{current.title}</h3>
+        <p className="text-sm text-gray-600 dark:text-white/60 leading-relaxed mb-6">{current.description}</p>
 
         <div className="flex items-center justify-between">
-          <button onClick={dismiss} className="text-xs text-white/40 hover:text-white/60">Skip tour</button>
+          <button onClick={dismiss} className="text-xs text-gray-400 dark:text-white/40 hover:text-gray-600 dark:hover:text-white/60">Skip tour</button>
           <div className="flex gap-2">
             {step > 0 && (
-              <button onClick={() => setStep(s => s - 1)} className="flex items-center gap-1 px-3 py-2 border border-white/10 rounded-xl text-xs text-white/70 hover:bg-white/[0.06]">
+              <button onClick={() => setStep(s => s - 1)} className="flex items-center gap-1 px-3 py-2 border border-gray-200 dark:border-white/10 rounded-xl text-xs text-gray-700 dark:text-white/70 hover:bg-gray-50 dark:hover:bg-white/[0.06]">
                 <ChevronLeft className="w-3 h-3" /> Back
               </button>
             )}

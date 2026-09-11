@@ -206,15 +206,15 @@ export default function MessagesPage() {
 
   return (
     <ConnectLayout title="Messages" notificationCount={totalUnread}>
-      <div className="max-w-6xl mx-auto h-[calc(100vh-7rem)] flex overflow-hidden bg-[#12151C] rounded-2xl border border-white/[0.06]/70 shadow-sm">
+      <div className="max-w-6xl mx-auto h-[calc(100vh-7rem)] flex overflow-hidden bg-white dark:bg-[#12151C] rounded-2xl border border-gray-200/70 dark:border-white/[0.06]/70 shadow-sm">
 
         {/* ── Sidebar ──────────────────────────────────────────────────────── */}
-        <div className={`flex-shrink-0 w-full sm:w-80 flex flex-col border-r border-white/[0.04] ${isMobileChat ? 'hidden sm:flex' : 'flex'}`}>
+        <div className={`flex-shrink-0 w-full sm:w-80 flex flex-col border-r border-gray-100 dark:border-white/[0.04] ${isMobileChat ? 'hidden sm:flex' : 'flex'}`}>
 
           {/* Sidebar header */}
-          <div className="px-4 py-4 border-b border-gray-100">
+          <div className="px-4 py-4 border-b border-gray-100 dark:border-white/[0.04]">
             <div className="flex items-center justify-between mb-3">
-              <h2 className="font-bold text-white">Messages</h2>
+              <h2 className="font-bold text-gray-900 dark:text-white">Messages</h2>
               {totalUnread > 0 && (
                 <span className="w-6 h-6 bg-[#BF0A30] text-white text-xs rounded-full flex items-center justify-center font-bold">
                   {totalUnread}
@@ -225,7 +225,7 @@ export default function MessagesPage() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
                 placeholder="Search conversations…"
-                className="w-full pl-9 pr-3 py-2 text-sm bg-[#0A0C10] border border-white/[0.06] rounded-xl focus:outline-none focus:border-[#BF0A30] text-white placeholder-white/30" />
+                className="w-full pl-9 pr-3 py-2 text-sm bg-gray-50 dark:bg-[#0A0C10] border border-gray-200 dark:border-white/[0.06] rounded-xl focus:outline-none focus:border-[#BF0A30] text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-white/30" />
             </div>
           </div>
 
@@ -241,7 +241,7 @@ export default function MessagesPage() {
               const last = convo.messages.at(-1);
               return (
                 <button key={convo.id} onClick={() => openConvo(convo)}
-                  className={`w-full flex items-center gap-3 px-4 py-3.5 hover:bg-[#0A0C10] dark:hover:bg-white/[0.03] transition-colors text-left border-b border-gray-50 dark:border-white/[0.03] ${
+                  className={`w-full flex items-center gap-3 px-4 py-3.5 hover:bg-gray-50 dark:hover:bg-white/[0.03] transition-colors text-left border-b border-gray-50 dark:border-white/[0.03] ${
                     activeConvoId === convo.id ? 'bg-[#BF0A30]/5 dark:bg-[#BF0A30]/10' : ''
                   }`}>
                   {/* Avatar */}
@@ -258,7 +258,7 @@ export default function MessagesPage() {
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-0.5">
-                      <span className={`text-sm font-semibold truncate ${unread ? 'text-white' : 'text-white/70'}`}>
+                      <span className={`text-sm font-semibold truncate ${unread ? 'text-gray-900 dark:text-white' : 'text-gray-600 dark:text-white/70'}`}>
                         {convo.name}
                       </span>
                       {last && (
@@ -268,7 +268,7 @@ export default function MessagesPage() {
                       )}
                     </div>
                     <div className="flex items-center justify-between">
-                      <p className={`text-xs truncate ${unread ? 'text-white font-medium' : 'text-gray-500'}`}>
+                      <p className={`text-xs truncate ${unread ? 'text-gray-900 dark:text-white font-medium' : 'text-gray-500'}`}>
                         {last?.content ?? 'No messages yet'}
                       </p>
                       {unread > 0 && (
@@ -289,7 +289,7 @@ export default function MessagesPage() {
           {activeConvo ? (
             <>
               {/* Chat header */}
-              <div className="flex items-center gap-3 px-5 py-3.5 border-b border-gray-100">
+              <div className="flex items-center gap-3 px-5 py-3.5 border-b border-gray-100 dark:border-white/[0.04]">
                 <button onClick={() => setIsMobileChat(false)} className="sm:hidden p-1 text-gray-500">
                   <ChevronRight className="w-5 h-5 rotate-180" />
                 </button>
@@ -299,7 +299,7 @@ export default function MessagesPage() {
                   {activeConvo.type === 'cohort' ? <Users className="w-4 h-4" /> : activeConvo.initials}
                 </div>
                 <div className="flex-1">
-                  <p className="font-semibold text-white text-sm">{activeConvo.name}</p>
+                  <p className="font-semibold text-gray-900 dark:text-white text-sm">{activeConvo.name}</p>
                   <p className="text-xs text-gray-500">
                     {activeConvo.type === 'cohort' ? `${activeStudentCount} students` : 'Direct message'}
                   </p>
@@ -331,7 +331,7 @@ export default function MessagesPage() {
                       <div className={`max-w-[70%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
                         isOwn
                           ? 'bg-gradient-to-br from-[#BF0A30] to-[#A0021F] text-white rounded-br-sm'
-                          : 'bg-white/5 text-white rounded-bl-sm'
+                          : 'bg-gray-100 dark:bg-white/5 text-gray-900 dark:text-white rounded-bl-sm'
                       }`}>
                         {msg.content}
                       </div>
@@ -348,7 +348,7 @@ export default function MessagesPage() {
               </div>
 
               {/* Message input */}
-              <div className="px-4 py-3.5 border-t border-gray-100">
+              <div className="px-4 py-3.5 border-t border-gray-100 dark:border-white/[0.04]">
                 <div className="flex gap-2 items-end">
                   <textarea
                     value={messageInput}
@@ -356,7 +356,7 @@ export default function MessagesPage() {
                     onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }}}
                     placeholder={activeConvo.type === 'cohort' ? 'Message the whole cohort…' : `Message ${activeConvo.name}…`}
                     rows={1}
-                    className="flex-1 resize-none bg-[#0A0C10] border border-white/[0.06] rounded-xl px-4 py-3 text-sm text-white placeholder-white/30 focus:outline-none focus:border-[#BF0A30] transition-colors max-h-32"
+                    className="flex-1 resize-none bg-gray-50 dark:bg-[#0A0C10] border border-gray-200 dark:border-white/[0.06] rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-white/30 focus:outline-none focus:border-[#BF0A30] transition-colors max-h-32"
                     style={{ minHeight: '44px' }}
                   />
                   <button onClick={sendMessage} disabled={!messageInput.trim() || sending}
@@ -374,7 +374,7 @@ export default function MessagesPage() {
           ) : (
             <div className="flex-1 flex items-center justify-center">
               <div className="text-center">
-                <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-white/5 flex items-center justify-center mx-auto mb-4">
                   <Send className="w-8 h-8 text-gray-300" />
                 </div>
                 <p className="text-gray-500 font-medium">Select a conversation</p>

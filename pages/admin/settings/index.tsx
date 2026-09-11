@@ -99,15 +99,15 @@ export default function SettingsPage() {
       <PageHeader title="Settings" subtitle="Configure system preferences" />
 
       {saveSuccess && (
-        <div className="bg-green-900/20 border border-green-800 rounded-xl p-3 mb-6">
-          <p className="text-sm text-green-300 font-medium">Settings saved successfully.</p>
+        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl p-3 mb-6">
+          <p className="text-sm text-green-700 dark:text-green-300 font-medium">Settings saved successfully.</p>
         </div>
       )}
 
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Tabs */}
         <div className="lg:w-64 flex-shrink-0">
-          <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-2">
+          <div className="bg-white dark:bg-[#12151C] rounded-xl border border-gray-200 dark:border-white/[0.06] p-2">
             {tabs.map(tab => (
               <button
                 key={tab.id}
@@ -115,7 +115,7 @@ export default function SettingsPage() {
                 className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-lg text-left ${
                   activeTab === tab.id
                     ? 'bg-[#BF0A30]/10 text-[#BF0A30]'
-                    : 'text-white/50 hover:bg-white/[0.06]'
+                    : 'text-gray-600 dark:text-white/50 hover:bg-gray-50 dark:hover:bg-white/[0.06]'
                 }`}
               >
                 <tab.icon className="w-5 h-5" />
@@ -128,24 +128,24 @@ export default function SettingsPage() {
         {/* Content */}
         <div className="flex-1">
           {activeTab === 'general' && (
-            <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-6">
-              <h2 className="font-semibold text-white mb-6">Church Information</h2>
+            <div className="bg-white dark:bg-[#12151C] rounded-xl border border-gray-200 dark:border-white/[0.06] p-6">
+              <h2 className="font-semibold text-gray-900 dark:text-white mb-6">Church Information</h2>
               <div className="space-y-4 max-w-xl">
                 <div>
-                  <label className="block text-sm font-medium text-white/70 mb-1">Church Name</label>
-                  <input type="text" value={churchName} onChange={e => setChurchName(e.target.value)} className="w-full px-4 py-2.5 text-sm border border-white/10 rounded-lg bg-[#12151C]" />
+                  <label className="block text-sm font-medium text-gray-700 dark:text-white/70 mb-1">Church Name</label>
+                  <input type="text" value={churchName} onChange={e => setChurchName(e.target.value)} className="w-full px-4 py-2.5 text-sm border border-gray-200 dark:border-white/10 rounded-lg bg-white dark:bg-[#12151C] text-gray-900 dark:text-white" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-white/70 mb-1">Location</label>
-                  <input type="text" value={churchLocation} onChange={e => setChurchLocation(e.target.value)} className="w-full px-4 py-2.5 text-sm border border-white/10 rounded-lg bg-[#12151C]" />
+                  <label className="block text-sm font-medium text-gray-700 dark:text-white/70 mb-1">Location</label>
+                  <input type="text" value={churchLocation} onChange={e => setChurchLocation(e.target.value)} className="w-full px-4 py-2.5 text-sm border border-gray-200 dark:border-white/10 rounded-lg bg-white dark:bg-[#12151C] text-gray-900 dark:text-white" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-white/70 mb-1">Contact Email</label>
-                  <input type="email" value={contactEmail} onChange={e => setContactEmail(e.target.value)} className="w-full px-4 py-2.5 text-sm border border-white/10 rounded-lg bg-[#12151C]" />
+                  <label className="block text-sm font-medium text-gray-700 dark:text-white/70 mb-1">Contact Email</label>
+                  <input type="email" value={contactEmail} onChange={e => setContactEmail(e.target.value)} className="w-full px-4 py-2.5 text-sm border border-gray-200 dark:border-white/10 rounded-lg bg-white dark:bg-[#12151C] text-gray-900 dark:text-white" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-white/70 mb-1">Contact Phone</label>
-                  <input type="tel" value={contactPhone} onChange={e => setContactPhone(e.target.value)} className="w-full px-4 py-2.5 text-sm border border-white/10 rounded-lg bg-[#12151C]" />
+                  <label className="block text-sm font-medium text-gray-700 dark:text-white/70 mb-1">Contact Phone</label>
+                  <input type="tel" value={contactPhone} onChange={e => setContactPhone(e.target.value)} className="w-full px-4 py-2.5 text-sm border border-gray-200 dark:border-white/10 rounded-lg bg-white dark:bg-[#12151C] text-gray-900 dark:text-white" />
                 </div>
                 <button
                   onClick={() => handleSave({
@@ -165,29 +165,29 @@ export default function SettingsPage() {
           )}
 
           {activeTab === 'members' && (
-            <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-6">
-              <h2 className="font-semibold text-white mb-6">Member Settings</h2>
+            <div className="bg-white dark:bg-[#12151C] rounded-xl border border-gray-200 dark:border-white/[0.06] p-6">
+              <h2 className="font-semibold text-gray-900 dark:text-white mb-6">Member Settings</h2>
               <div className="space-y-6 max-w-xl">
                 <div>
-                  <label className="block text-sm font-medium text-white/70 mb-1">Member ID Prefix</label>
-                  <input type="text" value={memberIdPrefix} onChange={e => setMemberIdPrefix(e.target.value)} className="w-full px-4 py-2.5 text-sm border border-white/10 rounded-lg bg-[#12151C]" />
+                  <label className="block text-sm font-medium text-gray-700 dark:text-white/70 mb-1">Member ID Prefix</label>
+                  <input type="text" value={memberIdPrefix} onChange={e => setMemberIdPrefix(e.target.value)} className="w-full px-4 py-2.5 text-sm border border-gray-200 dark:border-white/10 rounded-lg bg-white dark:bg-[#12151C] text-gray-900 dark:text-white" />
                   <p className="text-xs text-gray-500 mt-1">e.g., RT-00001</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-white/70 mb-1">Legacy Member ID Prefix</label>
-                  <input type="text" value={legacyPrefix} onChange={e => setLegacyPrefix(e.target.value)} className="w-full px-4 py-2.5 text-sm border border-white/10 rounded-lg bg-[#12151C]" />
+                  <label className="block text-sm font-medium text-gray-700 dark:text-white/70 mb-1">Legacy Member ID Prefix</label>
+                  <input type="text" value={legacyPrefix} onChange={e => setLegacyPrefix(e.target.value)} className="w-full px-4 py-2.5 text-sm border border-gray-200 dark:border-white/10 rounded-lg bg-white dark:bg-[#12151C] text-gray-900 dark:text-white" />
                   <p className="text-xs text-gray-500 mt-1">For founding members</p>
                 </div>
-                <div className="flex items-center justify-between p-4 bg-white/[0.04] rounded-lg">
+                <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-white/[0.04] rounded-lg">
                   <div>
-                    <p className="font-medium text-white">Require Connect Class for Membership</p>
+                    <p className="font-medium text-gray-900 dark:text-white">Require Connect Class for Membership</p>
                     <p className="text-sm text-gray-500">Members must complete Connect Class</p>
                   </div>
                   <button
                     onClick={() => setRequireConnect(!requireConnect)}
-                    className={`relative w-12 h-6 rounded-full transition-colors ${requireConnect ? 'bg-[#BF0A30]' : 'bg-gray-600'}`}
+                    className={`relative w-12 h-6 rounded-full transition-colors ${requireConnect ? 'bg-[#BF0A30]' : 'bg-gray-300 dark:bg-gray-600'}`}
                   >
-                    <span className={`absolute top-1 w-4 h-4 bg-[#12151C] rounded-full transition-all ${requireConnect ? 'right-1' : 'left-1'}`}></span>
+                    <span className={`absolute top-1 w-4 h-4 bg-white dark:bg-[#12151C] rounded-full transition-all ${requireConnect ? 'right-1' : 'left-1'}`}></span>
                   </button>
                 </div>
                 <button
@@ -207,27 +207,27 @@ export default function SettingsPage() {
           )}
 
           {activeTab === 'crosspoints' && (
-            <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-6">
-              <h2 className="font-semibold text-white mb-6">Crosspoint Settings</h2>
+            <div className="bg-white dark:bg-[#12151C] rounded-xl border border-gray-200 dark:border-white/[0.06] p-6">
+              <h2 className="font-semibold text-gray-900 dark:text-white mb-6">Crosspoint Settings</h2>
               <div className="space-y-6 max-w-xl">
                 <div>
-                  <label className="block text-sm font-medium text-white/70 mb-1">Maximum Members per Crosspoint</label>
-                  <input type="number" value={maxCpMembers} onChange={e => setMaxCpMembers(e.target.value)} className="w-full px-4 py-2.5 text-sm border border-white/10 rounded-lg bg-[#12151C]" />
+                  <label className="block text-sm font-medium text-gray-700 dark:text-white/70 mb-1">Maximum Members per Crosspoint</label>
+                  <input type="number" value={maxCpMembers} onChange={e => setMaxCpMembers(e.target.value)} className="w-full px-4 py-2.5 text-sm border border-gray-200 dark:border-white/10 rounded-lg bg-white dark:bg-[#12151C] text-gray-900 dark:text-white" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-white/70 mb-1">Minimum Members to Activate</label>
-                  <input type="number" value={minCpMembers} onChange={e => setMinCpMembers(e.target.value)} className="w-full px-4 py-2.5 text-sm border border-white/10 rounded-lg bg-[#12151C]" />
+                  <label className="block text-sm font-medium text-gray-700 dark:text-white/70 mb-1">Minimum Members to Activate</label>
+                  <input type="number" value={minCpMembers} onChange={e => setMinCpMembers(e.target.value)} className="w-full px-4 py-2.5 text-sm border border-gray-200 dark:border-white/10 rounded-lg bg-white dark:bg-[#12151C] text-gray-900 dark:text-white" />
                 </div>
-                <div className="flex items-center justify-between p-4 bg-white/[0.04] rounded-lg">
+                <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-white/[0.04] rounded-lg">
                   <div>
-                    <p className="font-medium text-white">Require Transfer Approval</p>
+                    <p className="font-medium text-gray-900 dark:text-white">Require Transfer Approval</p>
                     <p className="text-sm text-gray-500">Members need approval to transfer</p>
                   </div>
                   <button
                     onClick={() => setRequireTransferApproval(!requireTransferApproval)}
-                    className={`relative w-12 h-6 rounded-full transition-colors ${requireTransferApproval ? 'bg-[#BF0A30]' : 'bg-gray-600'}`}
+                    className={`relative w-12 h-6 rounded-full transition-colors ${requireTransferApproval ? 'bg-[#BF0A30]' : 'bg-gray-300 dark:bg-gray-600'}`}
                   >
-                    <span className={`absolute top-1 w-4 h-4 bg-[#12151C] rounded-full transition-all ${requireTransferApproval ? 'right-1' : 'left-1'}`}></span>
+                    <span className={`absolute top-1 w-4 h-4 bg-white dark:bg-[#12151C] rounded-full transition-all ${requireTransferApproval ? 'right-1' : 'left-1'}`}></span>
                   </button>
                 </div>
                 <button
@@ -247,8 +247,8 @@ export default function SettingsPage() {
           )}
 
           {activeTab === 'notifications' && (
-            <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-6">
-              <h2 className="font-semibold text-white mb-6">Notification Settings</h2>
+            <div className="bg-white dark:bg-[#12151C] rounded-xl border border-gray-200 dark:border-white/[0.06] p-6">
+              <h2 className="font-semibold text-gray-900 dark:text-white mb-6">Notification Settings</h2>
               <div className="space-y-4 max-w-xl">
                 {[
                   { label: 'New Guest Notifications', desc: 'Alert when new guest registers' },
@@ -257,13 +257,13 @@ export default function SettingsPage() {
                   { label: 'Connect Class Reminders', desc: 'Remind attendees about upcoming classes' },
                   { label: 'Transfer Request Alerts', desc: 'Notify leaders of transfer requests' },
                 ].map((item, i) => (
-                  <div key={i} className="flex items-center justify-between p-4 bg-white/[0.04] rounded-lg">
+                  <div key={i} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-white/[0.04] rounded-lg">
                     <div>
-                      <p className="font-medium text-white">{item.label}</p>
+                      <p className="font-medium text-gray-900 dark:text-white">{item.label}</p>
                       <p className="text-sm text-gray-500">{item.desc}</p>
                     </div>
-                    <button className={`relative w-12 h-6 rounded-full ${i < 3 ? 'bg-[#BF0A30]' : 'bg-gray-600'}`}>
-                      <span className={`absolute top-1 w-4 h-4 bg-[#12151C] rounded-full ${i < 3 ? 'right-1' : 'left-1'}`}></span>
+                    <button className={`relative w-12 h-6 rounded-full ${i < 3 ? 'bg-[#BF0A30]' : 'bg-gray-300 dark:bg-gray-600'}`}>
+                      <span className={`absolute top-1 w-4 h-4 bg-white dark:bg-[#12151C] rounded-full ${i < 3 ? 'right-1' : 'left-1'}`}></span>
                     </button>
                   </div>
                 ))}
@@ -272,27 +272,27 @@ export default function SettingsPage() {
           )}
 
           {activeTab === 'security' && (
-            <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-6">
-              <h2 className="font-semibold text-white mb-6">Security Settings</h2>
+            <div className="bg-white dark:bg-[#12151C] rounded-xl border border-gray-200 dark:border-white/[0.06] p-6">
+              <h2 className="font-semibold text-gray-900 dark:text-white mb-6">Security Settings</h2>
               <div className="space-y-6 max-w-xl">
-                <div className="p-4 bg-amber-900/20 border border-amber-800 rounded-lg">
-                  <p className="text-sm text-amber-200">These settings affect all users. Make changes carefully.</p>
+                <div className="p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+                  <p className="text-sm text-amber-800 dark:text-amber-200">These settings affect all users. Make changes carefully.</p>
                 </div>
-                <div className="flex items-center justify-between p-4 bg-white/[0.04] rounded-lg">
+                <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-white/[0.04] rounded-lg">
                   <div>
-                    <p className="font-medium text-white">Two-Factor Authentication</p>
+                    <p className="font-medium text-gray-900 dark:text-white">Two-Factor Authentication</p>
                     <p className="text-sm text-gray-500">Require 2FA for admin accounts</p>
                   </div>
-                  <button className="relative w-12 h-6 bg-gray-600 rounded-full">
-                    <span className="absolute left-1 top-1 w-4 h-4 bg-[#12151C] rounded-full"></span>
+                  <button className="relative w-12 h-6 bg-gray-300 dark:bg-gray-600 rounded-full">
+                    <span className="absolute left-1 top-1 w-4 h-4 bg-white dark:bg-[#12151C] rounded-full"></span>
                   </button>
                 </div>
-                <div className="flex items-center justify-between p-4 bg-white/[0.04] rounded-lg">
+                <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-white/[0.04] rounded-lg">
                   <div>
-                    <p className="font-medium text-white">Session Timeout</p>
+                    <p className="font-medium text-gray-900 dark:text-white">Session Timeout</p>
                     <p className="text-sm text-gray-500">Auto logout after inactivity</p>
                   </div>
-                  <select className="px-3 py-1.5 text-sm border border-white/10 rounded-lg bg-[#12151C]">
+                  <select className="px-3 py-1.5 text-sm border border-gray-200 dark:border-white/10 rounded-lg bg-white dark:bg-[#12151C] text-gray-900 dark:text-white">
                     <option>30 minutes</option>
                     <option>1 hour</option>
                     <option>2 hours</option>
@@ -304,26 +304,26 @@ export default function SettingsPage() {
           )}
 
           {activeTab === 'data' && (
-            <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-6">
-              <h2 className="font-semibold text-white mb-6">Data Management</h2>
+            <div className="bg-white dark:bg-[#12151C] rounded-xl border border-gray-200 dark:border-white/[0.06] p-6">
+              <h2 className="font-semibold text-gray-900 dark:text-white mb-6">Data Management</h2>
               <div className="space-y-6 max-w-xl">
-                <div className="p-4 border border-white/[0.06] rounded-lg">
-                  <h3 className="font-medium text-white mb-2">Export Data</h3>
+                <div className="p-4 border border-gray-200 dark:border-white/[0.06] rounded-lg">
+                  <h3 className="font-medium text-gray-900 dark:text-white mb-2">Export Data</h3>
                   <p className="text-sm text-gray-500 mb-4">Download all church data as CSV or Excel</p>
                   <div className="flex gap-2">
-                    <button className="px-4 py-2 text-sm font-medium border border-white/10 rounded-lg hover:bg-white/[0.06]">Export Members</button>
-                    <button className="px-4 py-2 text-sm font-medium border border-white/10 rounded-lg hover:bg-white/[0.06]">Export Crosspoints</button>
-                    <button className="px-4 py-2 text-sm font-medium border border-white/10 rounded-lg hover:bg-white/[0.06]">Export All</button>
+                    <button className="px-4 py-2 text-sm font-medium border border-gray-200 dark:border-white/10 rounded-lg hover:bg-gray-50 dark:hover:bg-white/[0.06]">Export Members</button>
+                    <button className="px-4 py-2 text-sm font-medium border border-gray-200 dark:border-white/10 rounded-lg hover:bg-gray-50 dark:hover:bg-white/[0.06]">Export Crosspoints</button>
+                    <button className="px-4 py-2 text-sm font-medium border border-gray-200 dark:border-white/10 rounded-lg hover:bg-gray-50 dark:hover:bg-white/[0.06]">Export All</button>
                   </div>
                 </div>
-                <div className="p-4 border border-white/[0.06] rounded-lg">
-                  <h3 className="font-medium text-white mb-2">Import Data</h3>
+                <div className="p-4 border border-gray-200 dark:border-white/[0.06] rounded-lg">
+                  <h3 className="font-medium text-gray-900 dark:text-white mb-2">Import Data</h3>
                   <p className="text-sm text-gray-500 mb-4">Import members from CSV file</p>
                   <button className="px-4 py-2 text-sm font-medium bg-[#BF0A30] text-white rounded-lg">Upload CSV</button>
                 </div>
-                <div className="p-4 border border-red-900 rounded-lg bg-red-900/20">
-                  <h3 className="font-medium text-red-200 mb-2">Danger Zone</h3>
-                  <p className="text-sm text-red-400 mb-4">These actions cannot be undone</p>
+                <div className="p-4 border border-red-200 dark:border-red-900 rounded-lg bg-red-50 dark:bg-red-900/20">
+                  <h3 className="font-medium text-red-700 dark:text-red-200 mb-2">Danger Zone</h3>
+                  <p className="text-sm text-red-600 dark:text-red-400 mb-4">These actions cannot be undone</p>
                   <button className="px-4 py-2 text-sm font-medium bg-red-600 text-white rounded-lg hover:bg-red-700">Reset All Data</button>
                 </div>
               </div>

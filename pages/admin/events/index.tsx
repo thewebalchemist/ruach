@@ -42,15 +42,15 @@ export default function EventsPage() {
       />
 
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-6">
-        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-4">
+        <div className="bg-white dark:bg-[#12151C] rounded-xl border border-gray-200 dark:border-white/[0.06] p-4">
           <p className="text-sm text-gray-500">Upcoming</p>
-          <p className="text-2xl font-bold text-white">{upcoming}</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-white">{upcoming}</p>
         </div>
-        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-4">
+        <div className="bg-white dark:bg-[#12151C] rounded-xl border border-gray-200 dark:border-white/[0.06] p-4">
           <p className="text-sm text-gray-500">Church-wide</p>
           <p className="text-2xl font-bold text-gray-900 dark:text-white">{events.filter(e => e.type === 'church-wide').length}</p>
         </div>
-        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-4">
+        <div className="bg-white dark:bg-[#12151C] rounded-xl border border-gray-200 dark:border-white/[0.06] p-4">
           <p className="text-sm text-gray-500">Department</p>
           <p className="text-2xl font-bold text-gray-900 dark:text-white">{events.filter(e => e.type === 'department').length}</p>
         </div>

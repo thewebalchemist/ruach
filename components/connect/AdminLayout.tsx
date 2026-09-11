@@ -122,8 +122,8 @@ export function PageHeader({ title, subtitle, actions }: PageHeaderProps) {
   return (
     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
       <div>
-        <h1 className="text-xl sm:text-2xl font-bold text-white">{title}</h1>
-        {subtitle && <p className="text-sm text-white/40 mt-1">{subtitle}</p>}
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{title}</h1>
+        {subtitle && <p className="text-sm text-gray-500 dark:text-white/40 mt-1">{subtitle}</p>}
       </div>
       {actions && <div className="flex gap-2">{actions}</div>}
     </div>
@@ -140,9 +140,9 @@ interface EmptyStateProps {
 export function EmptyState({ icon, title, description, action }: EmptyStateProps) {
   return (
     <div className="text-center py-16">
-      {icon && <div className="text-white/20 mb-4 flex justify-center">{icon}</div>}
-      <h3 className="text-base font-medium text-white/70">{title}</h3>
-      {description && <p className="text-sm text-white/40 mt-1">{description}</p>}
+      {icon && <div className="text-gray-300 dark:text-white/20 mb-4 flex justify-center">{icon}</div>}
+      <h3 className="text-base font-medium text-gray-700 dark:text-white/70">{title}</h3>
+      {description && <p className="text-sm text-gray-500 dark:text-white/40 mt-1">{description}</p>}
       {action && <div className="mt-4">{action}</div>}
     </div>
   );

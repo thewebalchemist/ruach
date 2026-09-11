@@ -50,9 +50,9 @@ export default function AdminDiscipleshipPage() {
     switch (status) {
       case 'active': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
       case 'registration-open': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
-      case 'completed': return 'bg-white/5 text-white/70 dark:bg-gray-800';
+      case 'completed': return 'bg-gray-100 text-gray-700 dark:bg-white/5 dark:text-white/70';
       case 'draft': return 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400';
-      default: return 'bg-white/5 text-gray-700';
+      default: return 'bg-gray-100 text-gray-700 dark:bg-white/5';
     }
   };
 
@@ -76,16 +76,16 @@ export default function AdminDiscipleshipPage() {
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-4">
+        <div className="bg-white dark:bg-[#12151C] rounded-xl border border-gray-200 dark:border-white/[0.06] p-4">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-9 h-9 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
               <BookOpen className="w-5 h-5 text-green-600" />
             </div>
             <span className="text-sm text-gray-500">Active Cohorts</span>
           </div>
-          <p className="text-2xl font-bold text-white">{activeCohorts.length}</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-white">{activeCohorts.length}</p>
         </div>
-        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-4">
+        <div className="bg-white dark:bg-[#12151C] rounded-xl border border-gray-200 dark:border-white/[0.06] p-4">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-9 h-9 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
               <Users className="w-5 h-5 text-blue-600" />
@@ -94,23 +94,23 @@ export default function AdminDiscipleshipPage() {
           </div>
           <p className="text-2xl font-bold text-gray-900 dark:text-white">{students.length}</p>
         </div>
-        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-4">
+        <div className="bg-white dark:bg-[#12151C] rounded-xl border border-gray-200 dark:border-white/[0.06] p-4">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-9 h-9 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
               <Layers className="w-5 h-5 text-blue-600" />
             </div>
             <span className="text-sm text-gray-500">Open for Reg.</span>
           </div>
-          <p className="text-2xl font-bold text-white">{openCohorts.length}</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-white">{openCohorts.length}</p>
         </div>
-        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-4">
+        <div className="bg-white dark:bg-[#12151C] rounded-xl border border-gray-200 dark:border-white/[0.06] p-4">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-9 h-9 rounded-lg bg-[#BF0A30]/10 flex items-center justify-center">
               <CheckCircle className="w-5 h-5 text-[#BF0A30]" />
             </div>
             <span className="text-sm text-gray-500">Ready to Graduate</span>
           </div>
-          <p className="text-2xl font-bold text-white">{readyToGraduate.length}</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-white">{readyToGraduate.length}</p>
         </div>
       </div>
 
@@ -125,7 +125,7 @@ export default function AdminDiscipleshipPage() {
               </div>
               <GraduationCap className="w-5 h-5 text-gray-400" />
             </div>
-            <p className="font-semibold text-white mb-1">
+            <p className="font-semibold text-gray-900 dark:text-white mb-1">
               {course?.title ?? `KDC Level ${level}`}
             </p>
             <p className="text-sm text-gray-500 mb-3 line-clamp-2">{course?.description}</p>
@@ -182,8 +182,8 @@ export default function AdminDiscipleshipPage() {
         </div>
 
         <div className="space-y-4">
-          <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-5">
-            <h3 className="font-semibold text-white mb-3">Quick Actions</h3>
+          <div className="bg-white dark:bg-[#12151C] rounded-xl border border-gray-200 dark:border-white/[0.06] p-5">
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-3">Quick Actions</h3>
             <div className="space-y-1">
               <Link
                 href="/discipleship/cohorts"

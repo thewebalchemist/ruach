@@ -83,12 +83,12 @@ export default function StudentsPage() {
       {/* Warn modal */}
       {warnId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
-          <div className="bg-[#12151C] rounded-2xl border border-white/[0.06] p-6 w-full max-w-md shadow-2xl">
+          <div className="bg-white dark:bg-[#12151C] rounded-2xl border border-gray-200 dark:border-white/[0.06] p-6 w-full max-w-md shadow-2xl">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-white">Send Warning</h3>
-              <button onClick={() => setWarnId(null)} className="p-1.5 rounded-xl hover:bg-white/5 text-gray-400"><X className="w-4 h-4" /></button>
+              <h3 className="font-semibold text-gray-900 dark:text-white">Send Warning</h3>
+              <button onClick={() => setWarnId(null)} className="p-1.5 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 text-gray-400"><X className="w-4 h-4" /></button>
             </div>
-            <textarea value={warnMsg} onChange={e => setWarnMsg(e.target.value)} rows={4} placeholder="Warning message to student..." className="w-full px-4 py-3 border border-white/[0.06] rounded-xl bg-[#0A0C10] dark:bg-white/[0.03] text-sm mb-4 resize-none focus:outline-none focus:border-amber-500 text-white placeholder:text-gray-400" />
+            <textarea value={warnMsg} onChange={e => setWarnMsg(e.target.value)} rows={4} placeholder="Warning message to student..." className="w-full px-4 py-3 border border-gray-200 dark:border-white/[0.06] rounded-xl bg-gray-50 dark:bg-white/[0.03] text-sm mb-4 resize-none focus:outline-none focus:border-amber-500 text-gray-900 dark:text-white placeholder:text-gray-400" />
             <div className="flex gap-3">
               <button onClick={() => setWarnId(null)} className="flex-1 py-2.5 border border-gray-200 dark:border-white/[0.06] rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400">Cancel</button>
               <button onClick={sendWarning} disabled={!warnMsg.trim() || sending} className="flex-1 py-2.5 bg-amber-500 text-white rounded-xl text-sm font-medium disabled:opacity-40 hover:bg-amber-600 flex items-center justify-center gap-2">
@@ -110,15 +110,15 @@ export default function StudentsPage() {
       <div className="flex flex-col sm:flex-row gap-3 mb-5">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input type="text" placeholder="Search by name or admission number..." value={query} onChange={e => setQuery(e.target.value)} className="w-full pl-9 pr-4 py-2.5 text-sm border border-white/[0.06] rounded-xl bg-[#12151C] text-white focus:outline-none focus:border-[#BF0A30]" />
+          <input type="text" placeholder="Search by name or admission number..." value={query} onChange={e => setQuery(e.target.value)} className="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-200 dark:border-white/[0.06] rounded-xl bg-white dark:bg-[#12151C] text-gray-900 dark:text-white focus:outline-none focus:border-[#BF0A30]" />
         </div>
-        <select value={cohortF} onChange={e => setCohortF(e.target.value)} className="px-4 py-2.5 text-sm border border-white/[0.06] rounded-xl bg-[#12151C] text-white focus:outline-none focus:border-[#BF0A30]">
+        <select value={cohortF} onChange={e => setCohortF(e.target.value)} className="px-4 py-2.5 text-sm border border-gray-200 dark:border-white/[0.06] rounded-xl bg-white dark:bg-[#12151C] text-gray-900 dark:text-white focus:outline-none focus:border-[#BF0A30]">
           <option value="all">All Cohorts</option>
           {cohorts.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
         </select>
-        <div className="flex gap-1 bg-[#12151C] border border-white/[0.06]/70 p-1 rounded-xl">
+        <div className="flex gap-1 bg-white dark:bg-[#12151C] border border-gray-200 dark:border-white/[0.06]/70 p-1 rounded-xl">
           {(['all', 'at-risk', 'in-progress', 'completed'] as const).map(s => (
-            <button key={s} onClick={() => setStatusF(s)} className={`px-3 py-1.5 text-xs font-medium rounded-lg capitalize whitespace-nowrap transition-colors ${statusF === s ? 'bg-[#BF0A30] text-white' : 'text-gray-500 hover:text-white/70 dark:hover:text-gray-300'}`}>
+            <button key={s} onClick={() => setStatusF(s)} className={`px-3 py-1.5 text-xs font-medium rounded-lg capitalize whitespace-nowrap transition-colors ${statusF === s ? 'bg-[#BF0A30] text-white' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}>
               {s.replace('-', ' ')}
             </button>
           ))}
@@ -168,7 +168,7 @@ export default function StudentsPage() {
                         student.status === 'completed'   ? 'bg-green-100 text-green-800' :
                         student.status === 'in-progress' ? 'bg-blue-100 text-blue-800' :
                         student.status === 'failed'      ? 'bg-red-100 text-red-800' :
-                        'bg-white/5 text-gray-700'
+                        'bg-gray-100 text-gray-700 dark:bg-white/5'
                       }`}>{student.status.replace('-', ' ')}</span>
                     </td>
                     <td className="px-4 py-3">
