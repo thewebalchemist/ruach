@@ -428,6 +428,10 @@ h1, h2, h3, h4, h5, h6 {
 .btn-xl  { font-size: 1.0625rem; padding: 0 2.5rem;   min-height: 56px; border-radius: 1rem; }
 
 .btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
   width: 40px; height: 40px; padding: 0;
   border-radius: 0.625rem;
   background: #F3F4F6;

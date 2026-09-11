@@ -42,18 +42,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   const fetchProfile = useCallback(async (userId: string) => {
-    const { data } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single();
+    // Fired in parallel rather than profile-then-permissions: the RPC only
+    // returns the caller's own permissions (empty for non-admins), and the
+    // sequential version added a full extra round trip to every admin
+    // dashboard load.
+    const [{ data }, { data: rows }] = await Promise.all([
+      supabase.from('profiles').select('*').eq('id', userId).single(),
+      supabase.rpc('get_my_admin_permissions'),
+    ]);
     setProfile(data ?? null);
 
-    // Only admin/pastor ever reach /admin, so only fetch permissions for
-    // them — one RPC call per session, not per render (see lib/admin-auth.ts
-    // for the server-side equivalent used by API routes).
     if (data?.role === 'admin' || data?.role === 'pastor') {
-      const { data: rows } = await supabase.rpc('get_my_admin_permissions');
       setPermissions((rows ?? []).map((r: { module_key: string; action: string; department_id: string | null }) => ({
         moduleKey: r.module_key,
         action: r.action,
@@ -69,29 +68,51 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [session, fetchProfile]);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session: s } }) => {
+    let cancelled = false;
+    // The user id whose profile is already loaded/loading — dedupes the
+    // double-fire on mount (getSession + INITIAL_SESSION event) and the
+    // redundant refetches on every TOKEN_REFRESHED / tab-refocus event.
+    let loadedUserId: string | null = null;
+
+    const handleSession = (s: Session | null) => {
+      if (cancelled) return;
       setSession(s);
-      if (s?.user?.id) {
-        fetchProfile(s.user.id).finally(() => setLoading(false));
-      } else {
+      const uid = s?.user?.id ?? null;
+
+      if (!uid) {
+        loadedUserId = null;
+        setProfile(null);
+        setPermissions([]);
         setLoading(false);
+        return;
       }
-    });
+      if (loadedUserId === uid) {
+        setLoading(false);
+        return;
+      }
+      loadedUserId = uid;
+      // Deferred via setTimeout: Supabase queries must not run inside the
+      // onAuthStateChange callback itself (the client's auth state machine
+      // is mid-transition there and the internal getSession the query makes
+      // can hang — the "stuck loading until I clear site data" bug).
+      setTimeout(() => {
+        if (cancelled) return;
+        fetchProfile(uid)
+          .catch(() => { loadedUserId = null; }) // allow retry on next event
+          .finally(() => { if (!cancelled) setLoading(false); });
+      }, 0);
+    };
+
+    supabase.auth.getSession().then(({ data: { session: s } }) => handleSession(s));
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, s) => {
-        setSession(s);
-        if (s?.user?.id) {
-          await fetchProfile(s.user.id);
-        } else {
-          setProfile(null);
-          setPermissions([]);
-        }
-        setLoading(false);
-      },
+      (_event, s) => handleSession(s),
     );
 
-    return () => subscription.unsubscribe();
+    return () => {
+      cancelled = true;
+      subscription.unsubscribe();
+    };
   }, [fetchProfile]);
 
   const signOut = useCallback(async () => {
