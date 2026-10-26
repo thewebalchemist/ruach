@@ -1,0 +1,262 @@
+/* ═══════════════════════════════════════════════════════════════════
+   HOMEPAGE: "Breath"
+   Ruach (רוח) means breath, wind, Spirit. One gust of wind enters the
+   hero, draws a circle (the ring of the (R) mark), and the circle opens
+   into the room. The same thin wind line comes back through the page:
+   it runs along the Sunday service times, under section headings and
+   through the crimson card.
+
+   Every hidden state is gated on html.reveal-ready (set by Reveal.tsx
+   only when motion is allowed), so the page is complete without JS and
+   for prefers-reduced-motion.
+═══════════════════════════════════════════════════════════════════ */
+
+.ease { transition-timing-function: cubic-bezier(.16, .84, .3, 1); }
+
+/* ─── HERO ────────────────────────────────────────────────────── */
+.hero {
+  position: relative;
+  min-height: 100svh;
+  overflow: hidden;
+  background: #0A0C10;
+  isolation: isolate;
+}
+
+.media,
+.lit {
+  position: absolute;
+  inset: 0;
+}
+/* The dim room before the breath. Painted immediately, so it is the LCP. */
+.media img { filter: brightness(.32) saturate(.6); }
+
+/* The same photo, in full colour, seen through the circle. */
+.lit {
+  clip-path: circle(var(--hero-r, 0px) at var(--hero-cx, 70%) var(--hero-cy, 45%));
+  -webkit-clip-path: circle(var(--hero-r, 0px) at var(--hero-cx, 70%) var(--hero-cy, 45%));
+}
+.lit img { filter: brightness(.82) saturate(1.05); }
+.breathe {
+  position: absolute;
+  inset: 0;
+  animation: inhale 9s ease-in-out infinite alternate;
+  transform-origin: 60% 40%;
+}
+@keyframes inhale {
+  from { transform: scale(1); }
+  to   { transform: scale(1.045); }
+}
+
+/* Final state (no JS, reduced motion, or after the intro). */
+.done .lit { clip-path: none; -webkit-clip-path: none; }
+
+.video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 1.6s cubic-bezier(.16, .84, .3, 1);
+}
+.videoOn { opacity: .78; }
+
+.scrim {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to top, #0A0C10 0%, rgba(10, 12, 16, .72) 30%, rgba(10, 12, 16, .1) 70%),
+    linear-gradient(to right, rgba(10, 12, 16, .78) 0%, rgba(10, 12, 16, .2) 55%, transparent 80%);
+  pointer-events: none;
+}
+
+.wind {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+}
+.gust {
+  fill: none;
+  stroke: #BF0A30;
+  stroke-linecap: round;
+  stroke-width: 3;
+}
+.stream {
+  fill: none;
+  stroke: rgba(255, 255, 255, .13);
+  stroke-linecap: round;
+  stroke-width: 1.25;
+  stroke-dasharray: 360 1180;
+  animation: flow var(--dur, 9s) linear infinite;
+  animation-delay: var(--delay, 0s);
+  opacity: 0;
+  transition: opacity 1.2s ease;
+}
+.streamOn { opacity: 1; }
+.streamRed { stroke: rgba(191, 10, 48, .55); }
+@keyframes flow {
+  from { stroke-dashoffset: 1540; }
+  to   { stroke-dashoffset: 0; }
+}
+
+.heroContent {
+  position: relative;
+  z-index: 2;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding-bottom: clamp(112px, 16vh, 160px);
+}
+@media (min-width: 1024px) {
+  .heroContent { justify-content: center; padding-bottom: 0; padding-top: 64px; }
+}
+
+/* Hero copy waits for the circle to open, then rises. */
+.heroCopy { opacity: 1; }
+:global(.reveal-ready) .intro .heroCopy :global(.rise) { transform: translateY(115%); }
+:global(.reveal-ready) .intro.open .heroCopy :global(.rise) {
+  transform: translateY(0);
+  transition: transform 1.1s cubic-bezier(.16, .84, .3, 1);
+  transition-delay: calc(var(--i, 0) * 120ms);
+}
+:global(.reveal-ready) .intro .fadeUp { opacity: 0; transform: translateY(18px); filter: blur(6px); }
+:global(.reveal-ready) .intro.open .fadeUp {
+  opacity: 1; transform: none; filter: none;
+  transition: opacity .9s ease, transform 1s cubic-bezier(.16, .84, .3, 1), filter .9s ease;
+  transition-delay: var(--d, 400ms);
+}
+
+.mute { opacity: 0; pointer-events: none; transition: opacity .6s ease; }
+.muteOn { opacity: 1; pointer-events: auto; }
+
+/* ─── WIND LINE (reusable section motif) ──────────────────────── */
+.windLine { display: block; height: auto; overflow: visible; }
+.windLine path {
+  fill: none;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+}
+:global(.reveal-ready) .windLine path { stroke-dashoffset: 1; }
+:global(.reveal-ready) :global(.is-revealed) .windLine path {
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 1.8s cubic-bezier(.16, .84, .3, 1);
+  transition-delay: calc(var(--k, 0) * 140ms + var(--reveal-delay, 0ms));
+}
+
+/* ─── SUNDAY LINE (service times) ─────────────────────────────── */
+.sunday { position: relative; }
+.track {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 7px;
+  height: 2px;
+  background: rgba(255, 255, 255, .12);
+  overflow: hidden;
+}
+.trackFill {
+  position: absolute;
+  inset: 0;
+  background: #BF0A30;
+  transform-origin: left;
+}
+.node {
+  position: relative;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: #000;
+  border: 2px solid rgba(255, 255, 255, .35);
+}
+.node::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border-radius: 999px;
+  background: #BF0A30;
+}
+:global(.reveal-ready) .trackFill { transform: scaleX(0); }
+:global(.reveal-ready) .node { border-color: rgba(255, 255, 255, .2); }
+:global(.reveal-ready) .node::after { transform: scale(0); }
+:global(.reveal-ready) .slot { opacity: .35; }
+:global(.reveal-ready) :global(.is-revealed) .trackFill {
+  transform: scaleX(1);
+  transition: transform 2.4s cubic-bezier(.45, 0, .2, 1) .2s;
+}
+:global(.reveal-ready) :global(.is-revealed) .node { border-color: #BF0A30; transition: border-color .4s ease; transition-delay: var(--at); }
+:global(.reveal-ready) :global(.is-revealed) .node::after {
+  transform: scale(1);
+  transition: transform .5s cubic-bezier(.34, 1.56, .64, 1);
+  transition-delay: var(--at);
+}
+:global(.reveal-ready) :global(.is-revealed) .slot { opacity: 1; transition: opacity .6s ease; transition-delay: var(--at); }
+
+/* Phones: the day runs down instead of across. */
+@media (max-width: 639px) {
+  .track { left: 7px; right: auto; top: 8px; bottom: 8px; width: 2px; height: auto; }
+  .trackFill { transform-origin: top; }
+  :global(.reveal-ready) .trackFill { transform: scaleY(0); }
+  :global(.reveal-ready) :global(.is-revealed) .trackFill { transform: scaleY(1); }
+}
+
+/* ─── "You're Family." fills as it passes ─────────────────────── */
+.familyWord {
+  -webkit-text-stroke: 2px #BF0A30;
+  color: color-mix(in srgb, #BF0A30 calc(var(--p, 1) * 100%), transparent);
+}
+
+/* ─── COMMUNITIES: cards deal out from one stack ──────────────── */
+.deal { position: relative; }
+:global(.reveal-ready) .deal .card {
+  transform: translate(var(--fx, 0), var(--fy, 0)) rotate(var(--fr, 0deg)) scale(.92);
+  opacity: 0;
+}
+@media (min-width: 1024px) {
+  :global(.reveal-ready) .deal .card { transform: translate(var(--fxl, 0), 0) rotate(var(--fr, 0deg)) scale(.92); }
+}
+:global(.reveal-ready) .deal:global(.is-revealed) .card {
+  transform: none;
+  opacity: 1;
+  transition: transform 1.1s cubic-bezier(.16, .84, .3, 1), opacity .5s ease;
+  transition-delay: calc(var(--n, 0) * 90ms);
+}
+.cardPanel {
+  background: #0A0C10;
+  border-radius: 20px;
+  transition: transform .5s cubic-bezier(.16, .84, .3, 1);
+}
+.cardLink:hover .cardPanel,
+.cardLink:focus-visible .cardPanel { transform: translateY(-6px); }
+.cardLink:hover img { transform: scale(1.06); }
+.cardLink img { transition: transform .9s cubic-bezier(.16, .84, .3, 1); }
+
+/* ─── RHEMA FEAST filmstrip drifts with scroll ────────────────── */
+.strip {
+  display: flex;
+  gap: 12px;
+  transform: translateX(calc((var(--p, .5) - .5) * -14%));
+  will-change: transform;
+}
+
+/* ─── WHAT TO EXPECT: cards stack as you scroll ───────────────── */
+.stack { position: relative; }
+.stackCard {
+  position: sticky;
+  top: calc(88px + var(--n, 0) * 22px);
+}
+@media (max-width: 767px) {
+  .stackCard { top: calc(76px + var(--n, 0) * 14px); }
+}
+
+/* ─── Reduced motion: everything settles in place ─────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .breathe, .stream { animation: none; }
+  .stream { opacity: 1; stroke-dasharray: none; }
+  .strip { transform: none; }
+  .lit { clip-path: none; -webkit-clip-path: none; }
+}
