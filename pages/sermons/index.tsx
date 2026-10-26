@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { Play, ArrowRight, Search, X, ChevronLeft, ChevronRight, Calendar, User, Layers } from 'lucide-react';
 import { GetServerSideProps } from 'next';
 import Layout from '@/components/shared/Layout';
+import { OG } from '@/lib/seo';
 import { supabase } from '@/lib/supabase';
 import type { Sermon } from '@/types';
 import ThemeHero from '@/components/streaming/ThemeHero';
@@ -332,7 +333,7 @@ export default function SermonsPage({ sermons, featuredSermon, seriesList, preac
     : sermons;
 
   return (
-    <Layout title="Sermons — Ruach Tabernacle" description="Watch powerful messages from Ruach Tabernacle. Kingdom-focused sermons that will transform your life.">
+    <Layout title="Sermons" image={OG.sermons} imageAlt="Sermons from Ruach Tabernacle, Nairobi" description="Watch powerful messages from Ruach Tabernacle. Kingdom-focused sermons that will transform your life.">
       <div className="min-h-screen bg-[#0A0C10] pt-16 sm:pt-24">
 
         <Reveal variant="fade">

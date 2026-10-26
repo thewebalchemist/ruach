@@ -56,7 +56,7 @@ function BeliefCard({ title, text, ref: reference }: { title: string; text: stri
 export default function AboutPage() {
   return (
     <Layout
-      title="Who We Are — Ruach Tabernacle"
+      title="About Us"
       description="Ruach Tabernacle Assembly — A community of believers passionate about Jesus Christ, rooted in the Word of God, and empowered by the Holy Spirit. Nairobi, Kenya."
     >
 
@@ -261,13 +261,15 @@ export default function AboutPage() {
             >
               Plan a Visit <ArrowRight className="w-3.5 h-3.5" />
             </Link>
-            <Link
-              href="/contact"
+            <a
+              href="https://www.google.com/maps/dir//Ruach+Tabernacle+Assembly+(A+Ministry+of+Ruach+Assemblies)+Rhema+Grounds,+Rhema+Avenue,+Off+Northern+Bypass+Rd+Nairobi+Kenya/@-1.2147391,36.8476721,16z"
+              target="_blank"
+              rel="noopener noreferrer"
               className="inline-flex items-center justify-center gap-2 border-2 border-white/30 text-white hover:bg-white/10 font-bold text-xs uppercase tracking-widest px-7 py-4 rounded-2xl transition-all"
               style={H}
             >
               Get Directions
-            </Link>
+            </a>
           </Reveal>
         </div>
       </section>

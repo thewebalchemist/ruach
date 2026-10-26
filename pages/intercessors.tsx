@@ -8,7 +8,7 @@ const serif = { fontFamily: 'Fraunces, Georgia, serif', fontWeight: 600 };
 
 export default function IntercessorsPage() {
   return (
-    <Layout title="Intercessors — Ruach Tabernacle" description="The Intercessors prayer ministry of Ruach Tabernacle — standing in the gap for the church, the city, and the nations.">
+    <Layout title="Intercessors" description="The Intercessors prayer ministry of Ruach Tabernacle — standing in the gap for the church, the city, and the nations.">
 
       <section className="relative min-h-[70vh] flex items-end bg-black overflow-hidden">
         <div className="absolute inset-0">

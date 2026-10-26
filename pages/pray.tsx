@@ -42,7 +42,7 @@ export default function PrayPage() {
   };
 
   return (
-    <Layout title="Prayer Wall">
+    <Layout title="Prayer Wall" description="Share a prayer request with Ruach Tabernacle. We believe in the power of collective prayer.">
       <div className="max-w-3xl mx-auto px-6 pt-12 pb-24">
         <Reveal variant="none" className="mb-10 text-center">
           <p className="text-[#BF0A30] text-sm font-bold uppercase tracking-widest mb-3">

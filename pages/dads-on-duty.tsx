@@ -8,11 +8,11 @@ const serif = { fontFamily: 'Fraunces, Georgia, serif', fontWeight: 600 };
 
 export default function DadsOnDutyPage() {
   return (
-    <Layout title="Dads on Duty — Ruach Tabernacle" description="Dads on Duty — fathers who show up, step up, and lead with love.">
+    <Layout title="Dads on Duty" description="Dads on Duty — fathers who show up, step up, and lead with love.">
 
       <section className="relative min-h-[70vh] flex items-end bg-black overflow-hidden">
         <div className="absolute inset-0">
-          <div className="absolute inset-0" style={{ backgroundImage: 'url(/church-photos/dark-background.png)', backgroundSize: 'cover', backgroundPosition: 'center' }} />
+          <div className="absolute inset-0" style={{ backgroundImage: 'url(/church-photos/dark-background-2.png)', backgroundSize: 'cover', backgroundPosition: 'center' }} />
           <img src="/church-photos/worship-man.jpg" alt="Dads on Duty" className="absolute inset-0 w-full h-full object-cover opacity-35"
             onError={(e) => { (e.target as HTMLImageElement).src = '/church-photos/worship1.jpg'; }} />
           <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />

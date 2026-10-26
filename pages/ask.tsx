@@ -190,17 +190,22 @@ export default function ChatPage() {
     { icon: '🎧', text: 'Where can I listen to sermons?', desc: 'Past messages' },
   ];
 
+  // Rendered in both branches so the server HTML carries the title.
+  const seo = (
+    <SEO
+      title="Ask Ruach AI"
+      description="Ask Ruach is the church's AI assistant. Ask about service times, events, directions, Connect Class and anything else about Ruach Tabernacle Assembly."
+      url="/ask"
+    />
+  );
+
   if (!mounted) {
-    return <div className="min-h-screen bg-[#0a0c10]" />;
+    return <>{seo}<div className="min-h-screen bg-[#0a0c10]" /></>;
   }
 
   return (
     <>
-      <SEO
-        title="Ask Ruach AI"
-        description="Ask Ruach — your AI church assistant. Get instant answers about services, events, directions, Connect Class, and anything about Ruach Tabernacle Assembly."
-        url="/ask"
-      />
+      {seo}
 
       <div className={`min-h-screen flex ${isDark ? 'bg-[#101622] text-white' : 'bg-gray-50 text-gray-900'}`}>
         {/* Sidebar */}

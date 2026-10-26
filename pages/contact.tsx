@@ -55,12 +55,23 @@ const LOCATIONS = [
   },
 ];
 
+const CONTACT_EMAIL = 'info@ruachtabernacle.org';
+
 export default function ContactPage() {
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
   const [sent, setSent] = useState(false);
 
+  // The form used to show "Message Received!" without sending anything.
+  // Until there is a server-side inbox for it, hand the message to the
+  // visitor's own email app, addressed to the address shown on this page.
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const subject = `Message from ${formData.name || 'the website'}`;
+    const body = `${formData.message}
+
+${formData.name}
+${formData.email}`;
+    window.location.href = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     setSent(true);
   };
 
@@ -259,9 +270,11 @@ export default function ContactPage() {
                   >
                     <span className="text-2xl">🙏</span>
                   </div>
-                  <h3 className="text-white font-black text-xl mb-2" style={H}>Message Received!</h3>
+                  <h3 className="text-white font-black text-xl mb-2" style={H}>Almost there</h3>
                   <p className="text-[#8B95A8] text-sm leading-relaxed">
-                    Thank you for reaching out. Someone from our team will get back to you within 24 hours.
+                    Your email app should now be open with your message filled in. Press send there and someone from our team will get back to you within 24 hours.
+                    If nothing opened, email us at{' '}
+                    <a href={`mailto:${CONTACT_EMAIL}`} className="text-white underline">{CONTACT_EMAIL}</a>.
                   </p>
                 </div>
               ) : (

@@ -17,6 +17,18 @@ const PHOTOS = [
   '/church-photos/advancing-kingdom.jpg',
 ];
 
+const ALTS = [
+  'Worship leaders singing on stage at Ruach Tabernacle',
+  'A woman worshipping with her hands raised, in black and white',
+  'A preacher speaking into a microphone during a Sunday service',
+  'A woman in a white coat worshipping with her hands raised',
+  'A worship dancer waving a silver flag on stage',
+  'A woman with her arms raised in worship among the congregation',
+  'A member of the media team filming the service',
+  'A preacher on stage in front of the congregation',
+  'Members talking in small groups inside the tent at Rhema Grounds',
+];
+
 export default function ExpectGallery() {
   return (
     <section className="relative py-24 overflow-hidden bg-[#000]">
@@ -49,7 +61,7 @@ export default function ExpectGallery() {
           <Reveal variant="scale" className="col-span-2 row-span-2 rounded-2xl overflow-hidden group relative">
             <img
               src={PHOTOS[0]}
-              alt="Ruach Tabernacle"
+              alt={ALTS[0]}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
               loading="lazy"
               onError={(e) => { (e.target as HTMLImageElement).src = '/church-photos/IMG_1716.jpg'; }}
@@ -67,7 +79,7 @@ export default function ExpectGallery() {
             <Reveal key={i} variant="scale" delay={80 + i * 60} className="rounded-2xl overflow-hidden group relative">
               <img
                 src={src}
-                alt={`Ruach ${i + 2}`}
+                alt={ALTS[i + 1]}
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                 loading="lazy"
                 onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}

@@ -64,12 +64,12 @@ const TEAM_MEMBERS: Record<string, TeamMember> = {
   },
   'pst-david-kimani': {
     name: 'Pastor David Kimani',
-    title: 'R Warriors President · Elder · Pastor · Editor',
-    subtitle: 'R Warriors President · Elder · Pastor · Editor',
+    title: 'R-Warriors President · Elder · Pastor · Editor',
+    subtitle: 'R-Warriors President · Elder · Pastor · Editor',
     img: '/church-photos/silhouette.png',
     bio: [
       'Pastor David Kimani serves faithfully at Ruach Tabernacle, carrying a strong mandate for leadership, discipleship, and excellence in ministry operations.',
-      'As the President of R Warriors, he provides visionary leadership to the men\'s movement, inspiring men to walk in spiritual authority, integrity, and purpose. He also serves in the Elders\' Court, contributing to spiritual governance, counsel, and oversight within the church.',
+      'As the President of R-Warriors, he provides visionary leadership to the men\'s movement, inspiring men to walk in spiritual authority, integrity, and purpose. He also serves in the Elders\' Court, contributing to spiritual governance, counsel, and oversight within the church.',
       'Pastor David provides pastoral oversight to several key departments, including Trendsetters, Hosts, Production, and Security. Through strategic leadership and mentorship, he ensures these teams operate with excellence, order, and unity in advancing the mission of the ministry.',
       'Beyond church leadership, he serves as Chief Editor at The Excellent Man Publishers, where he champions strong Christian literature and leadership resources that shape men and families for Kingdom impact.',
       'Pastor David Kimani is passionate about raising disciplined, spiritually grounded leaders who reflect Christ both in the church and in society.',
@@ -82,7 +82,7 @@ const TEAM_MEMBERS: Record<string, TeamMember> = {
     img: '/church-photos/silhouette.png',
     bio: [
       'Pastor Kevin Owino serves faithfully at Ruach Tabernacle as the JKG Resident Pastor, providing spiritual leadership, discipleship, and pastoral care within the congregation. With a deep passion for teaching and equipping believers, he is committed to raising mature, grounded, and purpose-driven Christians.',
-      'He also provides pastoral oversight for RT Crosspoints, nurturing a vibrant community focused on growth, fellowship, and Kingdom impact. His leadership emphasizes sound doctrine, practical ministry training, and spiritual formation.',
+      'He also provides pastoral oversight for R-Crosspoints, nurturing a vibrant community focused on growth, fellowship, and Kingdom impact. His leadership emphasizes sound doctrine, practical ministry training, and spiritual formation.',
       'In addition, Pastor Kevin serves as the Workstream Leader for the RT Volunteer Workforce and Interdenominational Church Partnership and Pastoral Collaborations. He plays a strategic role in mobilization, coordination, and training for Rhema Feast, fostering unity among churches and strengthening collaborative ministry efforts.',
       'Beyond pastoral ministry, Pastor Kevin is an accomplished author and ministerial trainer, equipping leaders and ministers with tools for effective service in the body of Christ. Through his teachings, writings, and training platforms, he continues to influence both church and marketplace leaders. For more resources visit PastorKev.org.',
       'Pastor Kevin Owino is passionate about empowering believers to live out their calling with excellence, clarity, and spiritual authority.',
@@ -128,7 +128,7 @@ interface Props { member: TeamMember | null; }
 export default function TeamMemberPage({ member }: Props) {
   if (!member) {
     return (
-      <Layout title="Not Found">
+      <Layout title="Not Found" noIndex>
         <div className="min-h-[60vh] flex items-center justify-center bg-[#0A0C10]">
           <div className="text-center px-6">
             <h1 className="text-4xl text-white mb-6" style={H}>Not Found</h1>

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import Layout from '@/components/shared/Layout';
+import { OG } from '@/lib/seo';
 import ExpectGallery from '@/components/shared/ExpectGallery';
 import { Reveal, RiseLine } from '@/components/shared/Reveal';
 
@@ -11,7 +12,9 @@ const serif = { fontFamily: 'Fraunces, Georgia, serif', fontWeight: 600 };
 export default function NewHerePage() {
   return (
     <Layout
-      title="New Here?"
+      title="New Here? Plan Your Visit"
+      image={OG.visit}
+      imageAlt="The congregation at a Ruach Tabernacle Sunday service"
       description="Planning your first visit to Ruach Tabernacle? Come as a guest, stay as family. We meet every Sunday at 8AM, 10AM and 12:30PM along the Northern Bypass, Windsor, Nairobi."
     >
 
@@ -52,13 +55,15 @@ export default function NewHerePage() {
             Bypass, Windsor, Nairobi. You&apos;ll find people of all ages and walks of life.
           </Reveal>
           <Reveal variant="up" delay={550} className="flex flex-wrap gap-3">
-            <Link
-              href="/contact"
+            <a
+              href="https://www.google.com/maps/dir//Ruach+Tabernacle+Assembly+(A+Ministry+of+Ruach+Assemblies)+Rhema+Grounds,+Rhema+Avenue,+Off+Northern+Bypass+Rd+Nairobi+Kenya/@-1.2147391,36.8476721,16z"
+              target="_blank"
+              rel="noopener noreferrer"
               className="flex items-center gap-2 bg-[#BF0A30] hover:bg-[#9A0826] text-white font-bold text-sm uppercase tracking-wider px-7 py-4 rounded-2xl transition-all hover:-translate-y-0.5 shadow-xl shadow-[rgba(191,10,48,0.4)]"
               style={H}
             >
               Get Directions <ArrowRight className="w-4 h-4" />
-            </Link>
+            </a>
             <Link
               href="/who-we-are"
               className="flex items-center gap-2 apple-glass-dark text-white font-bold text-sm uppercase tracking-wider px-7 py-4 transition-all hover:-translate-y-0.5"
@@ -188,7 +193,7 @@ export default function NewHerePage() {
                       Off Northern Bypass · next to Shell Windsor, Nairobi
                     </p>
                     <a
-                      href="https://www.google.com/maps/dir//Ruach+Tabernacle+Assembly"
+                      href="https://www.google.com/maps/dir//Ruach+Tabernacle+Assembly+(A+Ministry+of+Ruach+Assemblies)+Rhema+Grounds,+Rhema+Avenue,+Off+Northern+Bypass+Rd+Nairobi+Kenya/@-1.2147391,36.8476721,16z"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-2 bg-white text-[#111827] font-bold text-xs uppercase tracking-wider px-5 py-3 rounded-2xl hover:bg-white/90 transition-colors"
@@ -409,13 +414,15 @@ export default function NewHerePage() {
             >
               Events Calendar <ArrowRight className="w-3.5 h-3.5" />
             </Link>
-            <Link
-              href="/contact"
+            <a
+              href="https://www.google.com/maps/dir//Ruach+Tabernacle+Assembly+(A+Ministry+of+Ruach+Assemblies)+Rhema+Grounds,+Rhema+Avenue,+Off+Northern+Bypass+Rd+Nairobi+Kenya/@-1.2147391,36.8476721,16z"
+              target="_blank"
+              rel="noopener noreferrer"
               className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-xs uppercase tracking-widest px-7 py-4 rounded-2xl transition-all"
               style={H}
             >
               Get Directions <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
+            </a>
           </Reveal>
         </div>
       </section>

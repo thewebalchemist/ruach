@@ -17,6 +17,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import Layout from '@/components/shared/Layout';
+import { CHURCH_ID } from '@/lib/seo';
 import { supabase } from '@/lib/supabase';
 import { Sermon } from '@/types';
 import { getYouTubeThumbnail, getCurrentUser } from '@/lib/utils';
@@ -94,7 +95,7 @@ export default function SermonPage({ sermon, relatedSermons, seriesSermons }: Se
 
   if (!sermon) {
     return (
-      <Layout title="Sermon Not Found | Ruach Tabernacle">
+      <Layout title="Sermon Not Found" noIndex>
         <div className="min-h-screen bg-[#0A0C10] flex flex-col items-center justify-center text-center px-6 pt-16">
           <p className="text-[#BF0A30] text-6xl font-extrabold mb-4">404</p>
           <h1 className="text-white text-2xl font-bold mb-3">Sermon Not Found</h1>
@@ -115,44 +116,35 @@ export default function SermonPage({ sermon, relatedSermons, seriesSermons }: Se
   const pageUrl = `https://ruachtabernacle.org/${sermon.slug}`;
   const cleanDesc = sermon.description?.replace(/[#*_`]/g, '').substring(0, 160) || `Watch "${sermon.title}" by ${sermon.preacher} at Ruach Tabernacle Assembly.`;
   const jsonLd = {
-    '@context': 'https://schema.org',
     '@type': 'VideoObject',
-    name: sermon.title,
+    '@id': `${pageUrl}#video`,
+    name: sermon.title.trim(),
     description: cleanDesc,
-    thumbnailUrl: [thumbnailUrl],
+    thumbnailUrl: [thumbnailUrl.startsWith('http') ? thumbnailUrl : `https://ruachtabernacle.org${thumbnailUrl}`],
     uploadDate: sermon.created_at,
-    contentUrl: sermon.youtube_url,
+    url: pageUrl,
     embedUrl: ytId ? `https://www.youtube.com/embed/${ytId}` : undefined,
     duration: sermon.duration_seconds ? `PT${Math.floor(sermon.duration_seconds / 60)}M${sermon.duration_seconds % 60}S` : undefined,
     author: { '@type': 'Person', name: sermon.preacher },
-    publisher: { '@type': 'Organization', name: 'Ruach Tabernacle Assembly', logo: { '@type': 'ImageObject', url: 'https://ruachtabernacle.org/brand/ruach-logo.png' } },
+    publisher: { '@id': CHURCH_ID },
+    inLanguage: 'en',
   };
 
   return (
-    <Layout>
+    <Layout
+      title={`${sermon.title.trim()} | ${sermon.preacher} | Ruach Tabernacle`}
+      description={cleanDesc}
+      image={thumbnailUrl}
+      imageAlt={`${sermon.title.trim()}, a sermon by ${sermon.preacher}`}
+      ogType="video.other"
+      structuredData={jsonLd}
+    >
       <Head>
-        <title>{sermon.title} — {sermon.preacher} | Ruach Tabernacle</title>
-        <meta name="description" content={cleanDesc} />
-        <link rel="canonical" href={pageUrl} />
-        <meta name="keywords" content={`${sermon.title}, ${sermon.preacher}, Ruach Tabernacle, sermon, ${sermon.scripture_ref || ''}, ${(sermon.tags || []).join(', ')}, church, faith, Bible study, spiritual growth`} />
-        <meta property="og:type" content="video.other" />
-        <meta property="og:title" content={`${sermon.title} — ${sermon.preacher}`} />
-        <meta property="og:description" content={cleanDesc} />
-        <meta property="og:image" content={thumbnailUrl} />
-        <meta property="og:image:width" content="1280" />
-        <meta property="og:image:height" content="720" />
-        <meta property="og:url" content={pageUrl} />
-        <meta property="og:site_name" content="Ruach Tabernacle Assembly" />
+        <meta name="keywords" content={`${sermon.title}, ${sermon.preacher}, Ruach Tabernacle, sermon, ${sermon.scripture_ref || ''}, ${(sermon.tags || []).join(', ')}`} />
         {sermon.youtube_url && <meta property="og:video" content={sermon.youtube_url} />}
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:site" content="@ruachtabernacle" />
-        <meta name="twitter:title" content={`${sermon.title} — ${sermon.preacher}`} />
-        <meta name="twitter:description" content={cleanDesc} />
-        <meta name="twitter:image" content={thumbnailUrl} />
         <meta name="twitter:label1" content="Preacher" />
         <meta name="twitter:data1" content={sermon.preacher} />
         {sermon.scripture_ref && <><meta name="twitter:label2" content="Scripture" /><meta name="twitter:data2" content={sermon.scripture_ref} /></>}
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       </Head>
 
       <div className="min-h-screen bg-[#0A0C10] text-white overflow-x-hidden pt-16 sm:pt-24">
@@ -160,7 +152,7 @@ export default function SermonPage({ sermon, relatedSermons, seriesSermons }: Se
         {/* ── Hero: cinematic backdrop + video ────────────────────────── */}
         <section className="relative overflow-hidden">
           <div className="absolute inset-0 z-0 overflow-hidden">
-            <img src={thumbnailUrl} alt="" className="w-full h-full object-cover opacity-25 blur-xl scale-110" />
+            <img src={thumbnailUrl} alt="" aria-hidden="true" className="w-full h-full object-cover opacity-25 blur-xl scale-110" />
             <div className="absolute inset-0 bg-gradient-to-b from-[#0A0C10] via-[#0A0C10]/60 to-[#0A0C10]" />
           </div>
 
@@ -405,9 +397,9 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
     .eq('slug', slug)
     .single();
 
-  if (!sermon) {
-    return { props: { sermon: null, relatedSermons: [], seriesSermons: [] } };
-  }
+  // A real 404, not a 200 "Sermon Not Found" page: this route catches every
+  // unknown top-level URL (e.g. /llms.txt), and soft 404s get indexed.
+  if (!sermon) return { notFound: true };
 
   await supabase
     .from('sermons')

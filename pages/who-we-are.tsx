@@ -377,7 +377,7 @@ export default function WhoWeArePage() {
               '/church-photos/rhema-feast.jpg',
             ].map((src, i) => (
               <div key={i} className="flex-shrink-0 w-40 h-28 rounded-xl overflow-hidden">
-                <img src={src} alt="" className="w-full h-full object-cover" />
+                <img src={src} alt={['Members talking in small groups in the church tent', 'A preacher on stage at Ruach Tabernacle', 'A minister on stage at Rhema Feast'][i]} className="w-full h-full object-cover" />
               </div>
             ))}
           </Reveal>

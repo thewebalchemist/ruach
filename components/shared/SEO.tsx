@@ -15,9 +15,9 @@ interface SEOProps {
 const SITE_NAME = 'Ruach Tabernacle Assembly';
 const DEFAULT_DESCRIPTION =
   'A God-focused, Service-oriented, Community-driven church in Nairobi, Kenya. Join us for Sunday services, Connect Class, Crosspoints, and more.';
-const DEFAULT_IMAGE = '/brand/og-image.jpg';
-const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://ruachtabernacle.org';
-const TWITTER_HANDLE = '@RuachAssemblies';
+import { OG, OG_SIZED, SITE_URL } from '@/lib/seo';
+
+const DEFAULT_IMAGE = OG.default;
 
 export function SEO({
   title,
@@ -49,8 +49,8 @@ export function SEO({
       <meta property="og:title" content={fullTitle} />
       <meta property="og:description" content={desc} />
       <meta property="og:image" content={imgUrl} />
-      <meta property="og:image:width" content="1200" />
-      <meta property="og:image:height" content="630" />
+      {OG_SIZED.has(imgPath) && <meta property="og:image:width" content="1200" />}
+      {OG_SIZED.has(imgPath) && <meta property="og:image:height" content="630" />}
       <meta property="og:image:alt" content={title || SITE_NAME} />
       <meta property="og:site_name" content={SITE_NAME} />
       {canonicalUrl && <meta property="og:url" content={canonicalUrl} />}
@@ -59,8 +59,6 @@ export function SEO({
 
       {/* Twitter Card */}
       <meta name="twitter:card" content="summary_large_image" />
-      <meta name="twitter:site" content={TWITTER_HANDLE} />
-      <meta name="twitter:creator" content={TWITTER_HANDLE} />
       <meta name="twitter:title" content={fullTitle} />
       <meta name="twitter:description" content={desc} />
       <meta name="twitter:image" content={imgUrl} />

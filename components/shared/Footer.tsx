@@ -98,20 +98,13 @@ export default function Footer() {
               >
                 hello@ruachtabernacle.org
               </a>
-              <a
-                href="tel:+254700000000"
-                className="flex items-center gap-2 text-[#4A5568] hover:text-[#BF0A30] text-sm transition-colors"
-              >
-                Phone: 0700 000 000
-              </a>
             </div>
 
             <h5 className="text-white font-semibold text-xs uppercase tracking-widest mb-3">Social Links</h5>
             <div className="space-y-2">
               {[
-                { label: 'Facebook',  href: '#' },
-                { label: 'Instagram', href: '#' },
-                { label: 'YouTube',   href: '#' },
+                { label: 'Instagram', href: 'https://www.instagram.com/ruachtabernacle' },
+                { label: 'YouTube',   href: 'https://www.youtube.com/@ruachtabernacle' },
               ].map((s) => (
                 <a
                   key={s.label}

@@ -62,7 +62,7 @@ const ASSOCIATE_PASTORS = [
   },
   {
     name: 'Pst. David Kimani',
-    title: 'R Warriors President · Elder · Pastor · Editor',
+    title: 'R-Warriors President · Elder · Pastor · Editor',
     img: '/church-photos/silhouette.png',
     href: '/our-team/pst-david-kimani',
   },
@@ -71,7 +71,7 @@ const ASSOCIATE_PASTORS = [
 const ELDER_BOARD: { name: string; title: string; img: string; href: string | null }[] = [
   {
     name: 'Pst. David Kimani',
-    title: 'R Warriors President · Elder · Pastor · Editor',
+    title: 'R-Warriors President · Elder · Pastor · Editor',
     img: '/church-photos/silhouette.png',
     href: '/our-team/pst-david-kimani',
   },

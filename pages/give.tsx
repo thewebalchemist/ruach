@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { ArrowRight, ChevronDown, Copy, Check } from 'lucide-react';
 import Layout from '@/components/shared/Layout';
+import { OG } from '@/lib/seo';
 import { Reveal, RiseLine } from '@/components/shared/Reveal';
 
 const H = { fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 800 };
@@ -42,7 +43,7 @@ function CopyButton({ value }: { value: string }) {
 
 export default function GivePage() {
   return (
-    <Layout title="Give" description="Support the work of God at Ruach Tabernacle. Give via M-Pesa Paybill, Wave, PayPal, or in person every Sunday.">
+    <Layout title="Give" image={OG.give} description="Support the work of God at Ruach Tabernacle. Give via M-Pesa Paybill, Wave, PayPal, or in person every Sunday.">
 
       {/* ── HERO ──────────────────────────────────────────────────── */}
       <section className="relative min-h-[62vh] flex items-end bg-[#0A0C10] overflow-hidden">

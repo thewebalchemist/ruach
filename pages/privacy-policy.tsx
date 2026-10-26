@@ -4,11 +4,11 @@ const H = { fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 800 };
 
 export default function PrivacyPolicyPage() {
   return (
-    <Layout title="Privacy Policy — Ruach Tabernacle" description="Privacy Policy for Ruach Tabernacle Assembly.">
+    <Layout title="Privacy Policy" description="Privacy Policy for Ruach Tabernacle Assembly.">
 
       <section className="relative min-h-[40vh] flex items-end bg-black overflow-hidden">
         <div className="absolute inset-0">
-          <div className="absolute inset-0" style={{ backgroundImage: 'url(/church-photos/dark-background.png)', backgroundSize: 'cover', backgroundPosition: 'center' }} />
+          <div className="absolute inset-0" style={{ backgroundImage: 'url(/church-photos/dark-background-2.png)', backgroundSize: 'cover', backgroundPosition: 'center' }} />
           <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
         </div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 pb-16 pt-28 w-full">

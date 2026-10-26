@@ -6,122 +6,92 @@ import Footer from './Footer';
 import MobileNav from './MobileNav';
 import AskRuachWidget from './AskRuachWidget';
 import { ScrollProgress } from './Reveal';
+import { SITE_NAME, DEFAULT_DESC, OG, OG_SIZED, CHURCH_JSON_LD, absUrl, canonicalFor } from '@/lib/seo';
 
 interface LayoutProps {
   children: React.ReactNode;
   title?: string;
   description?: string;
+  /** Share image. Prefer a 1200x630 card from OG in lib/seo. */
   image?: string;
+  imageAlt?: string;
   noFooter?: boolean;
   noAnnouncement?: boolean;
-  /** Passed from individual pages for richer structured data */
-  structuredData?: object;
+  /** Keep this page out of search results (e.g. a not-found state). */
+  noIndex?: boolean;
+  ogType?: 'website' | 'article' | 'video.other';
+  /** Extra JSON-LD nodes for this page. The Church node is always included. */
+  structuredData?: object | object[];
 }
-
-const SITE_URL     = 'https://ruachtabernacle.org';
-const SITE_NAME    = 'Ruach Tabernacle Assembly';
-const DEFAULT_DESC = 'A God-focused, Service-oriented, Community-driven church in Nairobi, Kenya. Join us every Sunday along the Northern Bypass, next to Shell Windsor.';
-const DEFAULT_IMG  = `${SITE_URL}/church-photos/rhema-feast.jpg`;
-const ORG_JSON_LD  = {
-  '@context': 'https://schema.org',
-  '@type': 'Church',
-  name: SITE_NAME,
-  alternateName: 'Ruach Tabernacle',
-  description: DEFAULT_DESC,
-  url: SITE_URL,
-  logo: `${SITE_URL}/brand/logo.png`,
-  image: DEFAULT_IMG,
-  telephone: '+254700000000',
-  email: 'hello@ruachtabernacle.org',
-  sameAs: [
-    'https://www.facebook.com/RuachTabernacle',
-    'https://www.instagram.com/ruachtabernacle',
-    'https://www.youtube.com/@ruachtabernacle',
-  ],
-  address: {
-    '@type': 'PostalAddress',
-    streetAddress: 'Rhema Avenue, Northern Bypass',
-    addressLocality: 'Nairobi',
-    addressRegion: 'Nairobi County',
-    addressCountry: 'KE',
-  },
-  geo: {
-    '@type': 'GeoCoordinates',
-    latitude: -1.2195,
-    longitude: 36.7928,
-  },
-  openingHoursSpecification: [
-    { '@type': 'OpeningHoursSpecification', dayOfWeek: 'Sunday', opens: '08:00', closes: '14:00' },
-  ],
-  event: {
-    '@type': 'Event',
-    name: 'Sunday Service',
-    description: 'Three Sunday services at 8AM, 10AM and 12:30PM at Rhema Grounds, Windsor, Nairobi.',
-    startDate: 'T08:00',
-    location: {
-      '@type': 'Place',
-      name: 'Rhema Grounds',
-      address: { '@type': 'PostalAddress', streetAddress: 'Rhema Avenue, Northern Bypass', addressLocality: 'Nairobi', addressCountry: 'KE' },
-    },
-  },
-};
 
 const ADMIN_ROUTES = ['/admin', '/connect/dashboard', '/discipleship', '/crosspoint', '/department', '/notifications', '/onboarding'];
 const AUTH_ROUTES  = ['/auth'];
 const FULLSCREEN   = ['/live', '/ask', '/bible'];
+// Logged-in areas and their login screens: never indexed.
+const PRIVATE_PREFIXES = ['/admin', '/auth', '/member', '/connect', '/discipleship', '/crosspoint', '/department', '/notifications', '/control-panel', '/onboarding'];
 
-export default function Layout({ children, title, description, image, noFooter, noAnnouncement, structuredData }: LayoutProps) {
+export default function Layout({
+  children, title, description, image, imageAlt, noFooter, noAnnouncement, noIndex, ogType = 'website', structuredData,
+}: LayoutProps) {
   const router = useRouter();
 
   const isAdmin      = ADMIN_ROUTES.some(p => router.pathname.startsWith(p));
   const isAuth       = AUTH_ROUTES.some(p => router.pathname.startsWith(p));
   const isFullscreen = FULLSCREEN.includes(router.pathname);
+  const isPrivate    = PRIVATE_PREFIXES.some(p => router.pathname === p || router.pathname.startsWith(p + '/'));
 
-  const pageTitle = title
-    ? `${title} | ${SITE_NAME}`
-    : `${SITE_NAME} | God · Work · Community`;
+  // Don't double the brand when a page title already carries it.
+  const pageTitle = !title
+    ? `${SITE_NAME} | God · Work · Community`
+    : /ruach tabernacle/i.test(title) ? title : `${title} | ${SITE_NAME}`;
   const pageDesc  = description || DEFAULT_DESC;
-  const ogImage   = image ? (image.startsWith('http') ? image : `${SITE_URL}${image}`) : DEFAULT_IMG;
-  const canonical = `${SITE_URL}${router.asPath.split('?')[0]}`;
+  const imgPath   = image || OG.default;
+  const ogImage   = absUrl(imgPath);
+  const sized     = OG_SIZED.has(imgPath);
+  const canonical = canonicalFor(router.asPath);
+  const robots    = noIndex || isPrivate
+    ? 'noindex, nofollow'
+    : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1';
 
-  const jsonLd = structuredData ?? ORG_JSON_LD;
+  const extra  = structuredData ? (Array.isArray(structuredData) ? structuredData : [structuredData]) : [];
+  const jsonLd = { '@context': 'https://schema.org', '@graph': [CHURCH_JSON_LD, ...extra] };
 
   const seoHead = (
     <Head>
       <title>{pageTitle}</title>
       <meta name="description" content={pageDesc} />
       <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-      <link rel="canonical" href={canonical} />
+      {!isPrivate && !noIndex && <link rel="canonical" href={canonical} />}
 
       {/* Open Graph */}
-      <meta property="og:type"        content="website" />
+      <meta property="og:type"        content={ogType} />
       <meta property="og:url"         content={canonical} />
       <meta property="og:title"       content={pageTitle} />
       <meta property="og:description" content={pageDesc} />
       <meta property="og:image"       content={ogImage} />
-      <meta property="og:image:width"  content="1200" />
-      <meta property="og:image:height" content="630" />
+      {sized && <meta property="og:image:width"  content="1200" />}
+      {sized && <meta property="og:image:height" content="630" />}
+      <meta property="og:image:alt"   content={imageAlt || 'Ruach Tabernacle Assembly, Nairobi'} />
       <meta property="og:site_name"   content={SITE_NAME} />
       <meta property="og:locale"      content="en_KE" />
 
-      {/* Twitter / X */}
+      {/* X / Twitter cards. No twitter:site: @ruachtabernacle does not exist on X. */}
       <meta name="twitter:card"        content="summary_large_image" />
-      <meta name="twitter:site"        content="@ruachtabernacle" />
-      <meta name="twitter:creator"     content="@ruachtabernacle" />
       <meta name="twitter:title"       content={pageTitle} />
       <meta name="twitter:description" content={pageDesc} />
       <meta name="twitter:image"       content={ogImage} />
 
       {/* Indexing */}
-      <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+      <meta name="robots" content={robots} />
       <meta name="author" content={SITE_NAME} />
-      <meta name="keywords" content="Ruach Tabernacle, church Nairobi, Sunday service, Kingdom Champions, Rhema, Northern Bypass, Kenya church" />
 
-      {/* Structured Data */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      {/* Structured data */}
+      {!isPrivate && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      )}
     </Head>
   );
 

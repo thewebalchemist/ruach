@@ -8,7 +8,7 @@ const serif = { fontFamily: 'Fraunces, Georgia, serif', fontWeight: 600 };
 
 export default function MarriageMinistryPage() {
   return (
-    <Layout title="Marriage Ministry — Ruach Tabernacle" description="Building strong, God-centered marriages at Ruach Tabernacle.">
+    <Layout title="Marriage Ministry" description="Building strong, God-centered marriages at Ruach Tabernacle.">
 
       <section className="relative min-h-[70vh] flex items-end bg-black overflow-hidden">
         <div className="absolute inset-0">

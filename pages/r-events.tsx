@@ -182,7 +182,7 @@ export default function REventsPage({ events }: Props) {
 
   return (
     <Layout
-      title="Events — Ruach Tabernacle"
+      title="Events"
       description="Upcoming events at Ruach Tabernacle — gatherings designed to encounter God, build community, and see lives transformed."
     >
 

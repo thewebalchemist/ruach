@@ -67,9 +67,6 @@ export default function VideoPlayer({ streamUrl, isLive }: VideoPlayerProps) {
             <p className="text-gray-300">
               The live stream will start when the service begins.
             </p>
-            <p className="text-gray-400 text-sm mt-2">
-              Admin: Please configure the default video in the admin panel.
-            </p>
           </div>
         </div>
       </div>

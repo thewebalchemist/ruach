@@ -15,6 +15,10 @@ const nextConfig: NextConfig = {
 
   async redirects() {
     return [
+      // ── Homepage duplicates: "/index" was the canonical by mistake ──
+      { source: '/index', destination: '/', permanent: true },
+      { source: '/index_full', destination: '/', permanent: true },
+
       // ── WordPress legacy URL redirects ──────────────────────────────
       // Preserve any Google-indexed WordPress pages
       { source: '/wp-content/:path*', destination: '/', permanent: true },
@@ -43,7 +47,7 @@ const nextConfig: NextConfig = {
     // filenames), so let browsers keep them for a day and serve stale while
     // revalidating for a month after that.
     const staticMedia = 'public, max-age=86400, stale-while-revalidate=2592000';
-    const mediaFolders = ['videos', 'church-photos', 'communities', 'pastors', 'rhema-feast', 'brand', 'kids', 'events'];
+    const mediaFolders = ['videos', 'church-photos', 'communities', 'pastors', 'rhema-feast', 'brand', 'kids', 'events', 'og'];
     return [
       {
         source: '/:path*',

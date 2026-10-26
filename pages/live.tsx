@@ -5,7 +5,7 @@ import {
   ChevronDown, ChevronUp, EyeOff, Eye,
 } from 'lucide-react';
 import Layout from '@/components/shared/Layout';
-import { SEO } from '@/components/shared/SEO';
+import { OG } from '@/lib/seo';
 import VideoPlayer from '@/components/streaming/VideoPlayer';
 import NotesEditor from '@/components/streaming/NotesEditor';
 import BibleReader from '@/components/streaming/BibleReader';
@@ -65,14 +65,12 @@ export default function LivePage() {
 
   return (
     <>
-      <SEO
+      <Layout
         title="Watch Live"
         description="Join Ruach Tabernacle Assembly live every Sunday. Three services: 8AM, 10AM, and 12:30PM."
-        url="/live"
-        image="/church-photos/church.jpg"
-      />
-
-      <Layout>
+        image={OG.live}
+        imageAlt="Ruach Tabernacle Sunday service, streamed live"
+      >
         <div className="min-h-screen bg-[#0A0C10] pt-16 sm:pt-24">
 
           {/* Live banner */}

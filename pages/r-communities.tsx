@@ -17,10 +17,10 @@ const COMMUNITIES = [
   { name: 'R-Worship',            sub: 'Worship Team',         href: '/r-worship',         img: '/communities/r-worship-praise.jpg' },
   { name: 'R-Media',              sub: 'Production & Media',   href: '/r-media',           img: '/communities/r-media.jpg' },
   { name: 'Intercessors',         sub: 'Prayer Ministry',      href: '/intercessors',      img: '/communities/ruach2.jpg' },
-  { name: 'Evangelists',          sub: 'Outreach Ministry',    href: '/r-communities',     img: '/communities/worship1.jpg' },
-  { name: 'Hospitality',          sub: 'Guest Services',       href: '/r-communities',     img: '/communities/the-bridge1.jpg' },
-  { name: 'Care and Counselling', sub: 'Pastoral Care',        href: '/r-communities',     img: '/communities/kingdom-woman3.jpg' },
-  { name: 'Guest Experience',     sub: 'First Impressions',    href: '/r-communities',     img: '/communities/r-worship-praise2.jpg' },
+  { name: 'Evangelists',          sub: 'Outreach Ministry',    href: '/r-connect',         img: '/communities/worship1.jpg' },
+  { name: 'Hospitality',          sub: 'Guest Services',       href: '/r-connect',         img: '/communities/the-bridge1.jpg' },
+  { name: 'Care and Counselling', sub: 'Pastoral Care',        href: '/r-connect',         img: '/communities/kingdom-woman3.jpg' },
+  { name: 'Guest Experience',     sub: 'First Impressions',    href: '/r-connect',         img: '/communities/r-worship-praise2.jpg' },
 ];
 
 export default function RCommunitiesPage() {

@@ -8,6 +8,7 @@ import ThemeHero from '@/components/streaming/ThemeHero';
 import { supabase } from '@/lib/supabase';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import type { GetStaticProps } from 'next';
+import { sundayServiceEvents, eventJsonLd } from '@/lib/seo';
 
 interface HomeSermon { id: string; title: string; slug: string; preacher: string; service_date: string; youtube_url: string; thumbnail_url: string | null; description: string | null; }
 interface UpcomingEvent { id: string; title: string; description: string | null; event_date: string; end_date: string | null; start_time: string | null; location: string | null; map_url: string | null; image_url: string | null; }
@@ -21,7 +22,7 @@ const serif = { fontFamily: 'Fraunces, Georgia, serif', fontWeight: 600 };
 const FAQS = [
   { q: 'What are your services like?', a: 'We provide an inviting atmosphere where everyone is welcome. Our services are a little over an hour long — filled with powerful worship, practical teachings that will help grow your faith in God, and a community of people that want to do life with you.' },
   { q: 'What should I wear?', a: 'We welcome you to come as you are. Whether you prefer to dress up or dress down, we encourage you to wear modestly and decently. Come comfortable.' },
-  { q: 'How is it like visiting for the first time?', a: "We are committed to making sure that your first visit is enjoyable and stress-free. We won't single you out, make you stand up, or pressure you for money. Explore at your own pace." },
+  { q: 'What is it like visiting for the first time?', a: "We are committed to making sure that your first visit is enjoyable and stress-free. We won't single you out, make you stand up, or pressure you for money. Explore at your own pace." },
   { q: 'What about my kids?', a: "We know that your children are a big priority. We aim to create a safe, fun, and engaging environment through RT Kids — with games, interactive Bible lessons, and creative crafts. All volunteers are thoroughly vetted." },
   { q: 'How can I get connected?', a: 'Getting connected is easy! Attend our Connect Class to learn everything about Ruach, or join a Crosspoint (home church) where you can connect with people in your zone and grow in your faith.' },
 ];
@@ -85,8 +86,9 @@ export default function HomePage({ recentSermons, isLive, upcomingEvents = [] }:
 
   return (
     <Layout
-      title="God · Work · Community"
-      description="Ruach Tabernacle Assembly — A God-focused, Service-oriented, Community-driven church in Nairobi, Kenya. Join us every Sunday at 8AM, 10AM or 12:30PM along the Northern Bypass next to Shell Windsor."
+      title="Ruach Tabernacle Assembly | Church in Nairobi, Northern Bypass"
+      description="A God-focused, Service-oriented, Community-driven church in Nairobi. Sunday services at 8AM, 10AM and 12:30PM on the Northern Bypass, next to Shell Windsor."
+      structuredData={[...sundayServiceEvents(), ...upcomingEvents.map(ev => eventJsonLd(ev))]}
     >
 
       {/* ══════════════════════════════════════════════

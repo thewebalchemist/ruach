@@ -3,7 +3,7 @@ import Layout from '@/components/shared/Layout';
 
 export default function NotFoundPage() {
   return (
-    <Layout title="Page Not Found">
+    <Layout title="Page Not Found" noIndex>
       <div className="min-h-screen flex flex-col items-center justify-center text-center px-6">
         <p className="text-[#BF0A30] text-8xl font-extrabold mb-4">404</p>
         <h1 className="text-white text-3xl font-bold mb-4">Page Not Found</h1>
